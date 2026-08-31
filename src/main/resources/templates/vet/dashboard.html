@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - ClyvoVet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: #0f1b2d; color: #fff; padding: 2rem 1rem; }
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { margin: 0; font-size: 1.75rem; color: #1e293b; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: #fff; padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card h3 { margin: 0 0 0.5rem 0; font-size: 0.875rem; color: #64748b; font-weight: 500; }
+        .stat-card .value { font-size: 1.5rem; font-weight: 700; color: #0f1b2d; }
+        .recent-appointments { background: #fff; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .recent-appointments h2 { margin: 0 0 1rem 0; font-size: 1.25rem; color: #1e293b; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { font-weight: 600; color: #64748b; background: #f8fafc; }
+        .badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-scheduled { background: #dbeafe; color: #1e40af; }
+        .sidebar-brand { font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; display: block; text-decoration: none; color: white; text-align: center; }
+        .nav-link { display: block; color: #cbd5e1; text-decoration: none; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+        .nav-link:hover { background: #1e293b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="/" class="sidebar-brand">ClyvoVet</a>
+        <a href="/vet/dashboard" class="nav-link">Dashboard</a>
+        <a href="/vet/appointments" class="nav-link">Consultas</a>
+        <a href="/vet/patients" class="nav-link">Pacientes</a>
+        <a href="/vet/profile" class="nav-link">Meu Perfil</a>
+        <form th:action="@{/logout}" method="post" style="margin-top: auto;">
+            <button type="submit" style="width: 100%; padding: 0.75rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">Sair</button>
+        </form>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Olá, <span th:text="${vetName}">Dr. Veterinário</span>!</h1>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Consultas Hoje</h3>
+                <div class="value" th:text="${appointmentsToday}">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pacientes Ativos</h3>
+                <div class="value" th:text="${activePatients}">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Plano Atual</h3>
+                <div class="value" th:text="${planName}">FREE</div>
+            </div>
+        </div>
+        
+        <div class="recent-appointments">
+            <h2>Próximas Consultas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Horário</th>
+                        <th>Paciente (Pet)</th>
+                        <th>Tutor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="appt : ${recentAppointments}">
+                        <td th:text="${#temporals.format(appt.scheduledAt, 'dd/MM/yyyy HH:mm')}">10/10/2023 14:00</td>
+                        <td th:text="${appt.petName}">Rex</td>
+                        <td th:text="${appt.tutorName}">João</td>
+                        <td><span class="badge badge-scheduled" th:text="${appt.status}">AGENDADO</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
