@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+  Template: admin/users.html
+  Descrição: Tabela de gerenciamento de todos os usuários do sistema.
+  Acesso: ROLE_ADMIN
+-->
+<head th:replace="~{layouts/base :: head(title='Gerenciar Usuários — ClyvoVet')}"></head>
+<body>
+<div class="layout">
+  <div th:replace="~{layouts/base :: sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <h1 class="page-title">👥 Gerenciamento de Usuários</h1>
+      <div class="topbar-actions">
+        <span style="font-size: 13px; color: #64748b;"
+              th:text="${'Total: ' + (users != null ? #lists.size(users) : 0) + ' usuários'}">Total: 0 usuários</span>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <!-- Feedback -->
+      <div th:if="${param.deactivated}" class="alert alert-danger">⚠️ Usuário desativado com sucesso.</div>
+      <div th:if="${param.activated}" class="alert alert-success">✅ Usuário ativado com sucesso.</div>
+
+      <!-- Tabela de Usuários -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Todos os Usuários</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Perfil</th>
+                  <th>Status</th>
+                  <th>Cadastrado em</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="user : ${users}">
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div style="width: 32px; height: 32px; border-radius: 50%;
+                                  background: linear-gradient(135deg, #2563eb, #7c3aed);
+                                  display: flex; align-items: center; justify-content: center;
+                                  color: white; font-weight: 700; font-size: 12px; flex-shrink: 0;">
+                        <span th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</span>
+                      </div>
+                      <span style="font-weight: 600;" th:text="${user.name}">Nome do Usuário</span>
+                    </div>
+                  </td>
+                  <td style="color: #64748b; font-size: 13px;" th:text="${user.email}">email@exemplo.com</td>
+                  <td>
+                    <span th:if="${user.role == 'ROLE_VETERINARIAN'}" class="badge badge-purple">🩺 Veterinário</span>
+                    <span th:if="${user.role == 'ROLE_TUTOR'}" class="badge badge-green">👤 Tutor</span>
+                    <span th:if="${user.role == 'ROLE_ADMIN'}" class="badge badge-red">⚙️ Admin</span>
+                  </td>
+                  <td>
+                    <span th:if="${user.active}" class="badge badge-green">✓ Ativo</span>
+                    <span th:unless="${user.active}" class="badge badge-gray">✗ Inativo</span>
+                  </td>
+                  <td style="color: #94a3b8; font-size: 13px;"
+                      th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                  <td>
+                    <div style="display: flex; gap: 6px;">
+                      <!-- Desativar (usuário ativo) -->
+                      <form th:if="${user.active}"
+                            th:action="@{/admin/users/{id}/deactivate(id=${user.id})}"
+                            method="post" style="display: inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Desativar este usuário?')">
+                          🚫 Desativar
+                        </button>
+                      </form>
+                      <!-- Ativar (usuário inativo) -->
+                      <form th:unless="${user.active}"
+                            th:action="@{/admin/users/{id}/activate(id=${user.id})}"
+                            method="post" style="display: inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-success btn-sm">✅ Ativar</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                  <td colspan="6" style="text-align: center; color: #94a3b8; padding: 48px;">
+                    Nenhum usuário cadastrado.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
