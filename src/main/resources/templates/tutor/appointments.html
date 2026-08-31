@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/base :: head(title='Minhas Consultas — ClyvoVet')}"></head>
+<body>
+<div class="layout">
+  <div th:replace="~{layouts/base :: sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <h1 class="page-title">Minhas Consultas</h1>
+      <div class="topbar-actions">
+        <a th:href="@{/tutor/appointments/new}" class="btn btn-primary">+ Agendar Consulta</a>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div th:if="${param.scheduled}" class="alert alert-success">Consulta agendada com sucesso!</div>
+      <div th:if="${param.cancelled}" class="alert alert-danger">Consulta cancelada.</div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Pet</th>
+                  <th>Veterinario</th>
+                  <th>Data / Hora</th>
+                  <th>Status</th>
+                  <th>Acoes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="apt : ${appointments}">
+                  <td style="font-weight:600;" th:text="${apt.petName}">Pet</td>
+                  <td>
+                    <div style="font-size:14px;" th:text="${'Dr. ' + apt.veterinarianName}">Dr. Nome</div>
+                    <div style="font-size:12px;color:#94a3b8;" th:text="${apt.veterinarianCrm}">CRM</div>
+                  </td>
+                  <td style="font-size:13px;" th:text="${#temporals.format(apt.scheduledAt,'dd/MM/yyyy HH:mm')}">Data</td>
+                  <td>
+                    <span th:if="${apt.status == 'Agendado'}" class="badge badge-blue" th:text="${apt.status}"></span>
+                    <span th:if="${apt.status == 'Confirmado'}" class="badge badge-green" th:text="${apt.status}"></span>
+                    <span th:if="${apt.status == 'Em Andamento'}" class="badge badge-amber" th:text="${apt.status}"></span>
+                    <span th:if="${apt.status == 'Concluido'}" class="badge badge-gray" th:text="${apt.status}"></span>
+                    <span th:if="${apt.status == 'Cancelado'}" class="badge badge-red" th:text="${apt.status}"></span>
+                  </td>
+                  <td>
+                    <form th:if="${apt.status == 'Agendado' or apt.status == 'Confirmado'}"
+                          th:action="@{/tutor/appointments/{id}/cancel(id=${apt.id})}" method="post">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <button type="submit" class="btn btn-danger btn-sm"
+                              onclick="return confirm('Cancelar esta consulta?')">Cancelar</button>
+                    </form>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(appointments)}">
+                  <td colspan="5" style="text-align:center;color:#94a3b8;padding:48px;">
+                    Nenhuma consulta encontrada.
+                    <a th:href="@{/tutor/appointments/new}" style="color:#2563eb;display:block;margin-top:8px;">Agendar agora</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

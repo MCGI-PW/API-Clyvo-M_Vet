@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layouts/base :: head(title='Meus Pets — ClyvoVet')}"></head>
+<body>
+<div class="layout">
+  <div th:replace="~{layouts/base :: sidebar}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <h1 class="page-title">Meus Pets</h1>
+      <div class="topbar-actions">
+        <a th:href="@{/tutor/pets/new}" class="btn btn-primary">+ Novo Pet</a>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div th:if="${param.created}" class="alert alert-success">Pet cadastrado com sucesso!</div>
+      <div th:if="${param.updated}" class="alert alert-success">Pet atualizado com sucesso!</div>
+
+      <div th:if="${pets != null and !#lists.isEmpty(pets)}"
+           style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+        <div th:each="pet : ${pets}" class="card" style="transition:all 0.2s;">
+          <div class="card-body" style="text-align:center;padding:28px 20px;">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;">
+              <span th:if="${pet.species == 'Cachorro'}">🐶</span>
+              <span th:if="${pet.species == 'Gato'}">🐱</span>
+              <span th:unless="${pet.species == 'Cachorro' or pet.species == 'Gato'}">🐾</span>
+            </div>
+            <div style="font-size:18px;font-weight:700;color:#0f172a;" th:text="${pet.name}">Nome</div>
+            <div style="margin-top:6px;">
+              <span class="badge badge-amber" th:text="${pet.species}">Especie</span>
+            </div>
+            <div th:if="${pet.breed != null and !#strings.isEmpty(pet.breed)}" style="font-size:13px;color:#64748b;margin-top:6px;" th:text="${pet.breed}">Raca</div>
+            <div th:if="${pet.birthDate != null}" style="font-size:12px;color:#94a3b8;margin-top:4px;">
+              Nasceu em: <span th:text="${#temporals.format(pet.birthDate,'dd/MM/yyyy')}">01/01/2020</span>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;">
+              <a th:href="@{/tutor/pets/{id}/edit(id=${pet.id})}" class="btn btn-secondary btn-sm">Editar</a>
+              <a th:href="@{/tutor/pets/{id}/vaccines(id=${pet.id})}" class="btn btn-primary btn-sm">Vacinas</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${pets == null or #lists.isEmpty(pets)}" class="card">
+        <div class="card-body" style="text-align:center;padding:64px 32px;">
+          <div style="font-size:64px;margin-bottom:16px;">🐾</div>
+          <h3 style="font-size:20px;font-weight:700;color:#0f172a;margin-bottom:8px;">Nenhum pet cadastrado</h3>
+          <p style="color:#64748b;margin-bottom:24px;">Cadastre seu primeiro pet para comecar a agendar consultas.</p>
+          <a th:href="@{/tutor/pets/new}" class="btn btn-primary">Cadastrar meu primeiro pet</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
