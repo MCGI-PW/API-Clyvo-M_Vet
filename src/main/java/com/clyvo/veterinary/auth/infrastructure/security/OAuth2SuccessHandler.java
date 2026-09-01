@@ -21,12 +21,10 @@ import java.util.Collections;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public OAuth2SuccessHandler(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public OAuth2SuccessHandler(UserRepository userRepository, JwtService jwtService) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
@@ -48,7 +46,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             userRepository.save(user);
         }
         
-        String targetUrl = user.getRole() == Role.ROLE_VETERINARIAN ? "/vet/dashboard" : "/tutor/dashboard";
-        response.sendRedirect(targetUrl);
+        org.springframework.security.core.userdetails.UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password("")
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())))
+                .build();
+        
+        String jwt = jwtService.generateToken(userDetails);
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"token\": \"" + jwt + "\", \"type\": \"Bearer\"}");
     }
 }

@@ -10,6 +10,7 @@ import com.clyvo.veterinary.shared.domain.exception.BusinessException;
 import com.clyvo.veterinary.shared.domain.exception.ResourceNotFoundException;
 import com.clyvo.veterinary.user.domain.model.User;
 import com.clyvo.veterinary.user.domain.repository.UserRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,7 +32,7 @@ public class AuthService implements RegisterUseCase, LoginUseCase, UserDetailsSe
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, @Lazy AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;

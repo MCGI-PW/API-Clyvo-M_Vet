@@ -101,6 +101,7 @@ class AuthServiceTest {
         User existingUser = User.create("Dr. Joao", "joao@clyvovet.com", "$2a$hashed", Role.ROLE_VETERINARIAN);
         when(userRepository.findByEmail(validLoginRequest.email())).thenReturn(Optional.of(existingUser));
         when(jwtService.generateToken(any())).thenReturn("mocked.jwt.token");
+        when(jwtService.extractExpiration("mocked.jwt.token")).thenReturn(new java.util.Date(System.currentTimeMillis() + 3600000));
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
 
