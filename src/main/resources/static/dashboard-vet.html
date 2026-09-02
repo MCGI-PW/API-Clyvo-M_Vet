@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Painel do Veterinario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Painel do Veterinario</h1>
+    <button onclick="logout()">Sair</button>
+    
+    <h2>Finalizar Consulta</h2>
+    <input type="text" id="appId" placeholder="ID da Consulta (UUID)"><br>
+    <textarea id="notes" placeholder="Notas Clinicas"></textarea><br>
+    <button onclick="finalizarConsulta()">Finalizar</button>
+
+    <h2>Notificacoes</h2>
+    <div id="notifList"></div>
+
+    <script src="app.js"></script>
+    <script>
+        window.onload = function() {
+            carregarNotificacoes();
+        };
+    </script>
+</body>
+</html>

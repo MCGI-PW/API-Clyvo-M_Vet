@@ -1,0 +1,5 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+input, select, textarea { margin-bottom: 10px; padding: 5px; width: 300px; }
+button { padding: 10px 15px; background: #28a745; color: white; border: none; cursor: pointer; }
+button:hover { background: #218838; }
+.card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }

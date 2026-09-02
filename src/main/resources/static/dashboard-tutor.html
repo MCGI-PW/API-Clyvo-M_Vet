@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Painel do Tutor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Painel do Tutor</h1>
+    <button onclick="logout()">Sair</button>
+    
+    <h2>Meus Pets</h2>
+    <div id="petsList"></div>
+    <h3>Cadastrar Pet</h3>
+    <input type="text" id="petName" placeholder="Nome do Pet"><br>
+    <input type="number" id="petAge" placeholder="Idade"><br>
+    <input type="text" id="petBreed" placeholder="Raca"><br>
+    <button onclick="cadastrarPet()">Salvar Pet</button>
+
+    <h2>Notificacoes</h2>
+    <div id="notifList"></div>
+    
+    <h2>Agendar Consulta</h2>
+    <select id="selVet"></select><br>
+    <select id="selPet"></select><br>
+    <input type="datetime-local" id="appDate"><br>
+    <select id="appModality">
+        <option value="ONLINE">Online</option>
+        <option value="PRESENCIAL">Presencial</option>
+    </select><br>
+    <button onclick="agendarConsulta()">Agendar</button>
+
+    <script src="app.js"></script>
+    <script>
+        window.onload = function() {
+            carregarPets();
+            carregarVeterinarios();
+            carregarNotificacoes();
+        };
+    </script>
+</body>
+</html>
