@@ -17,9 +17,6 @@ public class VaccineEntity {
     @Column(name = "pet_id", nullable = false)
     private UUID petId;
     
-    @Column(name = "veterinarian_id", nullable = false)
-    private UUID veterinarianId;
-    
     @Column(name = "vaccine_name", nullable = false)
     private String vaccineName;
     
@@ -44,10 +41,9 @@ public class VaccineEntity {
     public VaccineEntity() {
     }
 
-    public VaccineEntity(UUID id, UUID petId, UUID veterinarianId, String vaccineName, String manufacturer, String batchNumber, LocalDate appliedAt, LocalDate nextDoseAt, String notes, LocalDateTime createdAt) {
+    public VaccineEntity(UUID id, UUID petId, String vaccineName, String manufacturer, String batchNumber, LocalDate appliedAt, LocalDate nextDoseAt, String notes, LocalDateTime createdAt) {
         this.id = id;
         this.petId = petId;
-        this.veterinarianId = veterinarianId;
         this.vaccineName = vaccineName;
         this.manufacturer = manufacturer;
         this.batchNumber = batchNumber;
@@ -62,9 +58,6 @@ public class VaccineEntity {
 
     public UUID getPetId() { return petId; }
     public void setPetId(UUID petId) { this.petId = petId; }
-
-    public UUID getVeterinarianId() { return veterinarianId; }
-    public void setVeterinarianId(UUID veterinarianId) { this.veterinarianId = veterinarianId; }
 
     public String getVaccineName() { return vaccineName; }
     public void setVaccineName(String vaccineName) { this.vaccineName = vaccineName; }
@@ -94,7 +87,6 @@ public class VaccineEntity {
     public static class Builder {
         private UUID id;
         private UUID petId;
-        private UUID veterinarianId;
         private String vaccineName;
         private String manufacturer;
         private String batchNumber;
@@ -107,7 +99,6 @@ public class VaccineEntity {
 
         public Builder id(UUID id) { this.id = id; return this; }
         public Builder petId(UUID petId) { this.petId = petId; return this; }
-        public Builder veterinarianId(UUID veterinarianId) { this.veterinarianId = veterinarianId; return this; }
         public Builder vaccineName(String vaccineName) { this.vaccineName = vaccineName; return this; }
         public Builder manufacturer(String manufacturer) { this.manufacturer = manufacturer; return this; }
         public Builder batchNumber(String batchNumber) { this.batchNumber = batchNumber; return this; }
@@ -117,7 +108,7 @@ public class VaccineEntity {
         public Builder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public VaccineEntity build() {
-            return new VaccineEntity(id, petId, veterinarianId, vaccineName, manufacturer, batchNumber, appliedAt, nextDoseAt, notes, createdAt);
+            return new VaccineEntity(id, petId, vaccineName, manufacturer, batchNumber, appliedAt, nextDoseAt, notes, createdAt);
         }
     }
 }

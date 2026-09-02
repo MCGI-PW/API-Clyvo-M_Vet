@@ -45,7 +45,7 @@ public class TutorController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN', 'TUTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TUTOR')")
     public ResponseEntity<TutorResponse> getProfile(@PathVariable UUID id) {
         return ResponseEntity.ok(tutorUseCase.getProfile(id));
     }
@@ -66,7 +66,7 @@ public class TutorController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'VETERINARIAN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TutorResponse>> listAll() {
         return ResponseEntity.ok(tutorUseCase.listAll());
     }

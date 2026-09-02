@@ -2,16 +2,17 @@ package com.clyvo.veterinary.vaccine.infrastructure.persistence.adapter;
 
 import com.clyvo.veterinary.vaccine.domain.model.Vaccine;
 import com.clyvo.veterinary.vaccine.domain.repository.VaccineRepository;
+import com.clyvo.veterinary.vaccine.infrastructure.persistence.entity.VaccineEntity;
 import com.clyvo.veterinary.vaccine.infrastructure.persistence.mapper.VaccineEntityMapper;
 import com.clyvo.veterinary.vaccine.infrastructure.persistence.repository.VaccineJpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Repository
+@Component
 public class VaccineRepositoryAdapter implements VaccineRepository {
 
     private final VaccineJpaRepository jpaRepository;
@@ -24,9 +25,9 @@ public class VaccineRepositoryAdapter implements VaccineRepository {
 
     @Override
     public Vaccine save(Vaccine vaccine) {
-        var entity = mapper.toEntity(vaccine);
-        var saved = jpaRepository.save(entity);
-        return mapper.toDomain(saved);
+        VaccineEntity entity = mapper.toEntity(vaccine);
+        VaccineEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
@@ -37,16 +38,6 @@ public class VaccineRepositoryAdapter implements VaccineRepository {
     @Override
     public List<Vaccine> findByPetId(UUID petId) {
         return jpaRepository.findByPetId(petId).stream().map(mapper::toDomain).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Vaccine> findByVeterinarianId(UUID veterinarianId) {
-        return jpaRepository.findByVeterinarianId(veterinarianId).stream().map(mapper::toDomain).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Vaccine> findAll() {
-        return jpaRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
     }
 
     @Override

@@ -13,7 +13,6 @@ public class VaccineEntityMapper {
         return VaccineEntity.builder()
                 .id(domain.getId())
                 .petId(domain.getPetId())
-                .veterinarianId(domain.getVeterinarianId())
                 .vaccineName(domain.getVaccineName())
                 .manufacturer(domain.getManufacturer())
                 .batchNumber(domain.getBatchNumber())
@@ -30,7 +29,6 @@ public class VaccineEntityMapper {
         return Vaccine.load(
                 entity.getId(),
                 entity.getPetId(),
-                entity.getVeterinarianId(),
                 entity.getVaccineName(),
                 entity.getManufacturer(),
                 entity.getBatchNumber(),

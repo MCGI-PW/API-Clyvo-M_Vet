@@ -8,8 +8,6 @@ public record VaccineResponse(
     UUID id,
     UUID petId,
     String petName,
-    UUID veterinarianId,
-    String veterinarianName,
     String vaccineName,
     String manufacturer,
     String batchNumber,

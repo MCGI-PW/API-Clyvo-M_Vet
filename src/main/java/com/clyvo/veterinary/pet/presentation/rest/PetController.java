@@ -7,12 +7,14 @@ import com.clyvo.veterinary.pet.application.port.in.PetUseCase;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/pets")
+@Tag(name = "Pets", description = "Endpoints for managing pets")
 public class PetController {
 
     private final PetUseCase petUseCase;
@@ -29,13 +31,13 @@ public class PetController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('TUTOR', 'VETERINARIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TUTOR', 'ADMIN')")
     public PetResponse getPet(@PathVariable UUID id) {
         return petUseCase.getPet(id);
     }
 
     @GetMapping("/tutor/{tutorId}")
-    @PreAuthorize("hasAnyRole('TUTOR', 'VETERINARIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TUTOR', 'ADMIN')")
     public List<PetResponse> listPetsByTutor(@PathVariable UUID tutorId) {
         return petUseCase.listPetsByTutor(tutorId);
     }

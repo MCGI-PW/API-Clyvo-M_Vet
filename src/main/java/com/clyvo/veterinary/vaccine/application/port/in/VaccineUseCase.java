@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface VaccineUseCase {
-    VaccineResponse registerVaccine(UUID vetId, CreateVaccineRequest request);
+    VaccineResponse registerVaccine(CreateVaccineRequest request);
     VaccineResponse getVaccine(UUID id);
     List<VaccineResponse> listByPet(UUID petId);
-    List<VaccineResponse> listByVeterinarian(UUID vetId);
     void deleteVaccine(UUID id);
 }

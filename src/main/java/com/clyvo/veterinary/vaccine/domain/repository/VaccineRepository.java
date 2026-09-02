@@ -10,7 +10,5 @@ public interface VaccineRepository {
     Vaccine save(Vaccine vaccine);
     Optional<Vaccine> findById(UUID id);
     List<Vaccine> findByPetId(UUID petId);
-    List<Vaccine> findByVeterinarianId(UUID veterinarianId);
-    List<Vaccine> findAll();
     void deleteById(UUID id);
 }
