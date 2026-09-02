@@ -1,34 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Painel do Tutor</title>
+    <meta charset="UTF-8">
+    <title>Clyvo Vet - Tutor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Painel do Tutor</h1>
-    <button onclick="logout()">Sair</button>
-    
-    <h2>Meus Pets</h2>
-    <div id="petsList"></div>
-    <h3>Cadastrar Pet</h3>
-    <input type="text" id="petName" placeholder="Nome do Pet"><br>
-    <input type="number" id="petAge" placeholder="Idade"><br>
-    <input type="text" id="petBreed" placeholder="Raca"><br>
-    <button onclick="cadastrarPet()">Salvar Pet</button>
+    <div class="container dashboard-container">
+        <div class="header">
+            <h1>Area do Tutor</h1>
+            <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
+        </div>
+        
+        <div id="globalError" class="error-box"></div>
+        <div id="globalSuccess" class="success-box"></div>
 
-    <h2>Notificacoes</h2>
-    <div id="notifList"></div>
-    
-    <h2>Agendar Consulta</h2>
-    <select id="selVet"></select><br>
-    <select id="selPet"></select><br>
-    <input type="datetime-local" id="appDate"><br>
-    <select id="appModality">
-        <option value="ONLINE">Online</option>
-        <option value="PRESENCIAL">Presencial</option>
-    </select><br>
-    <button onclick="agendarConsulta()">Agendar</button>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3>Meus Pets</h3>
+                <div id="petsList"></div>
+                <hr>
+                <h4>Adicionar Novo Pet</h4>
+                <input type="text" id="petName" placeholder="Nome do Pet">
+                <input type="number" id="petAge" placeholder="Idade (Anos)">
+                <input type="text" id="petBreed" placeholder="Raca">
+                <button onclick="cadastrarPet()">Salvar Pet</button>
+            </div>
+            
+            <div style="flex: 1;">
+                <h3>Agendar Consulta</h3>
+                <select id="selVet"><option value="">Carregando veterinarios...</option></select>
+                <select id="selPet"><option value="">Nenhum pet encontrado</option></select>
+                <input type="datetime-local" id="appDate">
+                <select id="appModality">
+                    <option value="ONLINE">Consulta Online</option>
+                    <option value="PRESENCIAL">Consulta Presencial</option>
+                </select>
+                <button onclick="agendarConsulta()">Confirmar Agendamento</button>
 
+                <hr>
+                <h3>Minhas Notificacoes (Caixa de Entrada)</h3>
+                <div id="notifList"></div>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
     <script>
         window.onload = function() {

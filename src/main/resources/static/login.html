@@ -1,32 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Login - Clyvo</title>
+    <meta charset="UTF-8">
+    <title>Clyvo Vet - Entrar</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Login</h1>
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="Email" required><br><br>
-        <input type="password" id="password" placeholder="Senha" required><br><br>
-        <button type="submit">Entrar</button>
-    </form>
+    <div class="container">
+        <h1>Entrar no Clyvo Vet</h1>
+        
+        <div id="loginError" class="error-box"></div>
+        <div id="loginSuccess" class="success-box"></div>
+
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Seu Email" required>
+            <input type="password" id="password" placeholder="Sua Senha (min 3 digitos)" required>
+            <button type="submit">Fazer Login</button>
+        </form>
+        
+        <hr>
+        
+        <h2>Ainda nao tem conta? Cadastre-se</h2>
+        <div id="regError" class="error-box"></div>
+        
+        <form id="registerForm">
+            <select id="role">
+                <option value="ROLE_TUTOR">Sou um Tutor</option>
+                <option value="ROLE_VETERINARIAN">Sou um Veterinario</option>
+            </select>
+            <input type="text" id="regName" placeholder="Nome Completo" required>
+            <input type="email" id="regEmail" placeholder="Email Valido (@)" required>
+            <input type="password" id="regPassword" placeholder="Senha (min 3 digitos)" required>
+            <input type="number" id="regAge" placeholder="Sua Idade (+18)" required>
+            <input type="text" id="regPhone" placeholder="Telefone de Contato" required>
+            
+            <div id="crmvDiv" style="display: none;">
+                <input type="text" id="regCrmv" placeholder="Seu CRMV (Ex: 12345-SP)">
+            </div>
+
+            <button type="submit" class="btn-secondary">Criar Conta</button>
+        </form>
+    </div>
     
-    <hr>
-    <h2>Cadastro</h2>
-    <form id="registerForm">
-        <select id="role">
-            <option value="ROLE_TUTOR">Tutor</option>
-            <option value="ROLE_VETERINARIAN">Veterinario</option>
-        </select><br><br>
-        <input type="text" id="regName" placeholder="Nome Completo" required><br><br>
-        <input type="email" id="regEmail" placeholder="Email" required><br><br>
-        <input type="password" id="regPassword" placeholder="Senha" required><br><br>
-        <input type="number" id="regAge" placeholder="Idade" required><br><br>
-        <input type="text" id="regPhone" placeholder="Telefone" required><br><br>
-        <input type="text" id="regCrmv" placeholder="CRMV (Apenas Vet)"><br><br>
-        <button type="submit">Cadastrar</button>
-    </form>
     <script src="app.js"></script>
+    <script>
+        document.getElementById('role').addEventListener('change', (e) => {
+            const crmvDiv = document.getElementById('crmvDiv');
+            if (e.target.value === 'ROLE_VETERINARIAN') {
+                crmvDiv.style.display = 'block';
+                document.getElementById('regCrmv').required = true;
+            } else {
+                crmvDiv.style.display = 'none';
+                document.getElementById('regCrmv').required = false;
+            }
+        });
+    </script>
 </body>
 </html>

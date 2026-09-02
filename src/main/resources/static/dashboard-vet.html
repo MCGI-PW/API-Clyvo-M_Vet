@@ -1,21 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Painel do Veterinario</title>
+    <meta charset="UTF-8">
+    <title>Clyvo Vet - Veterinario</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Painel do Veterinario</h1>
-    <button onclick="logout()">Sair</button>
-    
-    <h2>Finalizar Consulta</h2>
-    <input type="text" id="appId" placeholder="ID da Consulta (UUID)"><br>
-    <textarea id="notes" placeholder="Notas Clinicas"></textarea><br>
-    <button onclick="finalizarConsulta()">Finalizar</button>
+    <div class="container dashboard-container">
+        <div class="header">
+            <h1>Area do Veterinario</h1>
+            <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
+        </div>
+        
+        <div id="globalError" class="error-box"></div>
+        <div id="globalSuccess" class="success-box"></div>
 
-    <h2>Notificacoes</h2>
-    <div id="notifList"></div>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3>Finalizar Atendimento</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cole o ID da consulta agendada para atende-la e gerar historico para o Pet.</p>
+                <input type="text" id="appId" placeholder="ID da Consulta (Ex: 550e8400-e29b...)">
+                <textarea id="notes" placeholder="Descreva as notas clinicas, exames solicitados e estado de saude do pet..." rows="5"></textarea>
+                <button onclick="finalizarConsulta()">Finalizar Consulta</button>
+            </div>
 
+            <div style="flex: 1;">
+                <h3>Minhas Notificacoes</h3>
+                <div id="notifList"></div>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
     <script>
         window.onload = function() {
