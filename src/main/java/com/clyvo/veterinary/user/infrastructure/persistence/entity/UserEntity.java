@@ -2,8 +2,7 @@ package com.clyvo.veterinary.user.infrastructure.persistence.entity;
 
 import com.clyvo.veterinary.user.domain.model.Role;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -12,7 +11,6 @@ import java.util.UUID;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -30,11 +28,9 @@ public class UserEntity {
     @Column(nullable = false)
     private boolean active;
 
-    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     private String googleId;

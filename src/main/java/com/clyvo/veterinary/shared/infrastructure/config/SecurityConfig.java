@@ -34,6 +34,14 @@ public class SecurityConfig {
     }
 
     @Bean
+    public org.springframework.security.oauth2.jwt.JwtDecoderFactory<org.springframework.security.oauth2.client.registration.ClientRegistration> idTokenDecoderFactory() {
+        org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory idTokenDecoderFactory = new org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory();
+        idTokenDecoderFactory.setJwtValidatorFactory(clientRegistration -> 
+            new org.springframework.security.oauth2.jwt.JwtTimestampValidator(java.time.Duration.ofMinutes(5)));
+        return idTokenDecoderFactory;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
