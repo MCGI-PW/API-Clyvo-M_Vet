@@ -1,18 +1,39 @@
 package com.clyvo.veterinary.models;
+
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.util.UUID;
+
 @Entity
-@Table(name = "pets")
+@Table(name = "pet")
 public class Pet {
-    @Id @GeneratedValue(strategy = GenerationType.UUID) private UUID id;
-    @Column(nullable = false) private String name;
-    @Column(nullable = false) private Integer age;
-    @Column(nullable = false) private String breed;
-    @ManyToOne @JoinColumn(name = "tutor_id", nullable = false) private Tutor tutor;
-    
-    public UUID getId() { return id; } public void setId(UUID id) { this.id = id; }
-    public String getName() { return name; } public void setName(String name) { this.name = name; }
-    public Integer getAge() { return age; } public void setAge(Integer age) { this.age = age; }
-    public String getBreed() { return breed; } public void setBreed(String breed) { this.breed = breed; }
-    public Tutor getTutor() { return tutor; } public void setTutor(Tutor tutor) { this.tutor = tutor; }
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_pet")
+    private UUID idPet;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_tutor", nullable = false)
+    private Tutor tutor;
+
+    @Column(nullable = false)
+    private String nome;
+
+    @Column(name = "data_nascimento")
+    private LocalDate dataNascimento;
+
+    private String sexo;
+    private String especie;
+    private String raca;
+    private Boolean ativo = true;
+
+    // Getters and setters
+    public UUID getIdPet() { return idPet; } public void setIdPet(UUID id) { this.idPet = id; }
+    public Tutor getTutor() { return tutor; } public void setTutor(Tutor t) { this.tutor = t; }
+    public String getNome() { return nome; } public void setNome(String n) { this.nome = n; }
+    public LocalDate getDataNascimento() { return dataNascimento; } public void setDataNascimento(LocalDate d) { this.dataNascimento = d; }
+    public String getSexo() { return sexo; } public void setSexo(String s) { this.sexo = s; }
+    public String getEspecie() { return especie; } public void setEspecie(String e) { this.especie = e; }
+    public String getRaca() { return raca; } public void setRaca(String r) { this.raca = r; }
+    public Boolean getAtivo() { return ativo; } public void setAtivo(Boolean a) { this.ativo = a; }
 }

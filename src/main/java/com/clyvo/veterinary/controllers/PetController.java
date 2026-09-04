@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/pets")
-@PreAuthorize("hasRole('TUTOR')")
 public class PetController {
     private final PetRepository petRepository;
     private final TutorRepository tutorRepository;
@@ -26,9 +25,9 @@ public class PetController {
 
     @PostMapping
     public ResponseEntity<Pet> createPet(@RequestBody Pet pet) {
-        String userIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UUID userId = UUID.fromString(userIdStr);
-        Tutor tutor = tutorRepository.findByUserId(userId).orElseThrow();
+        String idContaStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UUID idConta = UUID.fromString(idContaStr);
+        Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta).orElseThrow();
         
         pet.setTutor(tutor);
         return ResponseEntity.ok(petRepository.save(pet));
@@ -36,10 +35,10 @@ public class PetController {
 
     @GetMapping
     public ResponseEntity<List<Pet>> myPets() {
-        String userIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UUID userId = UUID.fromString(userIdStr);
-        Tutor tutor = tutorRepository.findByUserId(userId).orElseThrow();
+        String idContaStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UUID idConta = UUID.fromString(idContaStr);
+        Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta).orElseThrow();
         
-        return ResponseEntity.ok(petRepository.findByTutorId(tutor.getId()));
+        return ResponseEntity.ok(petRepository.findByTutorIdTutor(tutor.getIdTutor()));
     }
 }

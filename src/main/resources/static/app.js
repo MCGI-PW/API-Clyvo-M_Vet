@@ -131,7 +131,7 @@ async function cadastrarPet() {
 
 async function carregarVeterinarios() {
     try {
-        const res = await fetch(`${API_URL}/veterinarians`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
+        const res = await fetch(`${API_URL}/veterinarios`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         const vets = await res.json();
         let opts = '';
         vets.forEach(v => { opts += `<option value='${v.id}'>Dr(a). ${v.name} (CRMV: ${v.crmv})</option>`; });
