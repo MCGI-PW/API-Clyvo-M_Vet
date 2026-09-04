@@ -158,24 +158,25 @@ async function carregarVeterinarios() {
         const res = await fetch(`${API_URL}/veterinarios`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         const vets = await res.json();
         let opts = '';
-        vets.forEach(v => { opts += `<option value='${v.id}'>Dr(a). ${v.name} (CRMV: ${v.crmv})</option>`; });
-        document.getElementById('selVet').innerHTML = opts || '<option value="">Nenhum veterinario disponivel</option>';
+        vets.forEach(v => { opts += `<option value='${v.idVeterinario}'>Dr(a). ${v.nome} (${v.especialidade})</option>`; });
+        const selVet = document.getElementById('selVet');
+        if (selVet) selVet.innerHTML = opts || '<option value="">Nenhum veterinario disponivel</option>';
     } catch(err) { showMsg('globalError', 'Erro ao carregar vets'); }
 }
 
 async function agendarConsulta() {
-    const res = await fetch(`${API_URL}/appointments/schedule`, {
+    const res = await fetch(`${API_URL}/consultas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
         body: JSON.stringify({
-            veterinarianId: document.getElementById('selVet').value,
-            petId: document.getElementById('selPet').value,
-            appointmentDate: document.getElementById('appDate').value,
-            modality: document.getElementById('appModality').value
+            veterinario: { idVeterinario: document.getElementById('selVet').value },
+            pet: { idPet: document.getElementById('selPet').value },
+            dataHora: document.getElementById('appDate').value,
+            modalidade: document.getElementById('appModality').value
         })
     });
     if(res.ok) {
-        showMsg('globalSuccess', 'Consulta agendada! Uma notificacao foi enviada.', true);
+        showMsg('globalSuccess', 'Consulta agendada com sucesso!', true);
         carregarNotificacoes();
     } else {
         const data = await res.json();
