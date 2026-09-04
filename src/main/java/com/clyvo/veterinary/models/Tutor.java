@@ -14,6 +14,7 @@ public class Tutor {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_conta", nullable = false, unique = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private ContaAcesso contaAcesso;
 
     @Column(nullable = false)

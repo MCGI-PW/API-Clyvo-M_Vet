@@ -33,7 +33,8 @@ public class ConsultaController {
     }
 
     @PostMapping
-    public ResponseEntity<Consulta> createConsulta(@RequestBody Consulta consulta) {
-        return ResponseEntity.ok(consultaRepository.save(consulta));
+    public ResponseEntity<Void> createConsulta(@RequestBody Consulta consulta) {
+        consultaRepository.save(consulta);
+        return ResponseEntity.ok().build();
     }
 }
