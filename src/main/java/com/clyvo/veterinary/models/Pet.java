@@ -14,10 +14,12 @@ public class Pet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_tutor", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Tutor tutor;
 
     @ManyToOne
     @JoinColumn(name = "id_raca")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Raca raca;
 
     @Column(nullable = false)
