@@ -23,7 +23,8 @@
                 <h4>Adicionar Novo Pet</h4>
                 <input type="text" id="petName" placeholder="Nome do Pet">
                 <input type="number" id="petAge" placeholder="Idade (Anos)">
-                <input type="text" id="petBreed" placeholder="Raca">
+                <input type="text" list="breedList" id="petBreed" placeholder="Selecione ou digite a Raca" required>
+                <datalist id="breedList"></datalist>
                 <button onclick="cadastrarPet()">Salvar Pet</button>
             </div>
             
@@ -47,6 +48,7 @@
     <script src="app.js"></script>
     <script>
         window.onload = function() {
+            carregarRacas();
             carregarPets();
             carregarVeterinarios();
             carregarNotificacoes();

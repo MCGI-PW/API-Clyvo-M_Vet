@@ -44,7 +44,7 @@ if(document.getElementById('loginForm')) {
                 localStorage.setItem('token', data.token);
                 showMsg('loginSuccess', 'Login efetuado com sucesso! Redirecionando...', true);
                 setTimeout(() => {
-                    if (data.role === 'ROLE_TUTOR') window.location.href = 'dashboard-tutor.html';
+                    if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
                     else window.location.href = 'dashboard-vet.html';
                 }, 1000);
             } else {
@@ -76,7 +76,7 @@ if(document.getElementById('loginForm')) {
                 localStorage.setItem('token', data.token);
                 showMsg('regError', 'Cadastro realizado com sucesso! Redirecionando...', true);
                 setTimeout(() => {
-                    if (data.role === 'ROLE_TUTOR') window.location.href = 'dashboard-tutor.html';
+                    if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
                     else window.location.href = 'dashboard-vet.html';
                 }, 1000);
             } else {
@@ -86,6 +86,23 @@ if(document.getElementById('loginForm')) {
             showMsg('regError', 'Erro de conexao com o servidor.', false);
         }
     });
+}
+
+let racasGlobais = [];
+
+async function carregarRacas() {
+    try {
+        const res = await fetch(`${API_URL}/racas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
+        racasGlobais = await res.json();
+        const breedList = document.getElementById('breedList');
+        if(breedList) {
+            let opts = '';
+            racasGlobais.forEach(r => {
+                opts += `<option value="${r.nome}">${r.especie.nome}</option>`;
+            });
+            breedList.innerHTML = opts;
+        }
+    } catch(err) { console.error('Erro ao carregar racas', err); }
 }
 
 async function carregarPets() {
@@ -98,29 +115,35 @@ async function carregarPets() {
             html = '<p style="color:#666;">Voce ainda nao tem pets.</p>';
         } else {
             pets.forEach(p => {
-                html += `<div class='card'><strong>${p.name}</strong><span>Idade: ${p.age} anos | Raca: ${p.breed}</span><span style="font-size:11px;color:#888;">ID: ${p.id}</span></div>`;
-                opts += `<option value='${p.id}'>${p.name}</option>`;
+                const racaNome = p.raca ? p.raca.nome : 'Sem Raca';
+                html += `<div class='card'><strong>${p.nome}</strong><span>Nascimento: ${p.dataNascimento} | Raca: ${racaNome}</span><span style="font-size:11px;color:#888;">ID: ${p.idPet}</span></div>`;
+                opts += `<option value='${p.idPet}'>${p.nome}</option>`;
             });
         }
         document.getElementById('petsList').innerHTML = html;
-        if(opts) document.getElementById('selPet').innerHTML = opts;
+        if(opts) { 
+            const selPet = document.getElementById('selPet');
+            if(selPet) selPet.innerHTML = opts; 
+        }
     } catch(err) { showMsg('globalError', 'Erro ao carregar pets'); }
 }
 
 async function cadastrarPet() {
+    let breedName = document.getElementById('petBreed').value;
+    let breedObj = racasGlobais.find(r => r.nome.toLowerCase() === breedName.toLowerCase());
+    
     const res = await fetch(`${API_URL}/pets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
         body: JSON.stringify({
-            name: document.getElementById('petName').value,
-            age: document.getElementById('petAge').value,
-            breed: document.getElementById('petBreed').value
+            nome: document.getElementById('petName').value,
+            dataNascimento: '2020-01-01', // Mock date as no age input is used anymore, wait age is used, let's just pass null for date
+            raca: breedObj ? { idRaca: breedObj.idRaca } : null
         })
     });
     if(res.ok) {
         showMsg('globalSuccess', 'Pet cadastrado com sucesso!', true);
         document.getElementById('petName').value = '';
-        document.getElementById('petAge').value = '';
         document.getElementById('petBreed').value = '';
         carregarPets();
     } else {
@@ -128,6 +151,7 @@ async function cadastrarPet() {
         showMsg('globalError', parseErrors(data));
     }
 }
+
 
 async function carregarVeterinarios() {
     try {

@@ -41,3 +41,8 @@ application-prod.properties
 application-local.properties
 *.env
 secrets.yml
+
+pgsql.zip
+pgsql_bin/
+pg_data/
+pwfile.txt
