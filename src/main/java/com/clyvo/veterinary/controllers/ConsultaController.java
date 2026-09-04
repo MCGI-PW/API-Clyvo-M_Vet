@@ -17,10 +17,14 @@ public class ConsultaController {
     
     private final ConsultaRepository consultaRepository;
     private final TutorRepository tutorRepository;
+    private final com.clyvo.veterinary.repositories.NotificacaoRepository notificacaoRepository;
+    private final com.clyvo.veterinary.repositories.VeterinarioRepository veterinarioRepository;
     
-    public ConsultaController(ConsultaRepository consultaRepository, TutorRepository tutorRepository) {
+    public ConsultaController(ConsultaRepository consultaRepository, TutorRepository tutorRepository, com.clyvo.veterinary.repositories.NotificacaoRepository notificacaoRepository, com.clyvo.veterinary.repositories.VeterinarioRepository veterinarioRepository) {
         this.consultaRepository = consultaRepository;
         this.tutorRepository = tutorRepository;
+        this.notificacaoRepository = notificacaoRepository;
+        this.veterinarioRepository = veterinarioRepository;
     }
 
     @GetMapping
@@ -35,6 +39,19 @@ public class ConsultaController {
     @PostMapping
     public ResponseEntity<Void> createConsulta(@RequestBody Consulta consulta) {
         consultaRepository.save(consulta);
+        
+        // Notify the user
+        String idContaStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        com.clyvo.veterinary.models.Veterinario vet = veterinarioRepository.findById(consulta.getVeterinario().getIdVeterinario()).orElse(null);
+        String vetName = vet != null ? vet.getNome() : "nosso time";
+        
+        com.clyvo.veterinary.models.Notificacao notif = new com.clyvo.veterinary.models.Notificacao();
+        com.clyvo.veterinary.models.ContaAcesso conta = new com.clyvo.veterinary.models.ContaAcesso();
+        conta.setIdConta(UUID.fromString(idContaStr));
+        notif.setContaAcesso(conta);
+        notif.setMensagem("Sua consulta com " + vetName + " foi agendada com sucesso!");
+        notificacaoRepository.save(notif);
+        
         return ResponseEntity.ok().build();
     }
 }

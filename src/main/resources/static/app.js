@@ -203,14 +203,14 @@ async function finalizarConsulta() {
 
 async function carregarNotificacoes() {
     try {
-        const res = await fetch(`${API_URL}/notifications`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
+        const res = await fetch(`${API_URL}/notificacoes`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         if(res.status === 403) return;
         const notifs = await res.json();
         let html = '';
         if(notifs.length === 0) html = '<p style="color:#666;">Nenhuma notificacao.</p>';
         notifs.forEach(n => { 
-            const d = new Date(n.sentAt).toLocaleString('pt-BR');
-            html += `<div class='card' style='background:#e9f7ef;'><strong style='color:#155724;'>${d}</strong>${n.message}</div>`; 
+            const d = new Date(n.dataCriacao).toLocaleString('pt-BR');
+            html += `<div class='card' style='background:#e9f7ef;'><strong style='color:#155724;'>${d}</strong> - ${n.mensagem}</div>`; 
         });
         document.getElementById('notifList').innerHTML = html;
     } catch(err) { showMsg('globalError', 'Erro ao carregar notificacoes'); }
