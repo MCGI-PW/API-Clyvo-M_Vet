@@ -5,6 +5,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "veterinario")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Veterinario {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

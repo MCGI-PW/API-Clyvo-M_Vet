@@ -195,11 +195,12 @@ async function carregarVetsDaClinicaSelecionada() {
         });
         const vets = await res.json();
         let opts = '';
-        if (vets.length === 0) {
+        if (!vets || vets.length === 0) {
             opts = '<option value="">Nenhum veterinário disponível nesta clínica</option>';
         } else {
             vets.forEach(v => {
-                opts += `<option value="${v.idVeterinario}">Dr(a). ${v.nome} (${v.especialidade || 'Clínico Geral'})</option>`;
+                const prefix = (v.nome && v.nome.startsWith('Dr')) ? '' : 'Dr(a). ';
+                opts += `<option value="${v.idVeterinario}">${prefix}${v.nome} (${v.especialidade || 'Clínico Geral'})</option>`;
             });
         }
         selVet.innerHTML = opts;
