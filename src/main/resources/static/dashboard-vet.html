@@ -17,8 +17,13 @@
 
         <div style="display: flex; gap: 20px;">
             <div style="flex: 1;">
+                <h3>Consultas Agendadas</h3>
+                <div id="consultasList"></div>
+                
+                <hr style="margin: 20px 0;">
+
                 <h3>Finalizar Atendimento</h3>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cole o ID da consulta agendada para atende-la e gerar historico para o Pet.</p>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cole o ID da consulta agendada (ou clique em uma consulta acima) para finalizá-la.</p>
                 <input type="text" id="appId" placeholder="ID da Consulta (Ex: 550e8400-e29b...)">
                 <textarea id="notes" placeholder="Descreva as notas clinicas, exames solicitados e estado de saude do pet..." rows="5"></textarea>
                 <button onclick="finalizarConsulta()">Finalizar Consulta</button>
@@ -33,6 +38,7 @@
     <script src="app.js"></script>
     <script>
         window.onload = function() {
+            carregarConsultasVet();
             carregarNotificacoes();
         };
     </script>

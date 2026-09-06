@@ -28,12 +28,21 @@ public class ConsultaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Consulta>> listTutorConsultas() {
+    public ResponseEntity<List<Consulta>> listConsultas() {
         String idContaStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UUID idConta = UUID.fromString(idContaStr);
-        Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta).orElseThrow();
         
-        return ResponseEntity.ok(consultaRepository.findByPetTutorIdTutor(tutor.getIdTutor()));
+        java.util.Optional<Tutor> tutorOpt = tutorRepository.findByContaAcessoIdConta(idConta);
+        if (tutorOpt.isPresent()) {
+            return ResponseEntity.ok(consultaRepository.findByPetTutorIdTutor(tutorOpt.get().getIdTutor()));
+        }
+
+        java.util.Optional<com.clyvo.veterinary.models.Veterinario> vetOpt = veterinarioRepository.findByContaAcessoIdConta(idConta);
+        if (vetOpt.isPresent()) {
+            return ResponseEntity.ok(consultaRepository.findByVeterinarioIdVeterinario(vetOpt.get().getIdVeterinario()));
+        }
+
+        return ResponseEntity.ok(java.util.Collections.emptyList());
     }
 
     @PostMapping

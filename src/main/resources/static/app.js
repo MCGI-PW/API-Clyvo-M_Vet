@@ -195,10 +195,33 @@ async function finalizarConsulta() {
         document.getElementById('appId').value = '';
         document.getElementById('notes').value = '';
         carregarNotificacoes();
+        if (typeof carregarConsultasVet === 'function') carregarConsultasVet();
     } else {
         const data = await res.json();
         showMsg('globalError', parseErrors(data));
     }
+}
+
+async function carregarConsultasVet() {
+    try {
+        const res = await fetch(`${API_URL}/consultas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
+        if(res.status === 403) return;
+        const apps = await res.json();
+        let html = '';
+        if(apps.length === 0) html = '<p style="color:#666;">Nenhuma consulta agendada.</p>';
+        apps.forEach(c => {
+            const d = new Date(c.dataHora).toLocaleString('pt-BR');
+            const petNome = c.pet ? c.pet.nome : 'Pet';
+            const racaNome = (c.pet && c.pet.raca) ? ` - ${c.pet.raca.nome}` : '';
+            html += `<div class='card' style='cursor:pointer; border-left: 4px solid #3498db;' onclick="document.getElementById('appId').value='${c.idConsulta}'">` +
+                    `<strong>${petNome}${racaNome}</strong><br>` +
+                    `<span>Data/Hora: ${d} | Modalidade: ${c.modalidade}</span><br>` +
+                    `<span>Status: <b>${c.status}</b></span>` +
+                    `<span style='font-size:11px;color:#888;display:block;margin-top:4px;'>Clique para selecionar o ID: ${c.idConsulta}</span></div>`;
+        });
+        const container = document.getElementById('consultasList');
+        if (container) container.innerHTML = html;
+    } catch(err) { showMsg('globalError', 'Erro ao carregar consultas'); }
 }
 
 async function carregarNotificacoes() {
