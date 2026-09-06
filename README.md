@@ -1,351 +1,213 @@
-# API-Clyvo-M_Vet
+# 🐾 Clyvo Veterinary API (`api-clyvovet_M`)
 
-API REST e Web para o sistema veterinário Clyvo, desenvolvida com Spring Boot 3.5 e Java 25.
+> API RESTful e Plataforma Web para gestão de clínicas, médicos veterinários e tutores de pets, desenvolvida com **Spring Boot 3.5**, **Java**, **PostgreSQL** e modelagem normalizada em **3NF**.
 
-O sistema permite que **médicos veterinários** criem e gerenciem seu perfil profissional, e que **tutores** (donos de pets) cadastrem seus animais e agendem consultas. A autenticação suporta login tradicional com e-mail e senha, e login social via Google OAuth2.
+![Java](https://img.shields.io/badge/Java-21%20%2F%2025-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.4-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%2B-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Flyway](https://img.shields.io/badge/Flyway-Migrations-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-JJWT_0.12.6-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 
 ---
 
-## Tecnologias
+## 📌 Sumário
 
-| Tecnologia | Versão | Papel |
+* [Visão Geral](#-visão-geral)
+* [Tecnologias Utilizadas](#-tecnologias-utilizadas)
+* [Arquitetura do Projeto](#-arquitetura-do-projeto)
+* [Banco de Dados e Modelagem 3NF](#-banco-de-dados-e-modelagem-3nf)
+* [Endpoints da API](#-endpoints-da-api)
+* [Frontend SPA Integrado](#-frontend-spa-integrado)
+* [Como Executar o Projeto](#-como-executar-o-projeto)
+* [Testes Automatizados](#-testes-automatizados)
+* [Autor](#-autor)
+
+---
+
+## 📖 Visão Geral
+
+O **Clyvo Veterinary** é um sistema completo para o ecossistema veterinário, permitindo a interação harmoniosa entre:
+* **Tutores:** Cadastro de animais de estimação, seleção de raças padronizadas, agendamento de consultas médicas (online ou presenciais) e visualização de notificações e receitas.
+* **Médicos Veterinários:** Gestão da fila de consultas agendadas, atendimento clínico e registro de notas médicas e orientações.
+* **Clínicas:** Estrutura preparada para vínculo profissional e administração de estabelecimentos.
+
+A autenticação é protegida por tokens **JWT Stateless** com registro de auditoria e revogação de sessões em banco de dados.
+
+---
+
+## 🛠 Tecnologias Utilizadas
+
+| Tecnologia | Versão | Papel no Sistema |
 |---|---|---|
-| Java | 25 LTS | Linguagem principal |
-| Spring Boot | 3.5.4 | Framework base |
-| Spring Security 6 | (via Boot) | Autenticação e autorização |
-| Spring OAuth2 Client | (via Boot) | Login com Google |
-| JJWT | 0.12.6 | Geração e validação de tokens JWT |
-| Spring Data JPA | (via Boot) | Persistência com Hibernate |
-| PostgreSQL | (runtime) | Banco de dados principal |
-| Flyway | (via Boot) | Controle de versão do schema |
-| Thymeleaf | (via Boot) | Templates HTML do frontend web |
-| thymeleaf-extras-springsecurity6 | (via Boot) | Integração Thymeleaf com Spring Security |
-| springdoc-openapi | 2.6.0 | Documentação Swagger UI em `/swagger-ui.html` |
-| H2 | (test scope) | Banco em memória para testes |
-| Spring Boot DevTools | (runtime/dev) | Reload automático em desenvolvimento |
-| Maven | 3.9.x | Gerenciador de build |
+| **Java** | 21 LTS / 25 | Linguagem principal de desenvolvimento |
+| **Spring Boot** | 3.5.4 | Framework base (Web, Security, Data JPA, Validation) |
+| **Spring Security** | 6.x | Controle de autenticação e proteção de rotas |
+| **JJWT (io.jsonwebtoken)** | 0.12.6 | Geração, assinatura (HMAC-SHA256) e validação de tokens JWT |
+| **Spring Data JPA / Hibernate** | 6.6.x | Mapeamento Objeto-Relacional (ORM) |
+| **PostgreSQL** | 16+ | Banco de dados relacional principal |
+| **Flyway** | 10.x | Controle versionado de migrações e população de dados |
+| **SpringDoc OpenAPI** | 2.8.5 | Documentação interativa Swagger UI em `/swagger-ui.html` |
+| **Maven Wrapper (`mvnw`)** | 3.9.16 | Gerenciador de compilação e dependências portátil |
+| **JUnit 5 & Mockito** | (via Boot) | Testes unitários e testes de integração de contexto |
 
-> **Nota:** O projeto não utiliza Lombok. Todo boilerplate (construtores, getters, setters, builders) é escrito em Java puro.
+> **Nota de Design:** O projeto não utiliza Lombok. Todas as classes utilizam POJOs em Java puro, garantindo transparência em stack traces e total compatibilidade entre compiladores.
 
 ---
 
-## Arquitetura
+## 🏛 Arquitetura do Projeto
 
-O projeto segue a **Arquitetura Hexagonal** (Ports & Adapters), combinada com os princípios **SOLID**.
-
-Cada módulo de domínio é independente e organizado em três camadas:
+O projeto adota o padrão **MVC em Camadas (Layered Architecture)** com separação estrita de responsabilidades:
 
 ```
-com.clyvo.veterinary.{modulo}
+com.clyvo.veterinary/
 │
-├── domain/              ← Regras de negócio puras (sem framework)
-│   ├── model/           ← Entidades e Value Objects de domínio
-│   ├── repository/      ← Interfaces (ports de saída)
-│   └── service/         ← Serviços de domínio (quando existem)
+├── config/                  ← Infraestrutura e Configurações
+│   ├── GlobalExceptionHandler.java  ← Tratamento global de erros da API
+│   ├── JwtFilter.java               ← Filtro de interceptação de tokens nas requisições
+│   ├── JwtUtil.java                 ← Assinatura e validação do JWT com chave persistente
+│   ├── SecurityConfig.java          ← Configuração de rotas públicas/privadas e CORS/CSRF
+│   └── SwaggerConfig.java           ← Configuração do esquema Bearer no OpenAPI
 │
-├── application/         ← Casos de uso (orquestração da lógica)
-│   ├── dto/             ← Objetos de transferência de dados
-│   ├── mapper/          ← Conversão DTO ↔ Domínio
-│   ├── port/in/         ← Interfaces de entrada (use cases)
-│   └── service/         ← Implementação dos use cases
+├── controllers/             ← [CONTROLLER] Exposição dos Endpoints REST
+│   ├── AuthController.java          ← Registro e login de usuários
+│   ├── PetController.java           ← CRUD e listagem de pets por tutor
+│   ├── ConsultaController.java      ← Agendamento e listagem de consultas
+│   ├── AppointmentController.java   ← Conclusão de atendimentos clínicos
+│   ├── VeterinarioController.java   ← Catálogo de médicos veterinários
+│   ├── TutorController.java         ← Listagem de tutores
+│   ├── RacaController.java          ← Catálogo padronizado de raças
+│   └── NotificacaoController.java   ← Caixa de entrada de notificações
 │
-└── infrastructure/      ← Adaptadores e detalhes técnicos
-    ├── persistence/
-    │   ├── entity/      ← Entidades JPA (@Entity)
-    │   ├── mapper/      ← Conversão Entity ↔ Domain
-    │   ├── repository/  ← Interfaces Spring Data JPA
-    │   └── adapter/     ← Implementação dos ports de saída
-    └── presentation/
-        ├── rest/        ← Controllers REST (@RestController) — para clientes mobile/API
-        └── web/         ← Controllers Web (@Controller) — para o frontend Thymeleaf
-```
-
-A camada `shared` contém componentes transversais usados por todos os módulos:
-
-```
-shared/
-├── application/security/    ← @CurrentUser (meta-anotação)
-├── domain/exception/        ← BusinessException, ResourceNotFoundException
-├── infrastructure/config/   ← SecurityConfig, JacksonConfig
-└── presentation/error/      ← ErrorResponse, GlobalExceptionHandler
+├── dto/                     ← Objetos de Transferência de Dados (Payloads)
+│   ├── AuthRequest.java
+│   ├── AuthResponse.java
+│   ├── RegisterRequest.java
+│   ├── ScheduleAppointmentRequest.java
+│   └── CompleteAppointmentRequest.java
+│
+├── models/                  ← [MODEL] Entidades de Domínio JPA (3NF)
+│   ├── ContaAcesso.java
+│   ├── Credencial.java
+│   ├── IdentificadorAcesso.java
+│   ├── Sessao.java
+│   ├── Tutor.java
+│   ├── Veterinario.java
+│   ├── Clinica.java
+│   ├── Especie.java
+│   ├── Raca.java
+│   ├── Pet.java
+│   ├── Consulta.java
+│   └── Notificacao.java
+│
+├── repositories/            ← [DATA] Interfaces Spring Data JPA
+│
+└── services/                ← [SERVICE] Regras de Negócio e Casos de Uso
+    └── AuthService.java
 ```
 
 ---
 
-## Módulos de Domínio
+## 🗄 Banco de Dados e Modelagem 3NF
 
-O sistema é composto por 9 módulos de domínio:
+O banco de dados é modelado na **Terceira Forma Normal (3NF)**, eliminando redundâncias e garantindo integridade referencial por meio de migrações automáticas do **Flyway** (`src/main/resources/db/migration/`):
 
-### `user`
-Representa um usuário da plataforma. Todo acesso ao sistema começa por aqui.
-
-- **Modelo:** `User` com campos `id`, `name`, `email`, `passwordHash`, `role`, `active`, `googleId`, `createdAt`, `updatedAt`
-- **Role (enum):** `ROLE_VETERINARIAN`, `ROLE_TUTOR`, `ROLE_ADMIN`
-- **Criação:** Três métodos de fábrica estáticos: `User.create()`, `User.createWithGoogle()`, `User.load()`
-- A senha é armazenada como hash BCrypt. Usuários Google não têm `passwordHash`
-
-### `auth`
-Responsável por registro e login. Implementa `UserDetailsService` para integração com Spring Security.
-
-- **Registro:** valida e-mail único, codifica senha com BCrypt, persiste o usuário
-- **Login:** delega autenticação ao `AuthenticationManager`, gera token JWT via `JwtService`
-- **JWT:** gerado com JJWT 0.12.6, assinado com HS256, expira em 24 horas (configurável via `jwt.expiration.ms`)
-- **OAuth2:** `OAuth2SuccessHandler` intercepta o sucesso do login Google, cria ou recupera o `User`, gera JWT e redireciona
-- **Filtro:** `JwtAuthenticationFilter` intercepta todas as requisições `POST /api/**`, extrai e valida o token
-
-### `veterinarian`
-Perfil profissional do médico veterinário, vinculado a um `User`.
-
-- **Modelo:** `Veterinarian` com `userId`, `crm`, `specialty`, `bio`, `phone`, `profilePictureUrl`, `subscriptionPlan`, `subscriptionStatus`
-- **Specialty (enum):** `GENERAL_PRACTICE`, `SURGERY`, `DERMATOLOGY`, `CARDIOLOGY`, `ONCOLOGY`, `ORTHOPEDICS`, `NEUROLOGY`, `OPHTHALMOLOGY`, `DENTISTRY`, `EXOTIC_ANIMALS`
-- **SubscriptionPlan (enum):** `FREE`, `BASIC`, `PREMIUM`
-- **Regras:** CRM deve ser único; o `User` vinculado deve ter `role == ROLE_VETERINARIAN`
-- **Use Case:** `createProfile`, `updateProfile`, `getProfile`, `getProfileByUserId`, `listAll`, `deleteProfile`
-
-### `tutor`
-Perfil do dono do pet, vinculado a um `User`.
-
-- **Modelo:** `Tutor` com `userId`, `phone`, `address`, `profilePictureUrl`
-- **Regras:** Um `User` só pode ter um perfil de tutor
-
-### `pet`
-Representa um animal de estimação, sempre vinculado a um `Tutor`.
-
-- **Modelo:** `Pet` com `tutorId`, `name`, `species`, `breed`, `birthDate`, `observations`
-- **Species (enum):** `DOG`, `CAT`, `BIRD`, `RABBIT`, `FISH`, `REPTILE`, `RODENT`, `OTHER`
-
-### `appointment`
-Gerencia o agendamento de consultas entre tutores e veterinários.
-
-- **Modelo:** `Appointment` com `petId`, `veterinarianId`, `tutorId`, `scheduledAt`, `status`, `notes`, `finalNotes`
-- **AppointmentStatus (enum):** `SCHEDULED`, `CONFIRMED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
-- **AppointmentDomainService:** Serviço de domínio (`@Component`) que encapsula regras como validação de conflito de horário
-
-### `medicalrecord`
-Prontuário eletrônico de um pet gerado após uma consulta.
-
-- **Modelo:** `MedicalRecord` com `petId`, `veterinarianId`, `appointmentId`, `diagnosis`, `treatment`, `observations`, `recordDate`
-
-### `prescription`
-Prescrição médica emitida por um veterinário.
-
-- **Modelo:** `Prescription` com lista de `PrescriptionItem` (medicamento, dosagem, frequência, duração)
-- **`PrescriptionItem`** é um Value Object embarcado (`@Embeddable`)
-- **Endpoints REST reais:**
-  - `POST /api/prescriptions` — cria prescrição (somente `ROLE_VETERINARIAN`)
-  - `GET /api/prescriptions/{id}` — busca por ID (`VETERINARIAN` ou `ADMIN`)
-  - `GET /api/prescriptions/pet/{petId}` — lista por pet (`VETERINARIAN` ou `TUTOR`)
-  - `GET /api/prescriptions/vet/me` — lista as prescrições do vet autenticado
-  - `DELETE /api/prescriptions/{id}` — remove prescrição (somente `ADMIN`)
-
-### `vaccine`
-Registro do histórico de vacinas de um pet, com controle da próxima dose.
-
-- **Modelo:** `Vaccine` com `petId`, `veterinarianId`, `name`, `appliedAt`, `nextDoseAt`, `batch`, `manufacturer`
-
-### `integration`
-Adaptador de comunicação com o sistema orquestrador .NET (backend da plataforma Chronos).
-
-- **`OrchestratorPort`:** interface (port de saída) que define o contrato
-- **`OrchestratorHttpAdapter`:** implementação que realiza chamadas HTTP usando `RestTemplate`; configurável via `orchestrator.base-url` e `orchestrator.api-key`
-
----
-
-## Segurança
-
-A segurança é configurada em `SecurityConfig` com **duas cadeias de filtros independentes**:
-
-### Cadeia 1 — API REST (`@Order(1)`, matcher `/api/**`)
-- **CSRF:** desabilitado (clientes mobile/REST não usam cookies de sessão)
-- **Sessão:** `STATELESS` — nenhuma sessão HTTP é criada
-- **Rotas públicas:** `/api/auth/**` (registro e login)
-- **Todas as demais:** exigem token JWT válido no header `Authorization: Bearer <token>`
-- **Filtro:** `JwtAuthenticationFilter` é executado antes do `UsernamePasswordAuthenticationFilter`
-
-### Cadeia 2 — Frontend Web (`@Order(2)`, sem matcher — cobre tudo que não é `/api/**`)
-- **Sessão:** stateful (padrão do Spring Security)
-- **Rotas públicas:** `/login`, `/register`, `/css/**`, `/js/**`, `/images/**`, `/oauth2/**`, `/login/oauth2/**`
-- **Form login:** página customizada em `/login`, redireciona para `/` após sucesso
-- **OAuth2 Google:** página de login em `/login`, após sucesso chama `OAuth2SuccessHandler`
-- **Logout:** redireciona para `/login?logout`
-
-**Autorização por método** está habilitada via `@EnableMethodSecurity`. Os controllers usam `@PreAuthorize("hasRole('VETERINARIAN')")` para controle granular.
-
----
-
-## Banco de Dados
-
-O schema é gerenciado pelo **Flyway** e versionado em `src/main/resources/db/migration/`.
-
-| Migration | Tabela criada |
+| Migração | Conteúdo e Responsabilidade |
 |---|---|
-| `V1__create_users_table.sql` | `users` |
-| `V2__create_veterinarians_table.sql` | `veterinarians` |
-| `V3__create_tutors_table.sql` | `tutors` |
-| `V4__create_pets_table.sql` | `pets` |
-| `V5__create_appointments_table.sql` | `appointments` |
-| `V6__create_medical_records_table.sql` | `medical_records` |
-| `V7__create_prescriptions_table.sql` | `prescriptions` |
-| `V8__create_vaccines_table.sql` | `vaccines` |
-| `V9__insert_admin_user.sql` | (seed do usuário admin padrão) |
+| `V1__Create_3NF_Core.sql` | Estrutura de contas (`conta_acesso`), credenciais com BCrypt (`credencial`), documentos (`identificador_acesso`), perfis (`tutor`, `veterinario`, `clinica`), sessões ativas (`sessao`) e controle de permissões. |
+| `V2__Create_Racas.sql` | Normalização de espécies (`especie`) e catálogo com mais de 30 raças de cães e gatos com IDs padronizados. |
+| `V3__Create_Consulta_And_Populate_Vets.sql` | Tabela de agendamento de consultas (`consulta`) e seed com veterinários padrão (Dr. Roberto Silveira, Dra. Camila Nogueira, Dr. Marcos Santos). |
+| `V4__Create_Notificacao.sql` | Histórico e caixa de entrada de notificações em tempo real (`notificacao`). |
 
-Todas as PKs são `UUID` geradas pelo banco com `gen_random_uuid()`.
-
-O Hibernate está configurado com `ddl-auto=none` — ele nunca altera o schema. O Flyway é a única fonte de verdade para o schema.
+> Todas as chaves primárias são do tipo `UUID` geradas via `gen_random_uuid()` no PostgreSQL.
 
 ---
 
-## Frontend Web (Thymeleaf)
+## 📡 Endpoints da API
 
-O sistema possui uma interface web completa para uso no navegador, com templates organizados por perfil:
+Acesse a documentação interativa com execução em tempo real via Swagger UI:
+👉 **`http://localhost:8080/swagger-ui.html`**
 
-```
-src/main/resources/templates/
-├── layouts/
-│   └── base.html         ← Layout base com sidebar, topbar e tokens CSS
-├── auth/
-│   ├── login.html        ← Formulário de login + botão Google OAuth2
-│   └── register.html     ← Formulário de cadastro com seleção de tipo de conta
-├── vet/
-│   ├── dashboard.html    ← Dashboard do veterinário
-│   ├── profile.html      ← Visualização do perfil profissional
-│   ├── profile-edit.html ← Edição de perfil (especialidade, bio, telefone)
-│   └── appointments.html ← Lista de consultas com ações confirmar/concluir
-├── tutor/
-│   ├── dashboard.html    ← Dashboard do tutor com resumo de pets e consultas
-│   ├── profile.html      ← Perfil do tutor
-│   ├── pets.html         ← Grid de cards com os pets cadastrados
-│   └── appointments.html ← Lista de consultas com ação cancelar
-├── admin/
-│   ├── dashboard.html    ← Dashboard administrativo
-│   └── users.html        ← Gestão de usuários
-└── error/
-    ├── 403.html          ← Página de acesso negado
-    └── 404.html          ← Página não encontrada
-```
+### 1. Autenticação (`/api/auth`)
+* `POST /api/auth/register` — Cadastra uma nova conta (`TUTOR`, `VETERINARIO` ou `CLINICA`).
+* `POST /api/auth/login` — Autentica as credenciais, gera uma sessão e retorna o token JWT.
 
-O CSS global está em `src/main/resources/static/css/main.css` e define um design system com variáveis de cor, componentes de card, tabela, badge, botão e sidebar.
+### 2. Catálogos e Apoio
+* `GET /api/veterinarios` — Lista os veterinários cadastrados no banco com CRMV e especialidade.
+* `GET /api/racas` — Lista todas as raças e suas respectivas espécies.
+* `GET /api/tutors` — Lista os tutores da plataforma.
+
+### 3. Animais (`/api/pets`)
+* `POST /api/pets` — Cadastra um animal vinculado ao tutor logado.
+* `GET /api/pets` — Lista todos os animais do tutor logado.
+
+### 4. Consultas e Atendimentos (`/api/consultas` e `/api/appointments`)
+* `POST /api/consultas` — Agenda uma consulta entre um pet e um veterinário.
+* `GET /api/consultas` — Lista as consultas vinculadas ao usuário logado (filtra automaticamente por tutor ou veterinário).
+* `POST /api/appointments/{id}/complete` — Finaliza o atendimento, altera o status para `CONCLUIDA` e notifica o tutor com as notas médicas.
+
+### 5. Notificações (`/api/notificacoes`)
+* `GET /api/notificacoes` — Retorna as notificações em ordem decrescente (da mais recente para a mais antiga).
 
 ---
 
-## Configuração
+## 💻 Frontend SPA Integrado
 
-Todas as configurações sensíveis leem variáveis de ambiente com valor padrão de fallback para desenvolvimento local.
+O projeto conta com uma interface nativa (Single Page Application) em HTML5, CSS3 e JavaScript Vanilla localizada em `src/main/resources/static/`:
 
-### `application.properties`
-
-```properties
-# Servidor
-server.port=${PORT:8080}
-
-# PostgreSQL
-spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/clyvovet_db}
-spring.datasource.username=${DB_USERNAME:postgres}
-spring.datasource.password=${DB_PASSWORD:postgres}
-
-# JWT
-jwt.secret=${JWT_SECRET:clyvovet-super-secret-key-2026-must-be-at-least-256-bits-long-for-hs256}
-jwt.expiration.ms=${JWT_EXPIRATION_MS:86400000}
-
-# Google OAuth2
-spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID:SEU_GOOGLE_CLIENT_ID_AQUI}
-spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET:SEU_GOOGLE_CLIENT_SECRET_AQUI}
-
-# Integração .NET
-orchestrator.base-url=${ORCHESTRATOR_URL:http://localhost:5000}
-orchestrator.api-key=${ORCHESTRATOR_API_KEY:dev-api-key}
-```
-
-### Para desenvolvimento local
-
-1. Crie um banco PostgreSQL chamado `clyvovet_db`
-2. Para OAuth2 com Google, crie credenciais no [Google Cloud Console](https://console.cloud.google.com/apis/credentials) e defina as variáveis `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`
-3. O Flyway criará todas as tabelas automaticamente na primeira inicialização
+* **`login.html`**: Formulário responsivo de login e cadastro com comutação de campos (exibe campo de CRMV condicionalmente ao selecionar Veterinário).
+* **`dashboard-tutor.html`**: Painel exclusivo do tutor com listagem de pets em cards, formulário de cadastro com busca de raças, agendamento de consultas e notificações.
+* **`dashboard-vet.html`**: Painel do veterinário com fila de consultas agendadas, seleção rápida por clique e finalização de atendimento com anotações clínicas.
+* **`app.js`**: Gerenciador de requisições assíncronas (`fetch`) com armazenamento de JWT em `localStorage`.
 
 ---
 
-## Como Executar
+## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
+* **Java 21 ou 25** instalado
+* **PostgreSQL 16+** rodando localmente
 
-- Java 25
-- Maven 3.9+
-- PostgreSQL 15+ rodando localmente
+### 1. Configurar o Banco de Dados
+No terminal PostgreSQL (psql), crie a base e o usuário:
+```sql
+CREATE USER postgres WITH PASSWORD 'postgres' SUPERUSER;
+CREATE DATABASE clyvovet OWNER postgres;
+```
 
-### Passos
-
+### 2. Executar a Aplicação
+Clone o repositório e inicie utilizando o **Maven Wrapper** incluso:
 ```bash
-# 1. Clone o repositório
 git clone https://github.com/MCGI-PW/API-Clyvo-M_Vet.git
 cd API-Clyvo-M_Vet
 
-# 2. Configure o banco (o Flyway faz o resto)
-# Crie o banco: CREATE DATABASE clyvovet_db;
-
-# 3. Execute (com variáveis de ambiente ou com os valores default)
-mvn spring-boot:run
-
-# 4. Acesse
-# Frontend web:  http://localhost:8080/login
-# Swagger UI:    http://localhost:8080/swagger-ui.html
-# API docs JSON: http://localhost:8080/v3/api-docs
+./mvnw spring-boot:run
 ```
+
+* O **Flyway** executará automaticamente todas as migrações e criará as tabelas e dados iniciais.
+* O servidor subirá na porta padrão **8080**.
+
+### 3. Acessar
+* **Frontend Web:** [http://localhost:8080/login.html](http://localhost:8080/login.html)
+* **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ---
 
-## Testes
+## 🧪 Testes Automatizados
 
-O projeto contém testes unitários com **JUnit 5** e **Mockito**. Para testes, o Spring Boot usa H2 em memória (definido em `src/test/resources/application-test.properties`).
+O projeto contém testes unitários e de integração prontos para execução:
 
 ```bash
-mvn test
+./mvnw test
 ```
 
-Testes implementados:
-
-- **`AuthServiceTest`** — cobre registro (e-mail disponível, e-mail duplicado) e login (credenciais válidas, credenciais inválidas)
-- **`VeterinarianServiceTest`** — cobre criação de perfil (CRM disponível, CRM duplicado, usuário inexistente, usuário com role errada) e busca de perfil (ID existente, ID inexistente)
+* **`AuthServiceTest`:** Testes unitários com Mockito cobrindo registro de tutores e veterinários, prevenção de e-mails duplicados, verificação de credenciais válidas e rejeição de senhas incorretas.
+* **`ClyvoVeterinaryApplicationTests`:** Teste de integração garantindo o carregamento completo do contexto do Spring Boot e a integridade do schema relacional.
 
 ---
 
-## Estrutura de Commits
+## 👨‍💻 Autor
 
-O histórico de commits segue o padrão **Conventional Commits**:
-
-```
-chore: initial project setup with Spring Boot 3.5.4 and Java 25
-feat(shared): add cross-cutting infrastructure module
-feat(user): add user domain with Role enum and JPA adapter
-feat(auth): add authentication with JWT and Google OAuth2
-feat(veterinarian): add veterinarian profile with CRM and subscription plans
-feat(tutor): add tutor profile module
-feat(pet): add pet management with species classification
-feat(appointment): add appointment scheduling with domain service validation
-feat(medicalrecord): add medical record module
-feat(prescription): add prescription module with REST controller
-feat(vaccine): add vaccine tracking with next-dose calculation
-feat(integration): add orchestrator port and HTTP adapter for .NET communication
-feat(db): add Flyway migrations V1-V9 for all domain tables
-feat(frontend): add global CSS design system with sidebar and component tokens
-feat(frontend): add auth templates (login and register)
-feat(frontend): add base layout fragment with sidebar navigation
-feat(frontend): add veterinarian templates (dashboard, profile, edit, appointments)
-feat(frontend): add tutor templates (dashboard, profile, pets, appointments)
-feat(frontend): add admin templates (dashboard, users management)
-feat(frontend): add error pages (403 Forbidden, 404 Not Found)
-test: add unit tests for AuthService and VeterinarianService
-```
-
----
-
-## Decisões de Projeto
-
-**Arquitetura Hexagonal:** A separação entre domínio, aplicação e infraestrutura garante que as regras de negócio não dependem de framework. É possível trocar o banco de dados ou o mecanismo de autenticação sem alterar o domínio.
-
-**Dois filter chains separados:** A API REST usa JWT stateless para servir clientes mobile. O frontend web usa sessão stateful com form login e OAuth2. Ambos coexistem sem conflito graças ao `@Order` e ao `securityMatcher`.
-
-**Sem Lombok:** Todo o código é Java puro, sem geração de código em tempo de compilação. Isso melhora a rastreabilidade em stack traces e torna o código mais explícito.
-
-**Flyway como única fonte de verdade:** O Hibernate com `ddl-auto=none` nunca altera o schema. Toda mudança estrutural no banco passa por uma migration versionada e rastreável.
-
-**UUID como PK:** Todas as entidades usam `UUID` gerado pelo banco com `gen_random_uuid()`, eliminando dependência de sequências e facilitando eventual sharding ou replicação.
+Desenvolvido e mantido por **Maicon Douglas**:
+* **GitHub:** [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev)
+* **E-mail:** [maicon.timot8@gmail.com](mailto:maicon.timot8@gmail.com)
