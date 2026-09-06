@@ -14,14 +14,22 @@ public class AutorizacaoAcessoPet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_pet", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Pet pet;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_veterinario", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Veterinario veterinario;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_clinica")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Clinica clinica;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_conta_autorizador", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ContaAcesso contaAutorizador;
 
     @Column(name = "data_autorizacao")
@@ -31,7 +39,7 @@ public class AutorizacaoAcessoPet {
     private LocalDateTime dataExpiracao;
 
     @Column(nullable = false)
-    private String status;
+    private String status = "ATIVA";
 
     @Column(name = "motivo_revogacao")
     private String motivoRevogacao;
@@ -40,6 +48,7 @@ public class AutorizacaoAcessoPet {
     public UUID getIdAutorizacao() { return idAutorizacao; } public void setIdAutorizacao(UUID id) { this.idAutorizacao = id; }
     public Pet getPet() { return pet; } public void setPet(Pet p) { this.pet = p; }
     public Veterinario getVeterinario() { return veterinario; } public void setVeterinario(Veterinario v) { this.veterinario = v; }
+    public Clinica getClinica() { return clinica; } public void setClinica(Clinica c) { this.clinica = c; }
     public ContaAcesso getContaAutorizador() { return contaAutorizador; } public void setContaAutorizador(ContaAcesso c) { this.contaAutorizador = c; }
     public LocalDateTime getDataAutorizacao() { return dataAutorizacao; } public void setDataAutorizacao(LocalDateTime d) { this.dataAutorizacao = d; }
     public LocalDateTime getDataExpiracao() { return dataExpiracao; } public void setDataExpiracao(LocalDateTime d) { this.dataExpiracao = d; }

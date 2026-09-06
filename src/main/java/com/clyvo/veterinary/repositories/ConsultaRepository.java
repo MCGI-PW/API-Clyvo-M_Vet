@@ -9,4 +9,5 @@ public interface ConsultaRepository extends JpaRepository<Consulta, UUID> {
     List<Consulta> findByPetIdPet(UUID idPet);
     List<Consulta> findByVeterinarioIdVeterinario(UUID idVeterinario);
     List<Consulta> findByPetTutorIdTutor(UUID idTutor);
+    List<Consulta> findByClinicaIdClinica(UUID idClinica);
 }

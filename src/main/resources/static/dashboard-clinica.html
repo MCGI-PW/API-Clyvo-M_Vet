@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Clyvo Vet - Painel da Clínica</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container dashboard-container" style="max-width: 950px;">
+        <div class="header">
+            <div>
+                <h1 id="clinicaNome">Painel da Clínica</h1>
+                <span id="clinicaInfo" style="color: #666; font-size: 13px;">Carregando unidade...</span>
+            </div>
+            <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
+        </div>
+        
+        <div id="globalError" class="error-box"></div>
+        <div id="globalSuccess" class="success-box"></div>
+
+        <div style="display: flex; gap: 20px;">
+            <!-- Coluna 1: Gestao de Equipe Veterinaria -->
+            <div style="flex: 1;">
+                <h3>Corpo Clínico (Veterinários)</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Médicos veterinários vinculados a esta unidade.
+                </p>
+                <div id="equipeVetList"></div>
+
+                <hr>
+                <h4>Vincular Novo Veterinário à Unidade</h4>
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Selecione o Médico:</label>
+                <select id="selTodosVets">
+                    <option value="">Carregando profissionais...</option>
+                </select>
+                <button onclick="vincularVeterinario()">Vincular à Equipe</button>
+
+                <hr>
+                <h3>Notificações da Unidade</h3>
+                <div id="notifList"></div>
+            </div>
+            
+            <!-- Coluna 2: Consultas e Transferencia de Autorizacoes -->
+            <div style="flex: 1.2;">
+                <h3>Fila de Consultas da Unidade</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Atendimentos agendados ou realizados nesta clínica.
+                </p>
+                <div id="consultasClinicaList"></div>
+
+                <hr>
+                <h3>Autorizações de Pacientes Ativas</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Consentimentos de pets vinculados a esta unidade. Transfira o atendimento entre veterinários se necessário.
+                </p>
+                <div id="autorizacoesClinicaList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal simples para transferencia de autorizacao -->
+    <div id="modalTransfer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div class="container" style="max-width: 450px; background:#fff; padding:25px; border-radius:8px;">
+            <h3>Transferir Paciente</h3>
+            <p id="transferPetInfo" style="font-size:14px; margin-bottom:15px; color:#444;"></p>
+            <input type="hidden" id="transferAuthId">
+            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Selecione o Novo Veterinário da Unidade:</label>
+            <select id="selNovoVetTransfer"></select>
+            <button onclick="confirmarTransferencia()">Confirmar Transferência</button>
+            <button class="btn-secondary" onclick="fecharModalTransfer()">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        window.onload = function() {
+            carregarDadosClinica();
+            carregarVeterinariosClinica();
+            carregarTodosVeterinariosDisponiveis();
+            carregarConsultasClinica();
+            carregarAutorizacoesClinica();
+            carregarNotificacoes();
+        };
+    </script>
+</body>
+</html>

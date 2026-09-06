@@ -8,7 +8,7 @@
 <body>
     <div class="container dashboard-container">
         <div class="header">
-            <h1>Area do Tutor</h1>
+            <h1>Área do Tutor</h1>
             <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
         </div>
         
@@ -23,16 +23,39 @@
                 <h4>Adicionar Novo Pet</h4>
                 <input type="text" id="petName" placeholder="Nome do Pet">
                 <input type="number" id="petAge" placeholder="Idade (Anos)">
-                <input type="text" list="breedList" id="petBreed" placeholder="Selecione ou digite a Raca" required>
+                <input type="text" list="breedList" id="petBreed" placeholder="Selecione ou digite a Raça" required>
                 <datalist id="breedList"></datalist>
                 <button onclick="cadastrarPet()">Salvar Pet</button>
+
+                <hr>
+                <h3>Autorizações de Acesso aos meus Pets</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                    Controle quais veterinários e clínicas possuem consentimento ativo para acessar os dados dos seus pets.
+                </p>
+                <div id="autorizacoesList"></div>
             </div>
             
             <div style="flex: 1;">
                 <h3>Agendar Consulta</h3>
-                <select id="selVet"><option value="">Carregando veterinarios...</option></select>
-                <select id="selPet"><option value="">Nenhum pet encontrado</option></select>
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">1. Selecione a Clínica:</label>
+                <select id="selClinica" onchange="carregarVetsDaClinicaSelecionada()">
+                    <option value="">Carregando clínicas...</option>
+                </select>
+
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">2. Selecione o Médico Veterinário:</label>
+                <select id="selVet">
+                    <option value="">Selecione uma clínica primeiro</option>
+                </select>
+
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">3. Selecione o Pet:</label>
+                <select id="selPet">
+                    <option value="">Nenhum pet encontrado</option>
+                </select>
+
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">4. Data e Horário:</label>
                 <input type="datetime-local" id="appDate">
+
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">5. Modalidade:</label>
                 <select id="appModality">
                     <option value="ONLINE">Consulta Online</option>
                     <option value="PRESENCIAL">Consulta Presencial</option>
@@ -44,7 +67,7 @@
                 <div id="consultasTutorList"></div>
 
                 <hr>
-                <h3>Minhas Notificacoes (Caixa de Entrada)</h3>
+                <h3>Minhas Notificações (Caixa de Entrada)</h3>
                 <div id="notifList"></div>
             </div>
         </div>
@@ -54,9 +77,10 @@
         window.onload = function() {
             carregarRacas();
             carregarPets();
-            carregarVeterinarios();
+            carregarClinicas();
             carregarNotificacoes();
             carregarConsultasTutor();
+            carregarAutorizacoesTutor();
         };
     </script>
 </body>

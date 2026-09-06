@@ -94,6 +94,8 @@ com.clyvo.veterinary/
 │   ├── Tutor.java
 │   ├── Veterinario.java
 │   ├── Clinica.java
+│   ├── VeterinarioClinica.java
+│   ├── AutorizacaoAcessoPet.java
 │   ├── Especie.java
 │   ├── Raca.java
 │   ├── Pet.java
@@ -108,16 +110,38 @@ com.clyvo.veterinary/
 
 ---
 
-## 🗄 Banco de Dados e Modelagem 3NF
+## 🗄 Banco de Dados e Modelagem 3NF Aprimorada
 
-O banco de dados é modelado na **Terceira Forma Normal (3NF)**, eliminando redundâncias e garantindo integridade referencial por meio de migrações automáticas do **Flyway** (`src/main/resources/db/migration/`):
+O banco de dados segue rigorosamente a **Terceira Forma Normal (3NF)** e a topologia de relacionamento:
+
+```
+                          ROLE (Perfil)
+                          │
+                          ▼
+                        CONTA (ContaAcesso)
+                          │
+             ┌────────────┼────────────┐
+             │            │            │
+             ▼            ▼            ▼
+           TUTOR      VETERINARIO    CLINICA
+             │            │            ▲
+             ▼            │            │
+            PET           │   VETERINARIO_CLINICA
+             │            │
+             │            │
+             ├──── AUTORIZACAO_PET
+             │            │
+             ▼            │
+          CONSULTA ◄──────┘
+```
 
 | Migração | Conteúdo e Responsabilidade |
 |---|---|
-| `V1__Create_3NF_Core.sql` | Estrutura de contas (`conta_acesso`), credenciais com BCrypt (`credencial`), documentos (`identificador_acesso`), perfis (`tutor`, `veterinario`, `clinica`), sessões ativas (`sessao`) e controle de permissões. |
-| `V2__Create_Racas.sql` | Normalização de espécies (`especie`) e catálogo com mais de 30 raças de cães e gatos com IDs padronizados. |
+| `V1__Create_3NF_Core.sql` | Estrutura de contas (`conta_acesso`), credenciais (`credencial`), documentos (`identificador_acesso`), perfis (`tutor`, `veterinario`, `clinica`), vínculos (`veterinario_clinica`), autorizações (`autorizacao_acesso_pet`) e sessões. |
+| `V2__Create_Racas.sql` | Normalização de espécies (`especie`) e catálogo com mais de 30 raças com IDs padronizados. |
 | `V3__Create_Consulta_And_Populate_Vets.sql` | Tabela de agendamento de consultas (`consulta`) e seed com veterinários padrão (Dr. Roberto Silveira, Dra. Camila Nogueira, Dr. Marcos Santos). |
 | `V4__Create_Notificacao.sql` | Histórico e caixa de entrada de notificações em tempo real (`notificacao`). |
+| `V5__Add_Clinica_To_Consulta_And_Autorizacao.sql` | Vínculo estrito de `id_clinica` em `consulta` e `autorizacao_acesso_pet`, multi-tenancy e seed de clínicas e vínculos. |
 
 > Todas as chaves primárias são do tipo `UUID` geradas via `gen_random_uuid()` no PostgreSQL.
 
@@ -132,23 +156,33 @@ Acesse a documentação interativa com execução em tempo real via Swagger UI:
 * `POST /api/auth/register` — Cadastra uma nova conta (`TUTOR`, `VETERINARIO` ou `CLINICA`).
 * `POST /api/auth/login` — Autentica as credenciais, gera uma sessão e retorna o token JWT.
 
-### 2. Catálogos e Apoio
-* `GET /api/veterinarios` — Lista os veterinários cadastrados no banco com CRMV e especialidade.
-* `GET /api/racas` — Lista todas as raças e suas respectivas espécies.
-* `GET /api/tutors` — Lista os tutores da plataforma.
+### 2. Clínicas e Corpo Clínico (`/api/clinicas`)
+* `GET /api/clinicas` — Lista todas as clínicas ativas para seleção pública de agendamento.
+* `GET /api/clinicas/{id}/veterinarios` — Lista os veterinários ativos de uma clínica específica.
+* `GET /api/clinicas/minha` — Retorna os dados da clínica autenticada.
+* `GET /api/clinicas/meus-veterinarios` — Lista a equipe médica da clínica autenticada com status de vínculo.
+* `POST /api/clinicas/veterinarios/vincular` — Vincula um médico veterinário à equipe da clínica.
+* `PUT /api/clinicas/veterinarios/{idVinculo}/desvincular` — Desativa o vínculo de um médico com a clínica.
+* `GET /api/clinicas/consultas` — Lista todas as consultas da unidade (isolamento multi-tenancy).
+* `GET /api/clinicas/autorizacoes` — Lista as autorizações de acesso ativas para pacientes da unidade.
+* `PUT /api/clinicas/autorizacoes/{id}/transferir` — Transfere o atendimento e consultas agendadas de um pet para outro colega médico da mesma clínica.
 
-### 3. Animais (`/api/pets`)
+### 3. Autorizações de Acesso (`/api/autorizacoes`)
+* `GET /api/autorizacoes` — Lista autorizações ativas (filtradas por perfil: tutor, veterinário ou clínica).
+* `PUT /api/autorizacoes/{id}/revogar` — Tutor revoga o consentimento de acesso ao pet, cancelando automaticamente agendamentos futuros.
+
+### 4. Animais (`/api/pets`)
 * `POST /api/pets` — Cadastra um animal vinculado ao tutor logado.
 * `GET /api/pets` — Lista todos os animais do tutor logado.
 
-### 4. Consultas e Atendimentos (`/api/consultas` e `/api/appointments`)
-* `POST /api/consultas` — Agenda uma consulta entre um pet e um veterinário.
-* `GET /api/consultas` — Lista as consultas vinculadas ao usuário logado (filtra automaticamente por tutor ou veterinário).
-* `PUT /api/consultas/{id}/cancelar` (ou `POST` / `DELETE`) — Cancela uma consulta agendada, atualiza o status para `CANCELADA` e gera notificações para o tutor e o veterinário.
-* `POST /api/appointments/{id}/cancel` — Endpoint alternativo de cancelamento de atendimento.
-* `POST /api/appointments/{id}/complete` — Finaliza o atendimento, altera o status para `CONCLUIDA` e notifica o tutor com as notas médicas.
+### 5. Consultas e Atendimentos (`/api/consultas` e `/api/appointments`)
+* `POST /api/consultas` — Agenda uma consulta entre um pet, veterinário e clínica (cria automaticamente a `AutorizacaoAcessoPet`).
+* `GET /api/consultas` — Lista as consultas do usuário logado (filtro automático: tutor, veterinário ou isolamento de clínica).
+* `PUT /api/consultas/{id}/cancelar` (ou `POST` / `DELETE`) — Cancela uma consulta agendada e notifica tutor e equipe.
+* `POST /api/appointments/{id}/cancel` — Endpoint alternativo de cancelamento.
+* `POST /api/appointments/{id}/complete` — Finaliza o atendimento, altera status para `CONCLUIDA` e registra observações clínicas.
 
-### 5. Notificações (`/api/notificacoes`)
+### 6. Notificações (`/api/notificacoes`)
 * `GET /api/notificacoes` — Retorna as notificações em ordem decrescente (da mais recente para a mais antiga).
 
 ---
@@ -157,9 +191,10 @@ Acesse a documentação interativa com execução em tempo real via Swagger UI:
 
 O projeto conta com uma interface nativa (Single Page Application) em HTML5, CSS3 e JavaScript Vanilla localizada em `src/main/resources/static/`:
 
-* **`login.html`**: Formulário responsivo de login e cadastro com comutação de campos (exibe campo de CRMV condicionalmente ao selecionar Veterinário).
-* **`dashboard-tutor.html`**: Painel exclusivo do tutor com listagem de pets em cards, formulário de cadastro com busca de raças, agendamento de consultas, fila de consultas agendadas com cancelamento em 1 clique e notificações.
-* **`dashboard-vet.html`**: Painel do veterinário com fila de consultas agendadas com diferenciação por cores de status, seleção rápida por clique e finalização de atendimento com anotações clínicas.
+* **`login.html`**: Formulário responsivo com comutação de campos (CRMV condicional para Veterinário, CNPJ para Clínica).
+* **`dashboard-tutor.html`**: Painel do tutor com gestão de pets, agendamento hierárquico (Clínica -> Veterinário da Unidade -> Pet -> Data), fila de consultas e controle de autorizações com dupla confirmação e alertas de consequências.
+* **`dashboard-clinica.html`**: Painel exclusivo da clínica com gestão de corpo clínico, consultas da unidade e transferência de atendimento entre veterinários.
+* **`dashboard-vet.html`**: Painel do veterinário com fila de consultas agendadas e finalização com anotações clínicas.
 * **`app.js`**: Gerenciador de requisições assíncronas (`fetch`) com armazenamento de JWT em `localStorage`.
 
 ---

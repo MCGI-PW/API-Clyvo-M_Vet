@@ -29,7 +29,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/", "/index.html", "/login.html", "/dashboard-tutor.html", "/dashboard-vet.html", "/app.js", "/style.css").permitAll()
+                .requestMatchers("/", "/index.html", "/login.html", "/dashboard-tutor.html", "/dashboard-vet.html", "/dashboard-clinica.html", "/app.js", "/style.css").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

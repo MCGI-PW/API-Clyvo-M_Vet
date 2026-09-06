@@ -1,10 +1,7 @@
 package com.clyvo.veterinary.controllers;
 
 import com.clyvo.veterinary.models.*;
-import com.clyvo.veterinary.repositories.ConsultaRepository;
-import com.clyvo.veterinary.repositories.NotificacaoRepository;
-import com.clyvo.veterinary.repositories.TutorRepository;
-import com.clyvo.veterinary.repositories.VeterinarioRepository;
+import com.clyvo.veterinary.repositories.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +41,18 @@ class ConsultaControllerTest {
     @Mock
     private VeterinarioRepository veterinarioRepository;
 
+    @Mock
+    private ClinicaRepository clinicaRepository;
+
+    @Mock
+    private PetRepository petRepository;
+
+    @Mock
+    private AutorizacaoAcessoPetRepository autorizacaoRepository;
+
+    @Mock
+    private VeterinarioClinicaRepository vcRepository;
+
     @InjectMocks
     private ConsultaController consultaController;
 
@@ -52,6 +61,8 @@ class ConsultaControllerTest {
     private UUID idTutor;
     private Tutor tutor;
     private Pet pet;
+    private Veterinario vet;
+    private Clinica clinica;
     private Consulta consulta;
 
     @BeforeEach
@@ -73,9 +84,20 @@ class ConsultaControllerTest {
         pet.setNome("Rex");
         pet.setTutor(tutor);
 
+        vet = new Veterinario();
+        vet.setIdVeterinario(UUID.randomUUID());
+        vet.setNome("Dr. Roberto");
+        vet.setContaAcesso(conta);
+
+        clinica = new Clinica();
+        clinica.setIdClinica(UUID.randomUUID());
+        clinica.setNomeFantasia("Clyvo Central");
+
         consulta = new Consulta();
         consulta.setIdConsulta(idConsulta);
         consulta.setPet(pet);
+        consulta.setVeterinario(vet);
+        consulta.setClinica(clinica);
         consulta.setDataHora(LocalDateTime.now().plusDays(1));
         consulta.setModalidade("ONLINE");
         consulta.setStatus("AGENDADO");
@@ -91,6 +113,23 @@ class ConsultaControllerTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("Deve agendar consulta e gerar automaticamente autorizacao de acesso ao pet")
+    void deveAgendarConsultaEGerarAutorizacao() {
+        when(petRepository.findById(any())).thenReturn(Optional.of(pet));
+        when(veterinarioRepository.findById(any())).thenReturn(Optional.of(vet));
+        when(clinicaRepository.findById(any())).thenReturn(Optional.of(clinica));
+        when(autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(any(), any(), eq("ATIVA")))
+                .thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = consultaController.createConsulta(consulta);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(consultaRepository, times(1)).save(consulta);
+        verify(autorizacaoRepository, times(1)).save(any(AutorizacaoAcessoPet.class));
+        verify(notificacaoRepository, atLeastOnce()).save(any(Notificacao.class));
     }
 
     @Test
@@ -158,5 +197,19 @@ class ConsultaControllerTest {
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
         assertEquals(idConsulta, response.getBody().get(0).getIdConsulta());
+    }
+
+    @Test
+    @DisplayName("Deve listar consultas isoladas da clinica logada (Multi-Tenancy)")
+    void deveListarConsultasIsoladasDaClinica() {
+        when(clinicaRepository.findByContaAcessoIdConta(idConta)).thenReturn(Optional.of(clinica));
+        when(consultaRepository.findByClinicaIdClinica(clinica.getIdClinica())).thenReturn(List.of(consulta));
+
+        ResponseEntity<List<Consulta>> response = consultaController.listConsultas();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        verify(consultaRepository, times(1)).findByClinicaIdClinica(clinica.getIdClinica());
     }
 }

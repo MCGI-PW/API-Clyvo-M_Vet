@@ -22,6 +22,11 @@ public class Consulta {
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Veterinario veterinario;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_clinica")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Clinica clinica;
+
     @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 
@@ -34,6 +39,7 @@ public class Consulta {
     public UUID getIdConsulta() { return idConsulta; } public void setIdConsulta(UUID id) { this.idConsulta = id; }
     public Pet getPet() { return pet; } public void setPet(Pet p) { this.pet = p; }
     public Veterinario getVeterinario() { return veterinario; } public void setVeterinario(Veterinario v) { this.veterinario = v; }
+    public Clinica getClinica() { return clinica; } public void setClinica(Clinica c) { this.clinica = c; }
     public LocalDateTime getDataHora() { return dataHora; } public void setDataHora(LocalDateTime d) { this.dataHora = d; }
     public String getModalidade() { return modalidade; } public void setModalidade(String m) { this.modalidade = m; }
     public String getStatus() { return status; } public void setStatus(String s) { this.status = s; }
