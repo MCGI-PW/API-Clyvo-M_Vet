@@ -14,7 +14,8 @@ import java.util.Base64;
 
 @Component
 public class JwtUtil {
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final String SECRET = "clyvovet-super-secret-key-2026-must-be-at-least-256-bits-long-for-hs256";
+    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     private final long expiration = 86400000; // 24h
 
     public String generateToken(UUID idConta, String tipoConta) {
