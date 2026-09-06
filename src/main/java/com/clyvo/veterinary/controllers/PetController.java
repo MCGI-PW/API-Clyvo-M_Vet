@@ -29,6 +29,7 @@ public class PetController {
         UUID idConta = UUID.fromString(idContaStr);
         Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta).orElseThrow();
         
+        pet.setIdPet(null);
         pet.setTutor(tutor);
         return ResponseEntity.ok(petRepository.save(pet));
     }

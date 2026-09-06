@@ -47,6 +47,7 @@ public class ConsultaController {
 
     @PostMapping
     public ResponseEntity<Void> createConsulta(@RequestBody Consulta consulta) {
+        consulta.setIdConsulta(null);
         consultaRepository.save(consulta);
         
         // Notify the user
