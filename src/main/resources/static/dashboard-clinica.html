@@ -2,72 +2,97 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Clyvo Vet - Painel da Clínica</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Gestão da Clínica</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container dashboard-container" style="max-width: 950px;">
-        <div class="header">
+    <!-- Navbar Superior -->
+    <header class="navbar">
+        <div class="brand-wrapper">
+            <div class="brand-icon">🏥</div>
             <div>
-                <h1 id="clinicaNome">Painel da Clínica</h1>
-                <span id="clinicaInfo" style="color: #666; font-size: 13px;">Carregando unidade...</span>
+                <div class="brand-title">Clyvo <span>Vet</span></div>
+                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Painel de Gestão da Unidade</span>
             </div>
-            <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
+        </div>
+        <div class="nav-actions">
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar Tema">🌙</button>
+            <button type="button" class="btn-danger btn-sm" onclick="logout()">Sair da Conta</button>
+        </div>
+    </header>
+
+    <main class="container dashboard-container">
+        <!-- Cabeçalho da Unidade Clínica -->
+        <div style="margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+            <h1 id="clinicaNome" style="margin-bottom: 4px;">Carregando Unidade Clínica...</h1>
+            <span id="clinicaInfo" style="color: var(--text-secondary); font-size: 13.5px;">Aguarde a obtenção das informações da clínica...</span>
         </div>
         
         <div id="globalError" class="error-box"></div>
         <div id="globalSuccess" class="success-box"></div>
 
-        <div style="display: flex; gap: 20px;">
-            <!-- Coluna 1: Gestao de Equipe Veterinaria -->
-            <div style="flex: 1;">
-                <h3>Corpo Clínico (Veterinários)</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                    Médicos veterinários vinculados a esta unidade.
-                </p>
-                <div id="equipeVetList"></div>
+        <div class="dashboard-grid">
+            <!-- Coluna 1: Gestão de Corpo Clínico & Notificações -->
+            <div>
+                <section>
+                    <h3>👨‍⚕️ Corpo Clínico da Unidade</h3>
+                    <p style="margin-bottom: 12px;">Médicos veterinários vinculados ao corpo clínico desta unidade.</p>
+                    <div id="equipeVetList"></div>
+                </section>
 
                 <hr>
-                <h4>Vincular Novo Veterinário à Unidade</h4>
-                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Selecione o Médico:</label>
-                <select id="selTodosVets">
-                    <option value="">Carregando profissionais...</option>
-                </select>
-                <button onclick="vincularVeterinario()">Vincular à Equipe</button>
+
+                <section>
+                    <h3>➕ Vincular Médico Veterinário</h3>
+                    <label for="selTodosVets">Selecione o Profissional Registrado</label>
+                    <select id="selTodosVets">
+                        <option value="">Carregando profissionais...</option>
+                    </select>
+                    <button type="button" onclick="vincularVeterinario()">Vincular à Equipe Médica ✨</button>
+                </section>
 
                 <hr>
-                <h3>Notificações da Unidade</h3>
-                <div id="notifList"></div>
+
+                <section>
+                    <h3>🔔 Notificações da Unidade</h3>
+                    <div id="notifList"></div>
+                </section>
             </div>
             
-            <!-- Coluna 2: Consultas e Transferencia de Autorizacoes -->
-            <div style="flex: 1.2;">
-                <h3>Fila de Consultas da Unidade</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                    Atendimentos agendados ou realizados nesta clínica.
-                </p>
-                <div id="consultasClinicaList"></div>
+            <!-- Coluna 2: Fila da Unidade & Governança de Autorizações -->
+            <div>
+                <section>
+                    <h3>📋 Consultas Realizadas e Agendadas na Unidade</h3>
+                    <p style="margin-bottom: 12px;">Histórico e atendimentos em andamento isolados para esta clínica.</p>
+                    <div id="consultasClinicaList"></div>
+                </section>
 
                 <hr>
-                <h3>Autorizações de Pacientes Ativas</h3>
-                <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                    Consentimentos de pets vinculados a esta unidade. Transfira o atendimento entre veterinários se necessário.
-                </p>
-                <div id="autorizacoesClinicaList"></div>
+
+                <section>
+                    <h3>🛡️ Consentimentos e Autorizações de Pacientes</h3>
+                    <p style="margin-bottom: 12px;">
+                        Consentimentos ativos sob a responsabilidade desta unidade. Caso um veterinário esteja indisponível, você pode transferir o paciente.
+                    </p>
+                    <div id="autorizacoesClinicaList"></div>
+                </section>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Modal simples para transferencia de autorizacao -->
-    <div id="modalTransfer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div class="container" style="max-width: 450px; background:#fff; padding:25px; border-radius:8px;">
-            <h3>Transferir Paciente</h3>
-            <p id="transferPetInfo" style="font-size:14px; margin-bottom:15px; color:#444;"></p>
+    <!-- Modal Moderno de Transferência de Paciente (Backdrop Glassmorphism) -->
+    <div id="modalTransfer" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>🔄 Transferir Paciente para Outro Médico</h3>
+            <p id="transferPetInfo" style="font-size: 13.5px; margin-bottom: 16px;"></p>
             <input type="hidden" id="transferAuthId">
-            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Selecione o Novo Veterinário da Unidade:</label>
+
+            <label for="selNovoVetTransfer">Selecione o Novo Médico da Unidade</label>
             <select id="selNovoVetTransfer"></select>
-            <button onclick="confirmarTransferencia()">Confirmar Transferência</button>
-            <button class="btn-secondary" onclick="fecharModalTransfer()">Cancelar</button>
+
+            <button type="button" onclick="confirmarTransferencia()">Confirmar Transferência ✨</button>
+            <button type="button" class="btn-secondary" onclick="fecharModalTransfer()">Cancelar</button>
         </div>
     </div>
 

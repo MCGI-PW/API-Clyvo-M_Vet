@@ -2,57 +2,90 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Clyvo Vet - Entrar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Entrar no Sistema</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Entrar no Clyvo Vet</h1>
+    <!-- Navbar com Marca e Alternador de Tema -->
+    <header class="navbar" style="max-width: 520px;">
+        <div class="brand-wrapper">
+            <div class="brand-icon">🐾</div>
+            <div class="brand-title">Clyvo <span>Vet</span></div>
+        </div>
+        <div class="nav-actions">
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar Tema">🌙</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Acessar o Clyvo Vet</h1>
+        <p style="margin-bottom: 20px;">Plataforma inteligente de saúde veterinária e gestão clínica.</p>
         
         <div id="loginError" class="error-box"></div>
         <div id="loginSuccess" class="success-box"></div>
 
+        <!-- Formulário de Login -->
         <form id="loginForm">
-            <input type="email" id="email" placeholder="Seu Email" required>
-            <input type="password" id="password" placeholder="Sua Senha (min 3 digitos)" required>
-            <button type="submit">Fazer Login</button>
+            <label for="email">E-mail Cadastrado</label>
+            <input type="email" id="email" placeholder="exemplo@clyvovet.com" required autocomplete="email">
+
+            <label for="password">Senha de Acesso</label>
+            <input type="password" id="password" placeholder="Sua senha (mínimo 3 dígitos)" required autocomplete="current-password">
+
+            <button type="submit" class="btn-aurora">Fazer Login ✨</button>
         </form>
         
         <hr>
         
-        <h2>Ainda nao tem conta? Cadastre-se</h2>
+        <h2>Novo por aqui? Cadastre-se</h2>
+        <p style="margin-bottom: 15px;">Crie sua conta como Tutor, Médico Veterinário ou Clínica.</p>
         <div id="regError" class="error-box"></div>
         
+        <!-- Formulário de Cadastro -->
         <form id="registerForm">
+            <label for="role">Tipo de Perfil</label>
             <select id="role">
-                <option value="TUTOR">Sou um Tutor</option>
-                <option value="VETERINARIO">Sou um Veterinário</option>
-                <option value="CLINICA">Sou uma Clínica</option>
+                <option value="TUTOR">Tutor (Responsável por Pets)</option>
+                <option value="VETERINARIO">Médico Veterinário</option>
+                <option value="CLINICA">Clínica Veterinária</option>
             </select>
-            <input type="text" id="regName" placeholder="Nome Completo" required>
-            <input type="email" id="regEmail" placeholder="Email Valido (@)" required>
-            <input type="password" id="regPassword" placeholder="Senha (min 3 digitos)" required>
-            <input type="number" id="regAge" placeholder="Sua Idade (+18)" required>
-            <input type="text" id="regPhone" placeholder="Telefone de Contato" required>
+
+            <label for="regName">Nome Completo / Razão Social</label>
+            <input type="text" id="regName" placeholder="Ex: Amanda Silva ou Clínica Veterinária Central" required>
+
+            <label for="regEmail">E-mail de Contato</label>
+            <input type="email" id="regEmail" placeholder="seuemail@provedor.com" required autocomplete="email">
+
+            <label for="regPassword">Senha</label>
+            <input type="password" id="regPassword" placeholder="Crie uma senha segura" required autocomplete="new-password">
+
+            <label for="regAge">Idade (+18 anos)</label>
+            <input type="number" id="regAge" placeholder="Ex: 28" min="18" required>
+
+            <label for="regPhone">Telefone / WhatsApp</label>
+            <input type="text" id="regPhone" placeholder="(11) 99999-9999" required>
             
             <div id="crmvDiv" style="display: none;">
-                <input type="text" id="regCrmv" placeholder="Seu CRMV (Ex: 12345-SP)">
+                <label for="regCrmv">Registro CRMV (Obrigatório para Veterinários)</label>
+                <input type="text" id="regCrmv" placeholder="Ex: 12345-SP">
             </div>
 
-            <button type="submit" class="btn-secondary">Criar Conta</button>
+            <button type="submit" class="btn-aurora" style="filter: hue-rotate(40deg);">Criar Minha Conta ✨</button>
         </form>
-    </div>
+    </main>
     
     <script src="app.js"></script>
     <script>
         document.getElementById('role').addEventListener('change', (e) => {
             const crmvDiv = document.getElementById('crmvDiv');
+            const regCrmv = document.getElementById('regCrmv');
             if (e.target.value === 'VETERINARIO') {
                 crmvDiv.style.display = 'block';
-                document.getElementById('regCrmv').required = true;
+                regCrmv.required = true;
             } else {
                 crmvDiv.style.display = 'none';
-                document.getElementById('regCrmv').required = false;
+                regCrmv.required = false;
             }
         });
     </script>

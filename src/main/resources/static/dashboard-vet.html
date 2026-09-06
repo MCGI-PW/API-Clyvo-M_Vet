@@ -2,39 +2,66 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Clyvo Vet - Veterinario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Consultório do Veterinário</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container dashboard-container">
-        <div class="header">
-            <h1>Area do Veterinario</h1>
-            <button class="btn-danger" style="width: auto;" onclick="logout()">Sair da Conta</button>
+    <!-- Navbar Superior -->
+    <header class="navbar">
+        <div class="brand-wrapper">
+            <div class="brand-icon">🩺</div>
+            <div>
+                <div class="brand-title">Clyvo <span>Vet</span></div>
+                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Estação Médica Veterinária</span>
+            </div>
         </div>
-        
+        <div class="nav-actions">
+            <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar Tema">🌙</button>
+            <button type="button" class="btn-danger btn-sm" onclick="logout()">Sair da Conta</button>
+        </div>
+    </header>
+
+    <main class="container dashboard-container">
         <div id="globalError" class="error-box"></div>
         <div id="globalSuccess" class="success-box"></div>
 
-        <div style="display: flex; gap: 20px;">
-            <div style="flex: 1;">
-                <h3>Consultas Agendadas</h3>
-                <div id="consultasList"></div>
+        <div class="dashboard-grid">
+            <!-- Coluna 1: Fila de Atendimento e Conclusão Clínica -->
+            <div>
+                <section>
+                    <h3>📋 Fila de Consultas Agendadas</h3>
+                    <p style="margin-bottom: 12px;">Pacientes agendados com consentimento médico ativo.</p>
+                    <div id="consultasList"></div>
+                </section>
                 
-                <hr style="margin: 20px 0;">
+                <hr>
 
-                <h3>Finalizar Atendimento</h3>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Cole o ID da consulta agendada (ou clique em uma consulta acima) para finalizá-la.</p>
-                <input type="text" id="appId" placeholder="ID da Consulta (Ex: 550e8400-e29b...)">
-                <textarea id="notes" placeholder="Descreva as notas clinicas, exames solicitados e estado de saude do pet..." rows="5"></textarea>
-                <button onclick="finalizarConsulta()">Finalizar Consulta</button>
+                <section>
+                    <h3>✍️ Evolução e Conclusão de Atendimento</h3>
+                    <p style="margin-bottom: 12px;">Selecione uma consulta acima ou informe o ID para registrar as observações clínicas.</p>
+                    
+                    <label for="appId">Identificador da Consulta (ID)</label>
+                    <input type="text" id="appId" placeholder="Clique no card acima ou cole o ID da consulta">
+
+                    <label for="notes">Notas Clínicas, Diagnóstico e Prescrição</label>
+                    <textarea id="notes" placeholder="Descreva os achados clínicos, diagnóstico, prescrição medicamentosa e orientações ao tutor..." rows="6"></textarea>
+                    
+                    <button type="button" onclick="finalizarConsulta()">Finalizar Consulta e Salvar Prontuário ✨</button>
+                </section>
             </div>
 
-            <div style="flex: 1;">
-                <h3>Minhas Notificacoes</h3>
-                <div id="notifList"></div>
+            <!-- Coluna 2: Notificações e Atividades -->
+            <div>
+                <section>
+                    <h3>🔔 Minhas Notificações</h3>
+                    <p style="margin-bottom: 12px;">Alertas em tempo real de novos agendamentos e cancelamentos.</p>
+                    <div id="notifList"></div>
+                </section>
             </div>
         </div>
-    </div>
+    </main>
+
     <script src="app.js"></script>
     <script>
         window.onload = function() {

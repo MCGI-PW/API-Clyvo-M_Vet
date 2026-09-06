@@ -1,5 +1,41 @@
 const API_URL = 'http://localhost:8080/api';
 
+// ==========================================
+// GERENCIADOR DE TEMAS (DARK / LIGHT THEME)
+// ==========================================
+function getStoredTheme() {
+    return localStorage.getItem('clyvo_theme') || 
+           (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('clyvo_theme', theme);
+    const toggles = document.querySelectorAll('.theme-toggle');
+    toggles.forEach(btn => {
+        btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+        btn.setAttribute('title', theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro');
+    });
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+}
+
+// Inicializa tema imediatamente
+(function initTheme() {
+    applyTheme(getStoredTheme());
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyTheme(getStoredTheme());
+});
+
+// ==========================================
+// AUTENTICAÇÃO E UTILITÁRIOS GLOBAIS
+// ==========================================
 function getToken() { return localStorage.getItem('token'); }
 
 function logout() {
@@ -10,8 +46,8 @@ function logout() {
 function showMsg(elementId, msg, isSuccess = false) {
     const el = document.getElementById(elementId);
     if (!el) return;
-    el.style.display = 'block';
-    el.innerText = msg;
+    el.style.display = 'flex';
+    el.innerHTML = (isSuccess ? '✔ ' : '⚠ ') + msg;
     if (isSuccess) {
         el.className = 'success-box';
     } else {
@@ -27,7 +63,8 @@ function parseErrors(data) {
     return msgs.length > 0 ? msgs.join(' | ') : 'Ocorreu um erro desconhecido';
 }
 
-if(document.getElementById('loginForm')) {
+// Formulários de Login e Registro
+if (document.getElementById('loginForm')) {
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -47,7 +84,7 @@ if(document.getElementById('loginForm')) {
                     if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
                     else if (data.role === 'CLINICA') window.location.href = 'dashboard-clinica.html';
                     else window.location.href = 'dashboard-vet.html';
-                }, 1000);
+                }, 800);
             } else {
                 showMsg('loginError', parseErrors(data));
             }
@@ -80,7 +117,7 @@ if(document.getElementById('loginForm')) {
                     if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
                     else if (data.role === 'CLINICA') window.location.href = 'dashboard-clinica.html';
                     else window.location.href = 'dashboard-vet.html';
-                }, 1000);
+                }, 800);
             } else {
                 showMsg('regError', parseErrors(data), false);
             }
@@ -90,6 +127,9 @@ if(document.getElementById('loginForm')) {
     });
 }
 
+// ==========================================
+// FLUXO DO TUTOR (PETS, CLÍNICAS, AGENDAMENTOS)
+// ==========================================
 let racasGlobais = [];
 
 async function carregarRacas() {
@@ -97,7 +137,7 @@ async function carregarRacas() {
         const res = await fetch(`${API_URL}/racas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         racasGlobais = await res.json();
         const breedList = document.getElementById('breedList');
-        if(breedList) {
+        if (breedList) {
             let opts = '';
             racasGlobais.forEach(r => {
                 opts += `<option value="${r.nome}">${r.especie.nome}</option>`;
@@ -110,16 +150,24 @@ async function carregarRacas() {
 async function carregarPets() {
     try {
         const res = await fetch(`${API_URL}/pets`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
-        if(res.status === 403) { logout(); return; }
+        if (res.status === 403) { logout(); return; }
         const pets = await res.json();
         let html = ''; let opts = '';
-        if(pets.length === 0) {
-            html = '<p style="color:#666;">Você ainda não tem pets cadastrados.</p>';
+        if (pets.length === 0) {
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhum pet cadastrado ainda. Adicione o seu primeiro pet abaixo!</p>';
         } else {
             pets.forEach(p => {
                 const racaNome = p.raca ? p.raca.nome : 'Sem Raça';
-                html += `<div class='card'><strong>${p.nome}</strong><span>Nascimento: ${p.dataNascimento} | Raça: ${racaNome}</span><span style="font-size:11px;color:#888;">ID: ${p.idPet}</span></div>`;
-                opts += `<option value='${p.idPet}'>${p.nome}</option>`;
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>🐾 ${p.nome}</strong>
+                            <span class="badge" style="background:rgba(0,217,245,0.12); color:#00d9f5; border:1px solid rgba(0,217,245,0.25);">${racaNome}</span>
+                        </div>
+                        <span style="color:var(--text-secondary); font-size:12.5px;">Nascimento: ${p.dataNascimento}</span>
+                        <span style="font-size:11px; color:var(--text-muted);">ID do Pet: ${p.idPet}</span>
+                    </div>`;
+                opts += `<option value='${p.idPet}'>${p.nome} (${racaNome})</option>`;
             });
         }
         const petsList = document.getElementById('petsList');
@@ -142,7 +190,7 @@ async function cadastrarPet() {
             raca: breedObj ? { idRaca: breedObj.idRaca } : null
         })
     });
-    if(res.ok) {
+    if (res.ok) {
         showMsg('globalSuccess', 'Pet cadastrado com sucesso!', true);
         document.getElementById('petName').value = '';
         document.getElementById('petBreed').value = '';
@@ -153,17 +201,13 @@ async function cadastrarPet() {
     }
 }
 
-// ==========================================
-// FLUXO DO TUTOR COM CLÍNICAS E AUTORIZAÇÃO
-// ==========================================
-
 async function carregarClinicas() {
     try {
         const res = await fetch(`${API_URL}/clinicas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         const clinicas = await res.json();
         let opts = '<option value="">Selecione uma Clínica...</option>';
         clinicas.forEach(c => {
-            opts += `<option value="${c.idClinica}">${c.nomeFantasia} - ${c.endereco || ''}</option>`;
+            opts += `<option value="${c.idClinica}">${c.nomeFantasia} — ${c.endereco || 'Unidade Geral'}</option>`;
         });
         const selClinica = document.getElementById('selClinica');
         if (selClinica) {
@@ -232,7 +276,7 @@ async function agendarConsulta() {
             modalidade: appModality.value
         })
     });
-    if(res.ok) {
+    if (res.ok) {
         showMsg('globalSuccess', 'Consulta agendada com sucesso! Autorização gerada automaticamente.', true);
         carregarNotificacoes();
         if (typeof carregarConsultasTutor === 'function') carregarConsultasTutor();
@@ -246,11 +290,11 @@ async function agendarConsulta() {
 async function carregarConsultasTutor() {
     try {
         const res = await fetch(`${API_URL}/consultas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
-        if(res.status === 403) return;
+        if (res.status === 403) return;
         const apps = await res.json();
         let html = '';
-        if(!apps || apps.length === 0) {
-            html = '<p style="color:#666;">Nenhuma consulta agendada.</p>';
+        if (!apps || apps.length === 0) {
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma consulta agendada.</p>';
         } else {
             apps.forEach(c => {
                 const d = new Date(c.dataHora).toLocaleString('pt-BR');
@@ -259,20 +303,32 @@ async function carregarConsultasTutor() {
                 const vetNome = c.veterinario ? `Dr(a). ${c.veterinario.nome}` : 'Veterinário';
                 const clinicaNome = c.clinica ? `Unidade: ${c.clinica.nomeFantasia}` : '';
                 const status = c.status || 'AGENDADO';
-                const statusColor = status === 'AGENDADO' ? '#007bff' : (status === 'CONCLUIDA' ? '#28a745' : '#dc3545');
                 
-                let cancelBtn = '';
+                let badgeHtml = '';
                 if (status === 'AGENDADO') {
-                    cancelBtn = `<button class="btn-danger" style="margin-top:8px; padding:6px 12px; font-size:13px;" onclick="cancelarConsulta('${c.idConsulta}')">Cancelar Consulta</button>`;
+                    badgeHtml = '<span class="badge badge-agendado">● Agendada</span>';
+                } else if (status === 'CONCLUIDA') {
+                    badgeHtml = '<span class="badge badge-concluida">✔ Concluída</span>';
+                } else {
+                    badgeHtml = '<span class="badge badge-cancelada">✖ Cancelada</span>';
                 }
 
-                html += `<div class='card' style='border-left: 4px solid ${statusColor};'>` +
-                        `<strong>${petNome}${racaNome}</strong>` +
-                        `<span>Veterinário: <b>${vetNome}</b> | ${clinicaNome}</span>` +
-                        `<span>Data/Hora: ${d} | Modalidade: ${c.modalidade}</span>` +
-                        `<span>Status: <b style="color:${statusColor};">${status}</b></span>` +
-                        cancelBtn +
-                        `</div>`;
+                let cancelBtn = '';
+                if (status === 'AGENDADO') {
+                    cancelBtn = `<button class="btn-danger btn-sm" style="margin-top:8px;" onclick="cancelarConsulta('${c.idConsulta}')">Cancelar Consulta</button>`;
+                }
+
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <strong>🐾 ${petNome}${racaNome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>👨‍⚕️ Veterinário: <b>${vetNome}</b></span>
+                        <span>🏥 ${clinicaNome}</span>
+                        <span>📅 Horário: <b>${d}</b> | Modalidade: <b>${c.modalidade}</b></span>
+                        ${cancelBtn}
+                    </div>`;
             });
         }
         const container = document.getElementById('consultasTutorList');
@@ -309,27 +365,33 @@ async function carregarAutorizacoesTutor() {
         const auths = await res.json();
         let html = '';
         if (!auths || auths.length === 0) {
-            html = '<p style="color:#666;">Nenhuma autorização de acesso ativa no momento.</p>';
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma autorização de acesso ativa no momento.</p>';
         } else {
             auths.forEach(a => {
                 const petNome = a.pet ? a.pet.nome : 'Pet';
                 const vetNome = a.veterinario ? a.veterinario.nome : 'Veterinário';
                 const clinicaNome = a.clinica ? a.clinica.nomeFantasia : 'Clínica Geral';
                 const status = a.status || 'ATIVA';
-                const statusColor = status === 'ATIVA' ? '#28a745' : '#dc3545';
+                
+                const badgeHtml = status === 'ATIVA' ? 
+                    '<span class="badge badge-concluida">● Ativa</span>' : 
+                    '<span class="badge badge-cancelada">✖ Revogada</span>';
 
                 let actionBtn = '';
                 if (status === 'ATIVA') {
-                    actionBtn = `<button class="btn-danger" style="margin-top:6px; padding:5px 10px; font-size:12px;" onclick="revogarAutorizacaoTutor('${a.idAutorizacao}', '${petNome}', '${vetNome}', '${clinicaNome}')">Revogar Acesso do Médico</button>`;
+                    actionBtn = `<button class="btn-danger btn-sm" style="margin-top:8px;" onclick="revogarAutorizacaoTutor('${a.idAutorizacao}', '${petNome}', '${vetNome}', '${clinicaNome}')">Revogar Acesso do Médico</button>`;
                 }
 
-                html += `<div class='card' style='border-left: 4px solid ${statusColor}; font-size: 13px;'>` +
-                        `<strong>Pet: ${petNome}</strong>` +
-                        `<span>Veterinário Autorizado: Dr(a). ${vetNome}</span>` +
-                        `<span>Unidade: ${clinicaNome}</span>` +
-                        `<span>Status: <b style="color:${statusColor}">${status}</b></span>` +
-                        actionBtn +
-                        `</div>`;
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>🐾 Pet: ${petNome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>👨‍⚕️ Veterinário Autorizado: <b>Dr(a). ${vetNome}</b></span>
+                        <span>🏥 Unidade: <b>${clinicaNome}</b></span>
+                        ${actionBtn}
+                    </div>`;
             });
         }
         const container = document.getElementById('autorizacoesList');
@@ -340,7 +402,6 @@ async function carregarAutorizacoesTutor() {
 }
 
 async function revogarAutorizacaoTutor(idAuth, petNome, vetNome, clinicaNome) {
-    // Confirmação 1 de 2: Consequências clínicas
     const confirm1 = confirm(
         `ATENÇÃO (Etapa 1 de 2):\n\n` +
         `Ao revogar o acesso, Dr(a). ${vetNome} e a clínica ${clinicaNome} perderão imediatamente o acesso ao prontuário médico e histórico do pet ${petNome}.\n\n` +
@@ -348,7 +409,6 @@ async function revogarAutorizacaoTutor(idAuth, petNome, vetNome, clinicaNome) {
     );
     if (!confirm1) return;
 
-    // Confirmação 2 de 2: Cancelamento de agendamentos pendentes
     const confirm2 = confirm(
         `CONFIRMAÇÃO FINAL DE SEGURANÇA (Etapa 2 de 2):\n\n` +
         `Todas as consultas ativas/agendadas para o pet ${petNome} com este médico veterinário serão AUTOMATICAMENTE CANCELADAS.\n\n` +
@@ -363,7 +423,7 @@ async function revogarAutorizacaoTutor(idAuth, petNome, vetNome, clinicaNome) {
             body: JSON.stringify({ motivo: 'Revogado pelo tutor via painel do tutor.' })
         });
         if (res.ok) {
-            showMsg('globalSuccess', 'Autorização revogada e consultas agendadas canceladas com sucesso.', true);
+            showMsg('globalSuccess', 'Autorização revogada e consultas canceladas com sucesso.', true);
             carregarAutorizacoesTutor();
             carregarConsultasTutor();
             carregarNotificacoes();
@@ -379,15 +439,21 @@ async function revogarAutorizacaoTutor(idAuth, petNome, vetNome, clinicaNome) {
 // ==========================================
 // FLUXO DO VETERINÁRIO
 // ==========================================
-
 async function finalizarConsulta() {
-    const res = await fetch(`${API_URL}/appointments/${document.getElementById('appId').value}/complete`, {
+    const appId = document.getElementById('appId').value;
+    const notes = document.getElementById('notes').value;
+    if (!appId) {
+        showMsg('globalError', 'Selecione ou informe o ID da consulta agendada.');
+        return;
+    }
+
+    const res = await fetch(`${API_URL}/appointments/${appId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-        body: JSON.stringify({ clinicalNotes: document.getElementById('notes').value })
+        body: JSON.stringify({ clinicalNotes: notes })
     });
-    if(res.ok) {
-        showMsg('globalSuccess', 'Consulta finalizada com sucesso!', true);
+    if (res.ok) {
+        showMsg('globalSuccess', 'Consulta finalizada e prontuário salvo com sucesso!', true);
         document.getElementById('appId').value = '';
         document.getElementById('notes').value = '';
         carregarNotificacoes();
@@ -401,25 +467,43 @@ async function finalizarConsulta() {
 async function carregarConsultasVet() {
     try {
         const res = await fetch(`${API_URL}/consultas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
-        if(res.status === 403) return;
+        if (res.status === 403) return;
         const apps = await res.json();
         let html = '';
-        if(apps.length === 0) html = '<p style="color:#666;">Nenhuma consulta agendada.</p>';
-        apps.forEach(c => {
-            const d = new Date(c.dataHora).toLocaleString('pt-BR');
-            const petNome = c.pet ? c.pet.nome : 'Pet';
-            const racaNome = (c.pet && c.pet.raca) ? ` - ${c.pet.raca.nome}` : '';
-            const clinicaNome = c.clinica ? ` | Unidade: ${c.clinica.nomeFantasia}` : '';
-            const status = c.status || 'AGENDADO';
-            const statusColor = status === 'AGENDADO' ? '#3498db' : (status === 'CONCLUIDA' ? '#28a745' : '#dc3545');
-            const isClickable = status === 'AGENDADO' ? `onclick="document.getElementById('appId').value='${c.idConsulta}'"` : '';
-            const hint = status === 'AGENDADO' ? `<span style='font-size:11px;color:#888;display:block;margin-top:4px;'>Clique para selecionar o ID: ${c.idConsulta}</span>` : '';
-            html += `<div class='card' style='${status === 'AGENDADO' ? 'cursor:pointer;' : ''} border-left: 4px solid ${statusColor};' ${isClickable}>` +
-                    `<strong>${petNome}${racaNome}</strong><br>` +
-                    `<span>Data/Hora: ${d} | Modalidade: ${c.modalidade}${clinicaNome}</span><br>` +
-                    `<span>Status: <b style="color:${statusColor};">${status}</b></span>` +
-                    hint + `</div>`;
-        });
+        if (!apps || apps.length === 0) {
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma consulta agendada no momento.</p>';
+        } else {
+            apps.forEach(c => {
+                const d = new Date(c.dataHora).toLocaleString('pt-BR');
+                const petNome = c.pet ? c.pet.nome : 'Pet';
+                const racaNome = (c.pet && c.pet.raca) ? ` - ${c.pet.raca.nome}` : '';
+                const clinicaNome = c.clinica ? ` | Unidade: ${c.clinica.nomeFantasia}` : '';
+                const status = c.status || 'AGENDADO';
+                
+                let badgeHtml = '';
+                if (status === 'AGENDADO') {
+                    badgeHtml = '<span class="badge badge-agendado">● Agendada</span>';
+                } else if (status === 'CONCLUIDA') {
+                    badgeHtml = '<span class="badge badge-concluida">✔ Concluída</span>';
+                } else {
+                    badgeHtml = '<span class="badge badge-cancelada">✖ Cancelada</span>';
+                }
+
+                const isClickable = status === 'AGENDADO' ? `onclick="document.getElementById('appId').value='${c.idConsulta}'; document.getElementById('notes').focus();"` : '';
+                const hint = status === 'AGENDADO' ? `<span style='font-size:11.5px;color:var(--border-focus);display:block;margin-top:6px;font-weight:600;'>👉 Clique para selecionar e atender</span>` : '';
+
+                html += `
+                    <div class='card' style='${status === 'AGENDADO' ? 'cursor:pointer;' : ''}' ${isClickable}>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <strong>🐾 ${petNome}${racaNome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>📅 Horário: <b>${d}</b> | Modalidade: <b>${c.modalidade}${clinicaNome}</b></span>
+                        <span style="font-size:11px; color:var(--text-muted);">ID: ${c.idConsulta}</span>
+                        ${hint}
+                    </div>`;
+            });
+        }
         const container = document.getElementById('consultasList');
         if (container) container.innerHTML = html;
     } catch(err) { showMsg('globalError', 'Erro ao carregar consultas'); }
@@ -428,14 +512,24 @@ async function carregarConsultasVet() {
 async function carregarNotificacoes() {
     try {
         const res = await fetch(`${API_URL}/notificacoes`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
-        if(res.status === 403) return;
+        if (res.status === 403) return;
         const notifs = await res.json();
         let html = '';
-        if(notifs.length === 0) html = '<p style="color:#666;">Nenhuma notificação.</p>';
-        notifs.forEach(n => { 
-            const d = new Date(n.dataCriacao).toLocaleString('pt-BR');
-            html += `<div class='card' style='background:#e9f7ef;'><strong style='color:#155724;'>${d}</strong> - ${n.mensagem}</div>`; 
-        });
+        if (!notifs || notifs.length === 0) {
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma notificação recente.</p>';
+        } else {
+            notifs.forEach(n => { 
+                const d = new Date(n.dataCriacao).toLocaleString('pt-BR');
+                html += `
+                    <div class='card' style='border-left: 3px solid #00d9f5;'>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                            <span style="font-size:11px; font-weight:700; color:var(--border-focus); letter-spacing:0.5px;">🔔 NOTIFICAÇÃO</span>
+                            <span style="font-size:11px; color:var(--text-muted);">${d}</span>
+                        </div>
+                        <span style="color:var(--text-primary); font-size:13px;">${n.mensagem}</span>
+                    </div>`; 
+            });
+        }
         const container = document.getElementById('notifList');
         if (container) container.innerHTML = html;
     } catch(err) { showMsg('globalError', 'Erro ao carregar notificações'); }
@@ -444,7 +538,6 @@ async function carregarNotificacoes() {
 // ==========================================
 // FLUXO DO PAINEL DA CLÍNICA
 // ==========================================
-
 let vetsDaClinicaCache = [];
 
 async function carregarDadosClinica() {
@@ -455,7 +548,7 @@ async function carregarDadosClinica() {
         const nomeEl = document.getElementById('clinicaNome');
         const infoEl = document.getElementById('clinicaInfo');
         if (nomeEl) nomeEl.innerText = c.nomeFantasia || c.razaoSocial;
-        if (infoEl) infoEl.innerText = `${c.razaoSocial} | ${c.endereco || ''} | Tel: ${c.telefone || ''}`;
+        if (infoEl) infoEl.innerText = `${c.razaoSocial} | ${c.endereco || 'Endereço Geral'} | Tel: ${c.telefone || 'Não informado'}`;
     } catch(err) { showMsg('globalError', 'Erro ao carregar dados da clínica'); }
 }
 
@@ -466,20 +559,27 @@ async function carregarVeterinariosClinica() {
         vetsDaClinicaCache = vinculos.filter(v => v.statusVinculo === 'ATIVO').map(v => v.veterinario);
 
         let html = '';
-        if (vinculos.length === 0) {
-            html = '<p style="color:#666;">Nenhum médico veterinário vinculado à unidade.</p>';
+        if (!vinculos || vinculos.length === 0) {
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhum médico veterinário vinculado à unidade ainda.</p>';
         } else {
             vinculos.forEach(v => {
                 const isAtivo = v.statusVinculo === 'ATIVO';
-                const color = isAtivo ? '#28a745' : '#dc3545';
-                const action = isAtivo ? `<button class="btn-secondary" style="margin-top:6px; padding:4px 8px; font-size:11px;" onclick="desvincularVeterinario('${v.idVeterinarioClinica}')">Desativar Vínculo</button>` : '';
+                const badgeHtml = isAtivo ? 
+                    '<span class="badge badge-ativo">● Ativo</span>' : 
+                    '<span class="badge badge-cancelada">Desativado</span>';
+                
+                const action = isAtivo ? `<button class="btn-secondary btn-sm" style="margin-top:8px;" onclick="desvincularVeterinario('${v.idVeterinarioClinica}')">Desativar Vínculo</button>` : '';
 
-                html += `<div class='card' style='border-left: 4px solid ${color}; font-size: 13px;'>` +
-                        `<strong>Dr(a). ${v.veterinario.nome}</strong>` +
-                        `<span>Especialidade: ${v.veterinario.especialidade || 'Clínico Geral'}</span>` +
-                        `<span>Status do Vínculo: <b style="color:${color}">${v.statusVinculo}</b> (Desde ${v.dataInicio})</span>` +
-                        action +
-                        `</div>`;
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>👨‍⚕️ Dr(a). ${v.veterinario.nome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>Especialidade: <b>${v.veterinario.especialidade || 'Clínico Geral'}</b></span>
+                        <span style="font-size:11.5px; color:var(--text-muted);">Início do Vínculo: ${v.dataInicio}</span>
+                        ${action}
+                    </div>`;
             });
         }
         const container = document.getElementById('equipeVetList');
@@ -491,7 +591,7 @@ async function carregarTodosVeterinariosDisponiveis() {
     try {
         const res = await fetch(`${API_URL}/veterinarios`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
         const vets = await res.json();
-        let opts = '<option value="">Selecione um veterinário registrado...</option>';
+        let opts = '<option value="">Selecione um profissional registrado...</option>';
         vets.forEach(v => {
             opts += `<option value="${v.idVeterinario}">Dr(a). ${v.nome} (${v.especialidade || 'Clínico Geral'})</option>`;
         });
@@ -503,7 +603,7 @@ async function carregarTodosVeterinariosDisponiveis() {
 async function vincularVeterinario() {
     const sel = document.getElementById('selTodosVets');
     if (!sel || !sel.value) {
-        showMsg('globalError', 'Selecione um médico veterinário para vincular.');
+        showMsg('globalError', 'Selecione um médico veterinário para vincular à unidade.');
         return;
     }
     try {
@@ -547,7 +647,7 @@ async function carregarConsultasClinica() {
         const apps = await res.json();
         let html = '';
         if (!apps || apps.length === 0) {
-            html = '<p style="color:#666;">Nenhuma consulta registrada para esta unidade.</p>';
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma consulta registrada para esta unidade.</p>';
         } else {
             apps.forEach(c => {
                 const d = new Date(c.dataHora).toLocaleString('pt-BR');
@@ -555,13 +655,25 @@ async function carregarConsultasClinica() {
                 const racaNome = (c.pet && c.pet.raca) ? ` (${c.pet.raca.nome})` : '';
                 const vetNome = c.veterinario ? `Dr(a). ${c.veterinario.nome}` : 'Veterinário';
                 const status = c.status || 'AGENDADO';
-                const statusColor = status === 'AGENDADO' ? '#007bff' : (status === 'CONCLUIDA' ? '#28a745' : '#dc3545');
+                
+                let badgeHtml = '';
+                if (status === 'AGENDADO') {
+                    badgeHtml = '<span class="badge badge-agendado">● Agendada</span>';
+                } else if (status === 'CONCLUIDA') {
+                    badgeHtml = '<span class="badge badge-concluida">✔ Concluída</span>';
+                } else {
+                    badgeHtml = '<span class="badge badge-cancelada">✖ Cancelada</span>';
+                }
 
-                html += `<div class='card' style='border-left: 4px solid ${statusColor}; font-size: 13px;'>` +
-                        `<strong>${petNome}${racaNome}</strong>` +
-                        `<span>Médico: <b>${vetNome}</b> | Data/Hora: ${d} (${c.modalidade})</span>` +
-                        `<span>Status da Consulta: <b style="color:${statusColor}">${status}</b></span>` +
-                        `</div>`;
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <strong>🐾 ${petNome}${racaNome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>👨‍⚕️ Médico Responsável: <b>${vetNome}</b></span>
+                        <span>📅 Horário: <b>${d}</b> (${c.modalidade})</span>
+                    </div>`;
             });
         }
         const container = document.getElementById('consultasClinicaList');
@@ -576,25 +688,30 @@ async function carregarAutorizacoesClinica() {
         const auths = await res.json();
         let html = '';
         if (!auths || auths.length === 0) {
-            html = '<p style="color:#666;">Nenhuma autorização de paciente nesta unidade.</p>';
+            html = '<p style="color:var(--text-muted); font-style:italic;">Nenhuma autorização de paciente nesta unidade.</p>';
         } else {
             auths.forEach(a => {
                 const petNome = a.pet ? a.pet.nome : 'Pet';
                 const vetNome = a.veterinario ? a.veterinario.nome : 'Veterinário';
                 const status = a.status || 'ATIVA';
-                const statusColor = status === 'ATIVA' ? '#28a745' : '#dc3545';
+                const badgeHtml = status === 'ATIVA' ? 
+                    '<span class="badge badge-concluida">● Ativa</span>' : 
+                    '<span class="badge badge-cancelada">✖ Inativa</span>';
 
                 let transferBtn = '';
                 if (status === 'ATIVA') {
-                    transferBtn = `<button class="btn-secondary" style="margin-top:6px; padding:4px 10px; font-size:12px;" onclick="abrirModalTransfer('${a.idAutorizacao}', '${petNome}', '${vetNome}')">Transferir para outro Médico</button>`;
+                    transferBtn = `<button class="btn-secondary btn-sm" style="margin-top:8px;" onclick="abrirModalTransfer('${a.idAutorizacao}', '${petNome}', '${vetNome}')">🔄 Transferir para outro Médico</button>`;
                 }
 
-                html += `<div class='card' style='border-left: 4px solid ${statusColor}; font-size: 13px;'>` +
-                        `<strong>Paciente: ${petNome}</strong>` +
-                        `<span>Médico Atual: Dr(a). ${vetNome}</span>` +
-                        `<span>Status do Consentimento: <b style="color:${statusColor}">${status}</b></span>` +
-                        transferBtn +
-                        `</div>`;
+                html += `
+                    <div class='card'>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>🐾 Paciente: ${petNome}</strong>
+                            ${badgeHtml}
+                        </div>
+                        <span>👨‍⚕️ Médico Vinculado: <b>Dr(a). ${vetNome}</b></span>
+                        ${transferBtn}
+                    </div>`;
             });
         }
         const container = document.getElementById('autorizacoesClinicaList');
