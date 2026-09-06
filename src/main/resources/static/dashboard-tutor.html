@@ -40,6 +40,10 @@
                 <button onclick="agendarConsulta()">Confirmar Agendamento</button>
 
                 <hr>
+                <h3>Minhas Consultas Agendadas</h3>
+                <div id="consultasTutorList"></div>
+
+                <hr>
                 <h3>Minhas Notificacoes (Caixa de Entrada)</h3>
                 <div id="notifList"></div>
             </div>
@@ -52,6 +56,7 @@
             carregarPets();
             carregarVeterinarios();
             carregarNotificacoes();
+            carregarConsultasTutor();
         };
     </script>
 </body>

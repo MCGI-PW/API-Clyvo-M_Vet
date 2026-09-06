@@ -44,4 +44,22 @@ public class AppointmentController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable UUID id) {
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada com ID: " + id));
+
+        consulta.setStatus("CANCELADA");
+        consultaRepository.save(consulta);
+
+        if (consulta.getPet() != null && consulta.getPet().getTutor() != null && consulta.getPet().getTutor().getContaAcesso() != null) {
+            Notificacao notif = new Notificacao();
+            notif.setContaAcesso(consulta.getPet().getTutor().getContaAcesso());
+            notif.setMensagem("A consulta do pet " + consulta.getPet().getNome() + " foi cancelada com sucesso.");
+            notificacaoRepository.save(notif);
+        }
+
+        return ResponseEntity.ok().build();
+    }
 }

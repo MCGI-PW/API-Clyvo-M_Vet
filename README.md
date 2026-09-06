@@ -144,6 +144,8 @@ Acesse a documentação interativa com execução em tempo real via Swagger UI:
 ### 4. Consultas e Atendimentos (`/api/consultas` e `/api/appointments`)
 * `POST /api/consultas` — Agenda uma consulta entre um pet e um veterinário.
 * `GET /api/consultas` — Lista as consultas vinculadas ao usuário logado (filtra automaticamente por tutor ou veterinário).
+* `PUT /api/consultas/{id}/cancelar` (ou `POST` / `DELETE`) — Cancela uma consulta agendada, atualiza o status para `CANCELADA` e gera notificações para o tutor e o veterinário.
+* `POST /api/appointments/{id}/cancel` — Endpoint alternativo de cancelamento de atendimento.
 * `POST /api/appointments/{id}/complete` — Finaliza o atendimento, altera o status para `CONCLUIDA` e notifica o tutor com as notas médicas.
 
 ### 5. Notificações (`/api/notificacoes`)
@@ -156,8 +158,8 @@ Acesse a documentação interativa com execução em tempo real via Swagger UI:
 O projeto conta com uma interface nativa (Single Page Application) em HTML5, CSS3 e JavaScript Vanilla localizada em `src/main/resources/static/`:
 
 * **`login.html`**: Formulário responsivo de login e cadastro com comutação de campos (exibe campo de CRMV condicionalmente ao selecionar Veterinário).
-* **`dashboard-tutor.html`**: Painel exclusivo do tutor com listagem de pets em cards, formulário de cadastro com busca de raças, agendamento de consultas e notificações.
-* **`dashboard-vet.html`**: Painel do veterinário com fila de consultas agendadas, seleção rápida por clique e finalização de atendimento com anotações clínicas.
+* **`dashboard-tutor.html`**: Painel exclusivo do tutor com listagem de pets em cards, formulário de cadastro com busca de raças, agendamento de consultas, fila de consultas agendadas com cancelamento em 1 clique e notificações.
+* **`dashboard-vet.html`**: Painel do veterinário com fila de consultas agendadas com diferenciação por cores de status, seleção rápida por clique e finalização de atendimento com anotações clínicas.
 * **`app.js`**: Gerenciador de requisições assíncronas (`fetch`) com armazenamento de JWT em `localStorage`.
 
 ---

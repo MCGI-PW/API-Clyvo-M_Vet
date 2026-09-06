@@ -178,9 +178,68 @@ async function agendarConsulta() {
     if(res.ok) {
         showMsg('globalSuccess', 'Consulta agendada com sucesso!', true);
         carregarNotificacoes();
+        if (typeof carregarConsultasTutor === 'function') carregarConsultasTutor();
     } else {
         const data = await res.json();
         showMsg('globalError', parseErrors(data));
+    }
+}
+
+async function carregarConsultasTutor() {
+    try {
+        const res = await fetch(`${API_URL}/consultas`, { headers: { 'Authorization': 'Bearer ' + getToken() }});
+        if(res.status === 403) return;
+        const apps = await res.json();
+        let html = '';
+        if(!apps || apps.length === 0) {
+            html = '<p style="color:#666;">Nenhuma consulta agendada.</p>';
+        } else {
+            apps.forEach(c => {
+                const d = new Date(c.dataHora).toLocaleString('pt-BR');
+                const petNome = c.pet ? c.pet.nome : 'Pet';
+                const racaNome = (c.pet && c.pet.raca) ? ` (${c.pet.raca.nome})` : '';
+                const vetNome = c.veterinario ? `Dr(a). ${c.veterinario.nome}` : 'Veterinário';
+                const status = c.status || 'AGENDADO';
+                const statusColor = status === 'AGENDADO' ? '#007bff' : (status === 'CONCLUIDA' ? '#28a745' : '#dc3545');
+                
+                let cancelBtn = '';
+                if (status === 'AGENDADO') {
+                    cancelBtn = `<button class="btn-danger" style="margin-top:8px; padding:6px 12px; font-size:13px;" onclick="cancelarConsulta('${c.idConsulta}')">Cancelar Consulta</button>`;
+                }
+
+                html += `<div class='card' style='border-left: 4px solid ${statusColor};'>` +
+                        `<strong>${petNome}${racaNome}</strong>` +
+                        `<span>Veterinário: <b>${vetNome}</b></span>` +
+                        `<span>Data/Hora: ${d} | Modalidade: ${c.modalidade}</span>` +
+                        `<span>Status: <b style="color:${statusColor};">${status}</b></span>` +
+                        cancelBtn +
+                        `</div>`;
+            });
+        }
+        const container = document.getElementById('consultasTutorList');
+        if (container) container.innerHTML = html;
+    } catch(err) {
+        showMsg('globalError', 'Erro ao carregar consultas do tutor');
+    }
+}
+
+async function cancelarConsulta(idConsulta) {
+    if (!confirm('Deseja realmente cancelar esta consulta agendada?')) return;
+    try {
+        const res = await fetch(`${API_URL}/consultas/${idConsulta}/cancelar`, {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (res.ok) {
+            showMsg('globalSuccess', 'Consulta cancelada com sucesso!', true);
+            carregarConsultasTutor();
+            carregarNotificacoes();
+        } else {
+            const data = await res.json();
+            showMsg('globalError', parseErrors(data));
+        }
+    } catch (err) {
+        showMsg('globalError', 'Erro ao cancelar consulta');
     }
 }
 
@@ -213,11 +272,15 @@ async function carregarConsultasVet() {
             const d = new Date(c.dataHora).toLocaleString('pt-BR');
             const petNome = c.pet ? c.pet.nome : 'Pet';
             const racaNome = (c.pet && c.pet.raca) ? ` - ${c.pet.raca.nome}` : '';
-            html += `<div class='card' style='cursor:pointer; border-left: 4px solid #3498db;' onclick="document.getElementById('appId').value='${c.idConsulta}'">` +
+            const status = c.status || 'AGENDADO';
+            const statusColor = status === 'AGENDADO' ? '#3498db' : (status === 'CONCLUIDA' ? '#28a745' : '#dc3545');
+            const isClickable = status === 'AGENDADO' ? `onclick="document.getElementById('appId').value='${c.idConsulta}'"` : '';
+            const hint = status === 'AGENDADO' ? `<span style='font-size:11px;color:#888;display:block;margin-top:4px;'>Clique para selecionar o ID: ${c.idConsulta}</span>` : '';
+            html += `<div class='card' style='${status === 'AGENDADO' ? 'cursor:pointer;' : ''} border-left: 4px solid ${statusColor};' ${isClickable}>` +
                     `<strong>${petNome}${racaNome}</strong><br>` +
                     `<span>Data/Hora: ${d} | Modalidade: ${c.modalidade}</span><br>` +
-                    `<span>Status: <b>${c.status}</b></span>` +
-                    `<span style='font-size:11px;color:#888;display:block;margin-top:4px;'>Clique para selecionar o ID: ${c.idConsulta}</span></div>`;
+                    `<span>Status: <b style="color:${statusColor};">${status}</b></span>` +
+                    hint + `</div>`;
         });
         const container = document.getElementById('consultasList');
         if (container) container.innerHTML = html;
