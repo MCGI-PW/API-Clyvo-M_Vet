@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Login e Cadastro</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+        <!-- Mensagens de Sucesso ou Erro -->
+        <div th:if="${successMsg}" class="success-box" style="display: flex; margin-bottom: 20px;">
+            <span>✔</span> <span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
+            <span>⚠</span> <span th:text="${errorMsg}"></span>
+        </div>
+        <div th:if="${registerErrorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
+            <span>⚠</span> <span th:text="${registerErrorMsg}"></span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 32px;">
+            
+            <!-- Painel de Login -->
+            <div class="card" style="padding: 32px;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;" th:text="#{login.title}">Acessar Plataforma</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;" th:text="#{login.subtitle}">Entre com suas credenciais para continuar.</p>
+                </div>
+
+                <form th:action="@{/web/login}" th:object="${loginRequest}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail" th:text="#{login.email}">E-mail</label>
+                        <input type="email" id="loginEmail" class="form-input" th:field="*{email}" placeholder="seu@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword" th:text="#{login.password}">Senha</label>
+                        <input type="password" id="loginPassword" class="form-input" th:field="*{password}" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 12px;" th:text="#{login.btn}">
+                        Entrar ✨
+                    </button>
+                </form>
+
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--border-subtle); font-size: 13px; color: var(--text-muted); text-align: center;">
+                    Documentação da API REST disponível via <a th:href="@{/swagger-ui.html}" style="color: var(--text-primary); font-weight: 600;">Swagger UI</a>.
+                </div>
+            </div>
+
+            <!-- Painel de Cadastro -->
+            <div class="card" style="padding: 32px;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 6px;" th:text="#{login.register.title}">Criar Nova Conta</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Cadastre-se como Tutor, Médico Veterinário ou Clínica.</p>
+                </div>
+
+                <form th:action="@{/web/register}" th:object="${registerRequest}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="regName">Nome Completo / Razão Social</label>
+                        <input type="text" id="regName" class="form-input" th:field="*{name}" placeholder="Ex: Dr. Roberto / Clínica Central" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regRole" th:text="#{login.role}">Perfil</label>
+                        <select id="regRole" class="form-input" th:field="*{role}" required>
+                            <option value="TUTOR">Tutor de Pets</option>
+                            <option value="VETERINARIO">Médico Veterinário</option>
+                            <option value="CLINICA">Clínica Veterinária</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail" th:text="#{login.email}">E-mail</label>
+                        <input type="email" id="regEmail" class="form-input" th:field="*{email}" placeholder="contato@exemplo.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regPhone">Telefone</label>
+                        <input type="text" id="regPhone" class="form-input" th:field="*{phone}" placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword" th:text="#{login.password}">Senha</label>
+                        <input type="password" id="regPassword" class="form-input" th:field="*{password}" placeholder="Mínimo 6 caracteres" required>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 12px;" th:text="#{login.register.btn}">
+                        Criar Conta
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>

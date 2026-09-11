@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Painel da Clínica Veterinária</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        
+        <!-- Mensagens de Alerta -->
+        <div th:if="${successMsg}" class="success-box" style="display: flex; margin-bottom: 20px;">
+            <span>✔</span> <span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
+            <span>⚠</span> <span th:text="${errorMsg}"></span>
+        </div>
+
+        <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 4px;">
+                    Painel da Clínica Veterinária 🏥
+                </h2>
+                <p style="color: var(--text-secondary); font-size: 15px;">
+                    Unidade: <strong th:text="${clinica.nomeFantasia}">Clyvo Central</strong> — <span th:text="${clinica.endereco}">Av. Paulista, 1000</span>
+                </p>
+            </div>
+            <div class="card" style="padding: 10px 18px; font-size: 13px;">
+                <strong>Telefone:</strong> <span th:text="${clinica.telefone != null ? clinica.telefone : 'Não informado'}">(11) 3333-4441</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 32px;">
+            
+            <!-- Card 1: Vincular Novo Médico à Unidade -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>👨‍⚕️</span> <span>Vincular Veterinário à Equipe</span>
+                </h3>
+                <form th:action="@{/web/clinica/veterinarios/vincular}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="vetSelect">Selecione o Médico Veterinário</label>
+                        <select id="vetSelect" name="idVeterinario" class="form-input" required>
+                            <option value="" disabled selected>Escolha um profissional...</option>
+                            <option th:each="v : ${todosVeterinarios}" th:value="${v.idVeterinario}" th:text="${v.nome} + ' — ' + (${v.especialidade != null} ? ${v.especialidade} : 'Clínica Geral')"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 8px;">
+                        Vincular à Unidade ✨
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card 2: Transferência de Atendimento entre Colegas -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>🔄</span> <span>Transferência de Atendimento</span>
+                </h3>
+                <form th:action="@{/web/clinica/autorizacoes/transferir}" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Autorização / Paciente</label>
+                        <select name="idAutorizacao" class="form-input" required>
+                            <option value="" disabled selected>Selecione a autorização ativa...</option>
+                            <option th:each="a : ${autorizacoes}" th:if="${a.status == 'ATIVA'}" th:value="${a.idAutorizacao}" th:text="'Paciente: ' + ${a.pet.nome} + ' (Atual: ' + ${a.veterinario.nome} + ')'"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Novo Médico Responsável</label>
+                        <select name="idNovoVeterinario" class="form-input" required>
+                            <option value="" disabled selected>Escolha o novo médico...</option>
+                            <option th:each="v : ${todosVeterinarios}" th:value="${v.idVeterinario}" th:text="${v.nome}"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 8px;">
+                        Transferir Cuidados do Paciente 🔄
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Seção: Corpo Clínico da Unidade -->
+        <div class="card" style="padding: 24px; margin-bottom: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+                👨‍⚕️👩‍⚕️ Corpo Clínico Credenciado (<span th:text="${vinculos.size()}">0</span>)
+            </h3>
+            <div th:if="${vinculos.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhum médico veterinário vinculado a esta unidade.
+            </div>
+            <div th:if="${!vinculos.isEmpty()}" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-subtle); color: var(--text-secondary);">
+                            <th style="padding: 12px 8px;">Nome do Médico</th>
+                            <th style="padding: 12px 8px;">Especialidade</th>
+                            <th style="padding: 12px 8px;">Data de Início</th>
+                            <th style="padding: 12px 8px;">Status do Vínculo</th>
+                            <th style="padding: 12px 8px; text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="vc : ${vinculos}" style="border-bottom: 1px solid var(--border-subtle);">
+                            <td style="padding: 12px 8px; font-weight: 600;" th:text="${vc.veterinario.nome}">Dr. Roberto</td>
+                            <td style="padding: 12px 8px;" th:text="${vc.veterinario.especialidade != null ? vc.veterinario.especialidade : 'Clínica Geral'}">Clínica Geral</td>
+                            <td style="padding: 12px 8px;" th:text="${vc.dataInicio}">2026-01-10</td>
+                            <td style="padding: 12px 8px;">
+                                <span class="status-badge"
+                                      th:style="${vc.statusVinculo == 'ATIVO' ? 'background: var(--status-concluida-bg); color: var(--status-concluida-text);' : 'background: var(--status-cancelada-bg); color: var(--status-cancelada-text);'}"
+                                      th:text="${vc.statusVinculo}">ATIVO</span>
+                            </td>
+                            <td style="padding: 12px 8px; text-align: right;">
+                                <form th:if="${vc.statusVinculo == 'ATIVO'}" th:action="@{/web/clinica/veterinarios/{id}/desvincular(id=${vc.idVeterinarioClinica})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja desativar o vínculo deste profissional?');">
+                                    <button type="submit" class="btn-cancel" style="padding: 6px 12px; font-size: 12px;">Desvincular</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Seção: Consultas da Unidade -->
+        <div class="card" style="padding: 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+                📋 Histórico e Agendamentos da Unidade (<span th:text="${consultas.size()}">0</span>)
+            </h3>
+            <div th:if="${consultas.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhuma consulta registrada para esta unidade até o momento.
+            </div>
+            <div th:if="${!consultas.isEmpty()}" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-subtle); color: var(--text-secondary);">
+                            <th style="padding: 12px 8px;">Paciente</th>
+                            <th style="padding: 12px 8px;">Tutor</th>
+                            <th style="padding: 12px 8px;">Médico</th>
+                            <th style="padding: 12px 8px;">Data & Horário</th>
+                            <th style="padding: 12px 8px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${consultas}" style="border-bottom: 1px solid var(--border-subtle);">
+                            <td style="padding: 12px 8px; font-weight: 600;" th:text="${c.pet != null ? c.pet.nome : '-'}">Rex</td>
+                            <td style="padding: 12px 8px;" th:text="${c.pet != null && c.pet.tutor != null ? c.pet.tutor.nome : '-'}">Carlos Silva</td>
+                            <td style="padding: 12px 8px;" th:text="${c.veterinario != null ? c.veterinario.nome : '-'}">Dr. Roberto</td>
+                            <td style="padding: 12px 8px;" th:text="${c.dataHora}">2026-09-12 14:00</td>
+                            <td style="padding: 12px 8px;">
+                                <span class="status-badge"
+                                      th:style="${c.status == 'AGENDADO' ? 'background: var(--status-agendado-bg); color: var(--status-agendado-text);' : (c.status == 'CONCLUIDA' ? 'background: var(--status-concluida-bg); color: var(--status-concluida-text);' : 'background: var(--status-cancelada-bg); color: var(--status-cancelada-text);')}"
+                                      th:text="${c.status}">AGENDADO</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>

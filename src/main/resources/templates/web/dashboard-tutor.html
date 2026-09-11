@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Painel do Tutor</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        
+        <!-- Mensagens de Alerta -->
+        <div th:if="${successMsg}" class="success-box" style="display: flex; margin-bottom: 20px;">
+            <span>✔</span> <span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
+            <span>⚠</span> <span th:text="${errorMsg}"></span>
+        </div>
+
+        <div style="margin-bottom: 28px;">
+            <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 4px;">
+                Painel do Tutor 🐶🐱
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 15px;">
+                Bem-vindo(a)<span th:if="${tutor != null}" th:text="', ' + ${tutor.nome}"></span>! Gerencie seus animais, agende consultas e controle os consentimentos de acesso.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; margin-bottom: 32px;">
+            
+            <!-- Card 1: Cadastro de Novo Pet -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>🐾</span> <span th:text="#{pet.register}">Cadastrar Pet</span>
+                </h3>
+                <form th:action="@{/web/tutor/pets}" th:object="${novoPet}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="petNome" th:text="#{pet.name}">Nome do Pet</label>
+                        <input type="text" id="petNome" class="form-input" th:field="*{nome}" placeholder="Ex: Rex, Mel, Thor" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="petNasc" th:text="#{pet.birth}">Data de Nascimento</label>
+                        <input type="date" id="petNasc" class="form-input" th:field="*{dataNascimento}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="petSexo" th:text="#{pet.gender}">Sexo</label>
+                        <select id="petSexo" class="form-input" th:field="*{sexo}">
+                            <option value="MACHO">Macho</option>
+                            <option value="FEMEA">Fêmea</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="petRaca" th:text="#{pet.breed}">Raça</label>
+                        <select id="petRaca" class="form-input" th:field="*{raca.idRaca}">
+                            <option value="" disabled selected>Selecione a raça...</option>
+                            <option th:each="r : ${racas}" th:value="${r.idRaca}" th:text="${r.nome} + ' (' + ${r.especie.nome} + ')'"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 8px;" th:text="#{pet.save}">
+                        Salvar Pet
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card 2: Agendamento de Consulta -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>📅</span> <span th:text="#{consulta.schedule}">Nova Consulta</span>
+                </h3>
+                <form th:action="@{/web/tutor/consultas}" th:object="${novaConsulta}" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Paciente (Pet)</label>
+                        <select class="form-input" th:field="*{pet.idPet}" required>
+                            <option value="" disabled selected>Selecione um animal...</option>
+                            <option th:each="p : ${pets}" th:value="${p.idPet}" th:text="${p.nome} + ( ${p.raca != null} ? ' - ' + ${p.raca.nome} : '')"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" th:text="#{consulta.clinic}">Clínica / Unidade</label>
+                        <select class="form-input" th:field="*{clinica.idClinica}">
+                            <option value="" selected>Selecione uma clínica...</option>
+                            <option th:each="c : ${clinicas}" th:value="${c.idClinica}" th:text="${c.nomeFantasia} + ' (' + ${c.endereco} + ')'"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" th:text="#{consulta.vet}">Médico Veterinário</label>
+                        <select class="form-input" th:field="*{veterinario.idVeterinario}" required>
+                            <option value="" disabled selected>Selecione o profissional...</option>
+                            <option th:each="v : ${veterinarios}" th:value="${v.idVeterinario}" th:text="${v.nome} + ( ${v.especialidade != null} ? ' - ' + ${v.especialidade} : '')"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" th:text="#{consulta.datetime}">Data e Horário</label>
+                        <input type="datetime-local" class="form-input" th:field="*{dataHora}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" th:text="#{consulta.modality}">Modalidade</label>
+                        <select class="form-input" th:field="*{modalidade}">
+                            <option value="PRESENCIAL">Presencial</option>
+                            <option value="TELEMEDICINA">Telemedicina (Online)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 8px;">
+                        Confirmar Agendamento ✨
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Seção: Lista de Pets do Tutor -->
+        <div class="card" style="padding: 24px; margin-bottom: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+                🐾 Meus Animais Cadastrados (<span th:text="${pets.size()}">0</span>)
+            </h3>
+            <div th:if="${pets.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhum animal cadastrado ainda. Utilize o formulário acima para cadastrar seu primeiro pet!
+            </div>
+            <div th:if="${!pets.isEmpty()}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+                <div th:each="p : ${pets}" class="card" style="padding: 16px; background: var(--bg-surface-alt);">
+                    <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;" th:text="${p.nome}">Rex</div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
+                        <strong>Raça:</strong> <span th:text="${p.raca != null} ? ${p.raca.nome} : 'Não informada'">SRD</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
+                        <strong>Sexo:</strong> <span th:text="${p.sexo}">MACHO</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted);" th:if="${p.dataNascimento != null}">
+                        <strong>Nascimento:</strong> <span th:text="${p.dataNascimento}">2022-01-01</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Minhas Consultas -->
+        <div class="card" style="padding: 24px; margin-bottom: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+                📋 Minhas Consultas Agendadas e Histórico
+            </h3>
+            <div th:if="${consultas.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhuma consulta encontrada.
+            </div>
+            <div th:if="${!consultas.isEmpty()}" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-subtle); color: var(--text-secondary);">
+                            <th style="padding: 12px 8px;">Paciente</th>
+                            <th style="padding: 12px 8px;">Veterinário</th>
+                            <th style="padding: 12px 8px;">Unidade / Clínica</th>
+                            <th style="padding: 12px 8px;">Data & Horário</th>
+                            <th style="padding: 12px 8px;">Modalidade</th>
+                            <th style="padding: 12px 8px;">Status</th>
+                            <th style="padding: 12px 8px; text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${consultas}" style="border-bottom: 1px solid var(--border-subtle);">
+                            <td style="padding: 12px 8px; font-weight: 600;" th:text="${c.pet != null ? c.pet.nome : '-'}">Rex</td>
+                            <td style="padding: 12px 8px;" th:text="${c.veterinario != null ? c.veterinario.nome : '-'}">Dr. Roberto</td>
+                            <td style="padding: 12px 8px;" th:text="${c.clinica != null ? c.clinica.nomeFantasia : 'Atendimento Direto'}">Clyvo Central</td>
+                            <td style="padding: 12px 8px;" th:text="${c.dataHora}">2026-09-12 14:00</td>
+                            <td style="padding: 12px 8px;" th:text="${c.modalidade}">PRESENCIAL</td>
+                            <td style="padding: 12px 8px;">
+                                <span class="status-badge"
+                                      th:style="${c.status == 'AGENDADO' ? 'background: var(--status-agendado-bg); color: var(--status-agendado-text);' : (c.status == 'CONCLUIDA' ? 'background: var(--status-concluida-bg); color: var(--status-concluida-text);' : 'background: var(--status-cancelada-bg); color: var(--status-cancelada-text);')}"
+                                      th:text="${c.status}">AGENDADO</span>
+                            </td>
+                            <td style="padding: 12px 8px; text-align: right;">
+                                <form th:if="${c.status == 'AGENDADO'}" th:action="@{/web/tutor/consultas/{id}/cancelar(id=${c.idConsulta})}" method="post" style="display: inline;" onsubmit="return confirm('Deseja realmente cancelar este agendamento?');">
+                                    <button type="submit" class="btn-cancel" style="padding: 6px 12px; font-size: 12px;">Cancelar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Seção: Governança de Dados e Autorizações LGPD -->
+        <div class="card" style="padding: 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                🔒 Consentimentos de Acesso aos Prontuários (LGPD)
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                Abaixo estão listados os profissionais e clínicas autorizados a acessar os históricos clínicos dos seus pets. Você pode revogar o acesso a qualquer momento.
+            </p>
+            <div th:if="${autorizacoes.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 16px;">
+                Nenhuma autorização ativa registrada.
+            </div>
+            <div th:if="${!autorizacoes.isEmpty()}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                <div th:each="a : ${autorizacoes}" class="card" style="padding: 16px; background: var(--bg-surface-alt);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-weight: 700; font-size: 15px;" th:text="${a.pet != null ? a.pet.nome : 'Pet'}">Mel</span>
+                        <span class="status-badge" th:text="${a.status}">ATIVA</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
+                        <strong>Médico:</strong> <span th:text="${a.veterinario != null ? a.veterinario.nome : '-'}">Dr. Roberto</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                        <strong>Clínica:</strong> <span th:text="${a.clinica != null ? a.clinica.nomeFantasia : 'Unidade'}">Clyvo Central</span>
+                    </div>
+                    <form th:if="${a.status == 'ATIVA'}" th:action="@{/web/tutor/autorizacoes/{id}/revogar(id=${a.idAutorizacao})}" method="post" onsubmit="return confirm('Revogar o acesso cancelará consultas agendadas associadas. Confirmar?');">
+                        <button type="submit" class="btn-cancel" style="width: 100%; padding: 8px; font-size: 12px;" th:text="#{autorizacao.revoke}">
+                            Revogar Consentimento
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>

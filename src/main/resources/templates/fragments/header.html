@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <header th:fragment="header" class="main-header" style="background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); padding: 14px 28px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="brand-icon" style="width: 40px; height: 40px; font-size: 22px; border-radius: 12px;">🐾</div>
+                <div>
+                    <a th:href="@{/}" style="text-decoration: none; color: inherit;">
+                        <h1 style="font-size: 20px; font-weight: 800; margin: 0; line-height: 1.2;">
+                            <span style="background: var(--aurora-gradient); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Clyvo Vet</span>
+                        </h1>
+                    </a>
+                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" th:text="#{app.tagline}">Plataforma Veterinária</span>
+                </div>
+            </div>
+
+            <!-- Controles de Navegação, Idioma e Usuário -->
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <!-- Seletor de Idioma i18n -->
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;">
+                    <span>🌐</span>
+                    <a href="?lang=pt_BR" style="color: var(--text-secondary); text-decoration: none; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">PT</a>
+                    <a href="?lang=en" style="color: var(--text-secondary); text-decoration: none; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">EN</a>
+                </div>
+
+                <!-- Botão de Alternar Tema (Dark / Light) -->
+                <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar Tema">🌙</button>
+
+                <!-- Informações da Sessão se logado -->
+                <div th:if="${session.userEmail != null}" style="display: flex; align-items: center; gap: 10px;">
+                    <span class="status-badge" style="background: var(--status-agendado-bg); color: var(--status-agendado-text);" th:text="${session.userRole}">TUTOR</span>
+                    <span style="font-size: 13px; color: var(--text-secondary);" th:text="${session.userEmail}">usuario@email.com</span>
+                    <a th:href="@{/web/logout}" class="btn-cancel" style="padding: 6px 12px; font-size: 12px; text-decoration: none;" th:text="#{nav.logout}">Sair</a>
+                </div>
+            </div>
+        </div>
+    </header>
+</body>
+</html>

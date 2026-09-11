@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clyvo Vet — Painel do Médico Veterinário</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container" style="max-width: 1100px; margin: 0 auto; padding: 20px;">
+        
+        <!-- Mensagens de Alerta -->
+        <div th:if="${successMsg}" class="success-box" style="display: flex; margin-bottom: 20px;">
+            <span>✔</span> <span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
+            <span>⚠</span> <span th:text="${errorMsg}"></span>
+        </div>
+
+        <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 4px;">
+                    Painel do Médico Veterinário 🩺
+                </h2>
+                <p style="color: var(--text-secondary); font-size: 15px;">
+                    Bem-vindo(a)<span th:if="${veterinario != null}" th:text="', ' + ${veterinario.nome}"></span>! Acompanhe sua agenda e realize o registro clínico das consultas.
+                </p>
+            </div>
+            <div th:if="${veterinario != null}" class="card" style="padding: 10px 18px; background: var(--bg-surface-elevated); font-size: 13px;">
+                <strong>Especialidade:</strong> <span th:text="${veterinario.especialidade != null ? veterinario.especialidade : 'Clínica Geral'}">Clínica Geral</span>
+            </div>
+        </div>
+
+        <!-- Fila de Atendimentos -->
+        <div class="card" style="padding: 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <span>📋</span> <span>Fila de Consultas e Atendimentos (<span th:text="${consultas.size()}">0</span>)</span>
+            </h3>
+
+            <div th:if="${consultas.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 32px;">
+                Nenhum atendimento atribuído à sua agenda no momento.
+            </div>
+
+            <div th:if="${!consultas.isEmpty()}" style="display: flex; flex-direction: column; gap: 16px;">
+                <div th:each="c : ${consultas}" class="card" style="padding: 20px; background: var(--bg-surface-alt); border-left: 4px solid var(--border-focus);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                        <div>
+                            <span style="font-size: 18px; font-weight: 700; color: var(--text-primary);" th:text="${c.pet != null ? c.pet.nome : 'Pet Sem Nome'}">Mel</span>
+                            <span th:if="${c.pet != null && c.pet.raca != null}" style="font-size: 13px; color: var(--text-muted); margin-left: 6px;" th:text="'(' + ${c.pet.raca.nome} + ')'">(Poodle)</span>
+                        </div>
+                        <span class="status-badge"
+                              th:style="${c.status == 'AGENDADO' ? 'background: var(--status-agendado-bg); color: var(--status-agendado-text);' : (c.status == 'CONCLUIDA' ? 'background: var(--status-concluida-bg); color: var(--status-concluida-text);' : 'background: var(--status-cancelada-bg); color: var(--status-cancelada-text);')}"
+                              th:text="${c.status}">AGENDADO</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                        <div><strong>Data/Hora:</strong> <span th:text="${c.dataHora}">2026-09-12 15:00</span></div>
+                        <div><strong>Modalidade:</strong> <span th:text="${c.modalidade}">PRESENCIAL</span></div>
+                        <div><strong>Unidade:</strong> <span th:text="${c.clinica != null ? c.clinica.nomeFantasia : 'Consultório Próprio'}">Clyvo Central</span></div>
+                        <div th:if="${c.pet != null && c.pet.tutor != null}"><strong>Tutor:</strong> <span th:text="${c.pet.tutor.nome}">Carlos Silva</span></div>
+                    </div>
+
+                    <!-- Formulário de Conclusão Clínica (apenas se AGENDADO) -->
+                    <div th:if="${c.status == 'AGENDADO'}" style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 12px;">
+                        <form th:action="@{/web/vet/consultas/{id}/concluir(id=${c.idConsulta})}" method="post">
+                            <label class="form-label" style="font-size: 12px; margin-bottom: 6px;">Observações Clínicas / Prescrição do Atendimento:</label>
+                            <textarea name="clinicalNotes" class="form-input" rows="2" placeholder="Ex: Paciente vacinado, recomendado retorno em 6 meses..." style="margin-bottom: 10px;"></textarea>
+                            
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button type="submit" class="btn-aurora" style="padding: 8px 18px; font-size: 13px;" th:text="#{consulta.complete}">
+                                    Finalizar Atendimento ✔
+                                </button>
+                            </div>
+                        </form>
+
+                        <form th:action="@{/web/vet/consultas/{id}/cancelar(id=${c.idConsulta})}" method="post" style="display: inline-block; margin-top: 6px;" onsubmit="return confirm('Deseja cancelar esta consulta?');">
+                            <button type="submit" class="btn-cancel" style="padding: 6px 12px; font-size: 11px;" th:text="#{consulta.cancel}">
+                                Cancelar Consulta
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/app.js}"></script>
+</body>
+</html>
