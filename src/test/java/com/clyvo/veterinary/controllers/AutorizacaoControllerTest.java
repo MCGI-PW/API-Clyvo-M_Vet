@@ -46,7 +46,6 @@ class AutorizacaoControllerTest {
     @Mock
     private NotificacaoRepository notificacaoRepository;
 
-    @InjectMocks
     private AutorizacaoController autorizacaoController;
 
     private UUID idContaTutor;
@@ -58,6 +57,12 @@ class AutorizacaoControllerTest {
 
     @BeforeEach
     void setUp() {
+        com.clyvo.veterinary.services.AutorizacaoService autorizacaoService = new com.clyvo.veterinary.services.AutorizacaoService(
+                autorizacaoRepository, tutorRepository, veterinarioRepository,
+                clinicaRepository, consultaRepository, notificacaoRepository
+        );
+        autorizacaoController = new AutorizacaoController(autorizacaoService);
+
         idContaTutor = UUID.randomUUID();
         idTutor = UUID.randomUUID();
 

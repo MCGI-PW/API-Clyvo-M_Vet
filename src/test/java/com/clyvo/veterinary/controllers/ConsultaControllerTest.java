@@ -53,7 +53,9 @@ class ConsultaControllerTest {
     @Mock
     private VeterinarioClinicaRepository vcRepository;
 
-    @InjectMocks
+    @Mock
+    private com.clyvo.veterinary.repositories.ProntuarioRepository prontuarioRepository;
+
     private ConsultaController consultaController;
 
     private UUID idConta;
@@ -67,6 +69,13 @@ class ConsultaControllerTest {
 
     @BeforeEach
     void setUp() {
+        com.clyvo.veterinary.services.ConsultaService consultaService = new com.clyvo.veterinary.services.ConsultaService(
+                consultaRepository, tutorRepository, veterinarioRepository,
+                clinicaRepository, petRepository, autorizacaoRepository,
+                vcRepository, notificacaoRepository, prontuarioRepository
+        );
+        consultaController = new ConsultaController(consultaService);
+
         idConta = UUID.randomUUID();
         idConsulta = UUID.randomUUID();
         idTutor = UUID.randomUUID();
@@ -118,9 +127,19 @@ class ConsultaControllerTest {
     @Test
     @DisplayName("Deve agendar consulta e gerar automaticamente autorizacao de acesso ao pet")
     void deveAgendarConsultaEGerarAutorizacao() {
+        pet.setAtivo(true);
+        clinica.setAtiva(true);
+        VeterinarioClinica vinculo = new VeterinarioClinica();
+        vinculo.setVeterinario(vet);
+        vinculo.setClinica(clinica);
+        vinculo.setStatusVinculo("ATIVO");
+
+        when(tutorRepository.findByContaAcessoIdConta(idConta)).thenReturn(Optional.of(tutor));
         when(petRepository.findById(any())).thenReturn(Optional.of(pet));
         when(veterinarioRepository.findById(any())).thenReturn(Optional.of(vet));
         when(clinicaRepository.findById(any())).thenReturn(Optional.of(clinica));
+        when(vcRepository.findByVeterinarioIdVeterinarioAndClinicaIdClinica(any(), any())).thenReturn(Optional.of(vinculo));
+        when(consultaRepository.findByVeterinarioIdVeterinarioAndDataHora(any(), any())).thenReturn(Collections.emptyList());
         when(autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(any(), any(), eq("ATIVA")))
                 .thenReturn(Optional.empty());
 

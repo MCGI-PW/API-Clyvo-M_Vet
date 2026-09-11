@@ -46,7 +46,6 @@ class ClinicaControllerTest {
     @Mock
     private NotificacaoRepository notificacaoRepository;
 
-    @InjectMocks
     private ClinicaController clinicaController;
 
     private UUID idContaClinica;
@@ -57,6 +56,12 @@ class ClinicaControllerTest {
 
     @BeforeEach
     void setUp() {
+        com.clyvo.veterinary.services.ClinicaService clinicaService = new com.clyvo.veterinary.services.ClinicaService(
+                clinicaRepository, vcRepository, vetRepository,
+                consultaRepository, autorizacaoRepository, notificacaoRepository
+        );
+        clinicaController = new ClinicaController(clinicaService);
+
         idContaClinica = UUID.randomUUID();
         idClinica = UUID.randomUUID();
 
