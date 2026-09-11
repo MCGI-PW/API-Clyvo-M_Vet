@@ -43,8 +43,13 @@ public class JwtFilter extends OncePerRequestFilter {
                     Sessao sessao = sessaoOpt.get();
                     if (sessao.getDataRevogacao() == null && sessao.getDataExpiracao().isAfter(LocalDateTime.now())) {
                         String idConta = jwtUtil.extractIdConta(token);
+                        String tipoConta = jwtUtil.extractTipoConta(token);
+                        java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
+                        if (tipoConta != null && !tipoConta.isBlank()) {
+                            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + tipoConta.toUpperCase().trim()));
+                        }
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                idConta, null, new ArrayList<>() // Authorities will be loaded from DB later if needed
+                                idConta, null, authorities
                         );
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
