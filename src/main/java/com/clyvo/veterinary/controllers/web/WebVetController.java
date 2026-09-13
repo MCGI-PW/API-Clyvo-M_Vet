@@ -14,8 +14,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/web/vet")
+@PreAuthorize("hasRole('VETERINARIO')")
 public class WebVetController {
 
     private final ConsultaService consultaService;

@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/web/clinica")
+@PreAuthorize("hasRole('CLINICA')")
 public class WebClinicaController {
 
     private final ClinicaService clinicaService;

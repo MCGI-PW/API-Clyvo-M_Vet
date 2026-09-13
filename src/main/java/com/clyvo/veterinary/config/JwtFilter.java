@@ -31,10 +31,17 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-
+        String token = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            token = authHeader.substring(7);
+        } else if (request.getSession(false) != null) {
+            Object sessionToken = request.getSession(false).getAttribute("jwtToken");
+            if (sessionToken instanceof String s && !s.isBlank()) {
+                token = s;
+            }
+        }
 
+        if (token != null) {
             if (jwtUtil.validateToken(token)) {
                 String tokenHash = jwtUtil.hashToken(token);
                 Optional<Sessao> sessaoOpt = sessaoRepository.findByTokenHash(tokenHash);

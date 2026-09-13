@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/web/tutor")
+@PreAuthorize("hasRole('TUTOR')")
 public class WebTutorController {
 
     private final PetService petService;
