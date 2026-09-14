@@ -29,6 +29,11 @@
 #   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
 # ----------------------------------------------------------------------------
 
+if [ -z "${JAVA_HOME-}" ] && [ -x /usr/libexec/java_home ]; then
+  JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || /usr/libexec/java_home 2>/dev/null)"
+  export JAVA_HOME
+fi
+
 set -euf
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
 
