@@ -119,21 +119,11 @@ com.clyvo.veterinary/
 │   ├── ProntuarioRepository.java   ← Consultas de histórico clínico
 │   └── ConsultaRepository.java     ← Queries customizadas de conflito de agenda
 │
-├── services/                       ← Camada de Regras de Negócio
-│   ├── AuthService.java            ← Login com proteção anti-força bruta
-│   ├── ConsultaService.java        ← Validações de domínio e conclusão médica
-│   ├── AutorizacaoService.java     ← Governança de acesso LGPD
-│   └── ...
-│
-└── Devops/                         ← Solução Completa de DevOps & Cloud Computing (Azure)
-    ├── Dockerfile                  ← Multi-stage Java 21 LTS Non-Root (Requisito 8.2)
-    ├── docker-compose.yml          ← Orquestração containerizada (App + Banco)
-    ├── script_bd.sql               ← DDL das tabelas CORE (Consulta + Prontuário) com comentários
-    ├── README.md                   ← Documentação de infraestrutura e roteiro CRUD
-    ├── ENTREGA_PDF_TEMPLATE.md     ← Template oficial do PDF de entrega
-    └── scripts/
-        ├── deploy_acr_aci.sh       ← Script 100% Azure CLI (ACR + ACI)
-        └── deploy_app_service.sh   ← Script 100% Azure CLI (PaaS alternativo)
+└── services/                       ← Camada de Regras de Negócio
+    ├── AuthService.java            ← Login com proteção anti-força bruta
+    ├── ConsultaService.java        ← Validações de domínio e conclusão médica
+    ├── AutorizacaoService.java     ← Governança de acesso LGPD
+    └── ...
 ```
 
 ---
