@@ -269,9 +269,17 @@ Assista à apresentação completa da aplicação, dos fluxos de negócio, da pe
 
 ---
 
-## 👨‍💻 Autor
+## 👥 Integrantes do Projeto
 
-Desenvolvido por **Maicon Douglas**:
-* **RM:** 561279
-* **GitHub:** [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev)
+* **Maicon Douglas** — RM561279
+* **Gabriel (Gabs)** — RM561551
+* **Charlles** — RM566482
+* **Iago D.** — RM565708
+
+---
+
+## 👨‍💻 Contato e Repositórios
+* **Repositório API Java:** [https://github.com/MCGI-PW/API-Clyvo-M_Vet](https://github.com/MCGI-PW/API-Clyvo-M_Vet)
+* **Repositório DevOps:** [https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet)
+* **GitHub Maicon Douglas:** [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev)
 * **E-mail:** [maicon.timot8@gmail.com](mailto:maicon.timot8@gmail.com)
