@@ -10,7 +10,7 @@
 
 ## Links Obrigatórios:
 * **Repositório no GitHub**: https://github.com/MCGI-PW/API-Clyvo-M_Vet
-* **Vídeo Demonstrativo no YouTube**: [INSERIR_LINK_DO_YOUTUBE_AQUI]
+* **Vídeo Demonstrativo no YouTube**: https://youtu.be/548lg3zc7Mw
 
 ---
 *(Instrução: Salve este conteúdo exato como PDF - no Word, Google Docs ou Markdown to PDF - e envie o PDF gerado no portal da FIAP).*

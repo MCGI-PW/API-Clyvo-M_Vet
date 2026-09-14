@@ -24,6 +24,7 @@
 * [Endpoints da API REST (Compatibilidade Mobile)](#-endpoints-da-api-rest-compatibilidade-mobile)
 * [Como Executar o Projeto](#-como-executar-o-projeto)
 * [Testes Automatizados (Padrão AAA)](#-testes-automatizados-padrão-aaa)
+* [Vídeo de Demonstração](#-vídeo-de-demonstração)
 * [Autor](#-autor)
 
 ---
@@ -118,11 +119,21 @@ com.clyvo.veterinary/
 │   ├── ProntuarioRepository.java   ← Consultas de histórico clínico
 │   └── ConsultaRepository.java     ← Queries customizadas de conflito de agenda
 │
-└── services/                       ← Camada de Regras de Negócio
-    ├── AuthService.java            ← Login com proteção anti-força bruta
-    ├── ConsultaService.java        ← Validações de domínio e conclusão médica
-    ├── AutorizacaoService.java     ← Governança de acesso LGPD
-    └── ...
+├── services/                       ← Camada de Regras de Negócio
+│   ├── AuthService.java            ← Login com proteção anti-força bruta
+│   ├── ConsultaService.java        ← Validações de domínio e conclusão médica
+│   ├── AutorizacaoService.java     ← Governança de acesso LGPD
+│   └── ...
+│
+└── Devops/                         ← Solução Completa de DevOps & Cloud Computing (Azure)
+    ├── Dockerfile                  ← Multi-stage Java 21 LTS Non-Root (Requisito 8.2)
+    ├── docker-compose.yml          ← Orquestração containerizada (App + Banco)
+    ├── script_bd.sql               ← DDL das tabelas CORE (Consulta + Prontuário) com comentários
+    ├── README.md                   ← Documentação de infraestrutura e roteiro CRUD
+    ├── ENTREGA_PDF_TEMPLATE.md     ← Template oficial do PDF de entrega
+    └── scripts/
+        ├── deploy_acr_aci.sh       ← Script 100% Azure CLI (ACR + ACI)
+        └── deploy_app_service.sh   ← Script 100% Azure CLI (PaaS alternativo)
 ```
 
 ---
@@ -258,6 +269,13 @@ A aplicação conta com uma suíte de **28 testes automatizados** utilizando **J
 [INFO] Tests run: 28, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
+
+---
+
+## 🎥 Vídeo de Demonstração
+
+Assista à apresentação completa da aplicação, dos fluxos de negócio, da persistência e da infraestrutura de DevOps no YouTube:
+👉 **[https://youtu.be/548lg3zc7Mw](https://youtu.be/548lg3zc7Mw)**
 
 ---
 
