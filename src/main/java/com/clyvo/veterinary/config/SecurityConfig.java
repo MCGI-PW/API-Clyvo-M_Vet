@@ -15,22 +15,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(JwtFilter jwtFilter, @org.springframework.context.annotation.Lazy CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
         this.jwtFilter = jwtFilter;
+        this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                // Rotas Públicas: Autenticação, Swagger OpenAPI e Recursos Estáticos
+                // Rotas Públicas: Autenticação, OAuth2, Swagger OpenAPI e Recursos Estáticos
                 .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/", "/web/login", "/web/register", "/web/logout", "/css/**", "/style.css", "/app.js", "/index.html", "/login.html").permitAll()
+                .requestMatchers("/", "/web/login", "/web/register", "/web/logout", "/web/login/oauth2-mock", "/oauth2/**", "/login/oauth2/**", "/css/**", "/style.css", "/app.js").permitAll()
 
                 // Proteção de Rotas Web com base no Perfil do Usuário (Spring Security RBAC)
                 .requestMatchers("/web/tutor/**").hasRole("TUTOR")
@@ -38,12 +37,17 @@ public class SecurityConfig {
                 .requestMatchers("/web/clinica/**").hasRole("CLINICA")
 
                 // Proteção de Rotas REST com base no Perfil do Usuário
-                .requestMatchers("/api/appointments/**/complete").hasAnyRole("VETERINARIO", "CLINICA")
+                .requestMatchers("/api/appointments/*/complete").hasAnyRole("VETERINARIO", "CLINICA")
                 .requestMatchers("/api/clinicas/veterinarios/**", "/api/clinicas/autorizacoes/*/transferir").hasRole("CLINICA")
                 .requestMatchers("/api/pets/**").hasAnyRole("TUTOR", "VETERINARIO", "CLINICA")
                 .requestMatchers("/api/**").authenticated()
 
                 .anyRequest().permitAll()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/web/login")
+                .successHandler(customOAuth2SuccessHandler)
+                .failureUrl("/web/login?error=oauth2")
             )
             .exceptionHandling(ex -> ex
                 .accessDeniedHandler((request, response, accessDeniedException) -> {

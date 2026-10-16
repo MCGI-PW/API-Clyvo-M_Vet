@@ -57,6 +57,9 @@ public class WebVetController {
         List<Consulta> consultas = consultaService.listConsultasByConta(idConta);
         model.addAttribute("consultas", consultas);
 
+        List<com.clyvo.veterinary.models.Prontuario> prontuarios = consultaService.listProntuariosByConta(idConta);
+        model.addAttribute("prontuarios", prontuarios);
+
         if (completed != null) model.addAttribute("successMsg", "Atendimento clínico concluído com sucesso!");
         if (cancelled != null) model.addAttribute("successMsg", "Consulta cancelada com sucesso.");
         if (error != null) model.addAttribute("errorMsg", error);
@@ -66,13 +69,27 @@ public class WebVetController {
 
     @PostMapping("/consultas/{id}/concluir")
     public String concluirConsulta(@PathVariable UUID id,
+                                   @RequestParam(required = false) String diagnostico,
+                                   @RequestParam(required = false) String prescricao,
                                    @RequestParam(required = false) String clinicalNotes,
                                    HttpSession session) {
         UUID idConta = getAccountIdFromSession(session);
         if (idConta == null) return "redirect:/web/login";
 
         try {
-            consultaService.completeConsulta(id, idConta, clinicalNotes);
+            StringBuilder notes = new StringBuilder();
+            if (diagnostico != null && !diagnostico.isBlank()) {
+                notes.append("Diagnóstico: ").append(diagnostico.trim()).append("\n");
+            }
+            if (prescricao != null && !prescricao.isBlank()) {
+                notes.append("Prescrição: ").append(prescricao.trim()).append("\n");
+            }
+            if (clinicalNotes != null && !clinicalNotes.isBlank()) {
+                notes.append("Observações: ").append(clinicalNotes.trim());
+            }
+            String finalNotes = notes.toString().trim();
+
+            consultaService.completeConsulta(id, idConta, finalNotes);
             return "redirect:/web/vet/dashboard?completed=true";
         } catch (Exception e) {
             return "redirect:/web/vet/dashboard?error=" + e.getMessage();

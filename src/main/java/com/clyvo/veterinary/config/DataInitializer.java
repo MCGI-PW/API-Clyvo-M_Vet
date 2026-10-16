@@ -2,6 +2,7 @@ package com.clyvo.veterinary.config;
 
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.repositories.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ import java.util.Optional;
 import org.springframework.context.annotation.Profile;
 
 @Component
-@Profile({"local", "dev"})
+@Profile({"local", "dev", "demo"})
 public class DataInitializer implements CommandLineRunner {
 
     private final EspecieRepository especieRepository;
@@ -29,6 +30,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PetRepository petRepository;
     private final ConsultaRepository consultaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final String demoPassword;
 
     public DataInitializer(EspecieRepository especieRepository,
                            RacaRepository racaRepository,
@@ -41,7 +43,8 @@ public class DataInitializer implements CommandLineRunner {
                            VeterinarioClinicaRepository vetClinicaRepository,
                            PetRepository petRepository,
                            ConsultaRepository consultaRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           @Value("${app.demo.password:senha123}") String demoPassword) {
         this.especieRepository = especieRepository;
         this.racaRepository = racaRepository;
         this.contaRepository = contaRepository;
@@ -54,6 +57,7 @@ public class DataInitializer implements CommandLineRunner {
         this.petRepository = petRepository;
         this.consultaRepository = consultaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.demoPassword = demoPassword;
     }
 
     @Override
@@ -77,13 +81,13 @@ public class DataInitializer implements CommandLineRunner {
         seedRaca("Canário", ave);
 
         // 2. Criar Tutor Padrão: ana.silva@email.com / senha123
-        Tutor tutorAna = seedTutor("Ana Silva", "ana.silva@email.com", "senha123", "11999991111", "12345678901");
+        Tutor tutorAna = seedTutor("Ana Silva", "ana.silva@email.com", demoPassword, "11999991111", "12345678901");
 
         // 3. Criar Clínica Padrão: contato@matriz.com / senha123
-        Clinica clinicaCentral = seedClinica("Clínica Clyvo Central", "contato@matriz.com", "senha123", "1133334444", "12345678000199");
+        Clinica clinicaCentral = seedClinica("Clínica Clyvo Central", "contato@matriz.com", demoPassword, "1133334444", "12345678000199");
 
         // 4. Criar Veterinário Padrão: dr.carlos@veterinaria.com / senha123
-        Veterinario drCarlos = seedVeterinario("Dr. Carlos Mendes", "dr.carlos@veterinaria.com", "senha123", "11988882222", "98765432100", "CRMV-SP 12345", "Clínica Geral");
+        Veterinario drCarlos = seedVeterinario("Dr. Carlos Mendes", "dr.carlos@veterinaria.com", demoPassword, "11988882222", "98765432100", "CRMV-SP 12345", "Clínica Geral");
 
         // 5. Vincular Dr. Carlos à Clínica Central
         seedVinculo(drCarlos, clinicaCentral);

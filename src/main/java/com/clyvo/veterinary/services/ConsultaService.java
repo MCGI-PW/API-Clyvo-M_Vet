@@ -269,4 +269,17 @@ public class ConsultaService {
     public Optional<Consulta> findById(UUID idConsulta) {
         return consultaRepository.findById(idConsulta);
     }
+
+    @Transactional(readOnly = true)
+    public List<Prontuario> listProntuariosByConta(UUID idConta) {
+        Optional<Tutor> tutorOpt = tutorRepository.findByContaAcessoIdConta(idConta);
+        if (tutorOpt.isPresent()) {
+            return prontuarioRepository.findByConsultaPetTutorIdTutorOrderByDataRegistroDesc(tutorOpt.get().getIdTutor());
+        }
+        Optional<Veterinario> vetOpt = veterinarioRepository.findByContaAcessoIdConta(idConta);
+        if (vetOpt.isPresent()) {
+            return prontuarioRepository.findByVeterinarioIdVeterinarioOrderByDataRegistroDesc(vetOpt.get().getIdVeterinario());
+        }
+        return Collections.emptyList();
+    }
 }

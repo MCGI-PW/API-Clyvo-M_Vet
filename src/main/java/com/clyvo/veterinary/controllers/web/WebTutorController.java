@@ -61,6 +61,7 @@ public class WebTutorController {
                             @RequestParam(required = false) String consultaCreated,
                             @RequestParam(required = false) String cancelled,
                             @RequestParam(required = false) String revoked,
+                            @RequestParam(required = false) String authGranted,
                             @RequestParam(required = false) String error) {
         UUID idConta = getAccountIdFromSession(session);
         if (idConta == null) {
@@ -73,6 +74,7 @@ public class WebTutorController {
         model.addAttribute("pets", petService.listPetsByConta(idConta));
         model.addAttribute("consultas", consultaService.listConsultasByConta(idConta));
         model.addAttribute("autorizacoes", autorizacaoService.listAutorizacoesByConta(idConta));
+        model.addAttribute("prontuarios", consultaService.listProntuariosByConta(idConta));
         model.addAttribute("clinicas", clinicaService.listClinicasAtivas());
         model.addAttribute("veterinarios", veterinarioService.listAll());
         model.addAttribute("racas", racaService.listAll());
@@ -84,6 +86,7 @@ public class WebTutorController {
         if (consultaCreated != null) model.addAttribute("successMsg", "Consulta agendada com sucesso!");
         if (cancelled != null) model.addAttribute("successMsg", "Consulta cancelada com sucesso.");
         if (revoked != null) model.addAttribute("successMsg", "Autorização revogada com sucesso.");
+        if (authGranted != null) model.addAttribute("successMsg", "Consentimento de acesso ao prontuário concedido com sucesso!");
         if (error != null) model.addAttribute("errorMsg", error);
 
         return "web/dashboard-tutor";
@@ -138,6 +141,22 @@ public class WebTutorController {
         try {
             autorizacaoService.revogarAutorizacao(id, idConta, motivo);
             return "redirect:/web/tutor/dashboard?revoked=true";
+        } catch (Exception e) {
+            return "redirect:/web/tutor/dashboard?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/autorizacoes")
+    public String concederAutorizacao(@RequestParam UUID idPet,
+                                      @RequestParam(required = false) UUID idVeterinario,
+                                      @RequestParam(required = false) UUID idClinica,
+                                      HttpSession session) {
+        UUID idConta = getAccountIdFromSession(session);
+        if (idConta == null) return "redirect:/web/login";
+
+        try {
+            autorizacaoService.concederAutorizacao(idPet, idVeterinario, idClinica, idConta);
+            return "redirect:/web/tutor/dashboard?authGranted=true";
         } catch (Exception e) {
             return "redirect:/web/tutor/dashboard?error=" + e.getMessage();
         }

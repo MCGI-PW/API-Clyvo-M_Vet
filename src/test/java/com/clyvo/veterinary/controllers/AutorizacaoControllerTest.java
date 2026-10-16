@@ -46,6 +46,9 @@ class AutorizacaoControllerTest {
     @Mock
     private NotificacaoRepository notificacaoRepository;
 
+    @Mock
+    private PetRepository petRepository;
+
     private AutorizacaoController autorizacaoController;
 
     private UUID idContaTutor;
@@ -59,7 +62,7 @@ class AutorizacaoControllerTest {
     void setUp() {
         com.clyvo.veterinary.services.AutorizacaoService autorizacaoService = new com.clyvo.veterinary.services.AutorizacaoService(
                 autorizacaoRepository, tutorRepository, veterinarioRepository,
-                clinicaRepository, consultaRepository, notificacaoRepository
+                clinicaRepository, consultaRepository, notificacaoRepository, petRepository
         );
         autorizacaoController = new AutorizacaoController(autorizacaoService);
 

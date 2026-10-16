@@ -5,6 +5,7 @@ import com.clyvo.veterinary.dto.AuthResponse;
 import com.clyvo.veterinary.dto.RegisterRequest;
 import com.clyvo.veterinary.services.AuthService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class WebAuthController {
 
     private final AuthService authService;
+    private final boolean oauthMockEnabled;
+    private final boolean oauthGoogleEnabled;
+    private final boolean oauthGithubEnabled;
 
-    public WebAuthController(AuthService authService) {
+    public WebAuthController(AuthService authService,
+                             @Value("${app.oauth2.mock-enabled:false}") boolean oauthMockEnabled,
+                             @Value("${spring.security.oauth2.client.registration.google.client-id:}") String googleClientId,
+                             @Value("${spring.security.oauth2.client.registration.github.client-id:}") String githubClientId) {
         this.authService = authService;
+        this.oauthMockEnabled = oauthMockEnabled;
+        this.oauthGoogleEnabled = isRealClientId(googleClientId);
+        this.oauthGithubEnabled = isRealClientId(githubClientId);
+    }
+
+    private static boolean isRealClientId(String clientId) {
+        return clientId != null && !clientId.isBlank() && !clientId.endsWith("-demo");
+    }
+
+    @ModelAttribute
+    public void addOAuthFlags(Model model) {
+        model.addAttribute("oauthMockEnabled", oauthMockEnabled);
+        model.addAttribute("oauthGoogleEnabled", oauthGoogleEnabled);
+        model.addAttribute("oauthGithubEnabled", oauthGithubEnabled);
     }
 
     @GetMapping("/")
@@ -33,7 +54,8 @@ public class WebAuthController {
     @GetMapping("/web/login")
     public String loginPage(Model model,
                             @RequestParam(required = false) String logout,
-                            @RequestParam(required = false) String registered) {
+                            @RequestParam(required = false) String registered,
+                            @RequestParam(required = false) String error) {
         model.addAttribute("loginRequest", new AuthRequest());
         model.addAttribute("registerRequest", new RegisterRequest());
         if (logout != null) {
@@ -42,7 +64,28 @@ public class WebAuthController {
         if (registered != null) {
             model.addAttribute("successMsg", "Conta criada com sucesso! Faça login abaixo.");
         }
+        if ("oauth2".equals(error)) {
+            model.addAttribute("errorMsg", "Falha na autenticação via OAuth2. Tente novamente.");
+        }
         return "web/login";
+    }
+
+    @GetMapping("/web/login/oauth2-mock")
+    public String mockOAuth2Login(@RequestParam(defaultValue = "google") String provider,
+                                  HttpSession session) {
+        // Simulação disponível apenas em ambiente local (app.oauth2.mock-enabled=true)
+        if (!oauthMockEnabled) return "redirect:/web/login";
+
+        String email = "google".equalsIgnoreCase(provider) ? "tutor.google@gmail.com" : "tutor.github@github.com";
+        String name = "google".equalsIgnoreCase(provider) ? "Tutor Google Social" : "Tutor GitHub Social";
+
+        AuthResponse response = authService.loginOrRegisterOAuth2(email, name);
+        session.setAttribute("userRole", response.getRole());
+        session.setAttribute("jwtToken", response.getToken());
+        session.setAttribute("userEmail", email);
+        session.setAttribute("userName", name);
+
+        return "redirect:/web/tutor/dashboard";
     }
 
     @PostMapping("/web/login")

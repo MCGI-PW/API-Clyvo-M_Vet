@@ -17,19 +17,22 @@ public class AutorizacaoService {
     private final ClinicaRepository clinicaRepository;
     private final ConsultaRepository consultaRepository;
     private final NotificacaoRepository notificacaoRepository;
+    private final PetRepository petRepository;
 
     public AutorizacaoService(AutorizacaoAcessoPetRepository autorizacaoRepository,
                               TutorRepository tutorRepository,
                               VeterinarioRepository veterinarioRepository,
                               ClinicaRepository clinicaRepository,
                               ConsultaRepository consultaRepository,
-                              NotificacaoRepository notificacaoRepository) {
+                              NotificacaoRepository notificacaoRepository,
+                              PetRepository petRepository) {
         this.autorizacaoRepository = autorizacaoRepository;
         this.tutorRepository = tutorRepository;
         this.veterinarioRepository = veterinarioRepository;
         this.clinicaRepository = clinicaRepository;
         this.consultaRepository = consultaRepository;
         this.notificacaoRepository = notificacaoRepository;
+        this.petRepository = petRepository;
     }
 
     @Transactional(readOnly = true)
@@ -92,5 +95,61 @@ public class AutorizacaoService {
             notifVet.setMensagem("A autorização de acesso ao pet " + auth.getPet().getNome() + " foi revogada pelo tutor. Consultas pendentes foram canceladas.");
             notificacaoRepository.save(notifVet);
         }
+    }
+
+    @Transactional
+    public AutorizacaoAcessoPet concederAutorizacao(UUID idPet, UUID idVeterinario, UUID idClinica, UUID idConta) {
+        Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta)
+                .orElseThrow(() -> new com.clyvo.veterinary.exceptions.AccessDeniedException("Apenas contas de tutores podem conceder autorizações de prontuário."));
+
+        Pet pet = petRepository.findById(idPet)
+                .orElseThrow(() -> new com.clyvo.veterinary.exceptions.ResourceNotFoundException("Pet não encontrado com ID: " + idPet));
+
+        if (pet.getTutor() == null || !pet.getTutor().getIdTutor().equals(tutor.getIdTutor())) {
+            throw new com.clyvo.veterinary.exceptions.AccessDeniedException("Acesso negado: o pet informado não pertence ao tutor autenticado.");
+        }
+
+        Veterinario vet = null;
+        if (idVeterinario != null) {
+            vet = veterinarioRepository.findById(idVeterinario)
+                    .orElseThrow(() -> new com.clyvo.veterinary.exceptions.ResourceNotFoundException("Médico veterinário não encontrado."));
+        }
+
+        Clinica clinica = null;
+        if (idClinica != null) {
+            clinica = clinicaRepository.findById(idClinica)
+                    .orElseThrow(() -> new com.clyvo.veterinary.exceptions.ResourceNotFoundException("Clínica não encontrada."));
+        }
+
+        if (vet == null && clinica == null) {
+            throw new com.clyvo.veterinary.exceptions.BusinessException("Informe ao menos um médico veterinário ou uma clínica para conceder acesso.");
+        }
+
+        // Se já existe autorização ativa, não duplica
+        Optional<AutorizacaoAcessoPet> existente = (vet != null)
+                ? autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(pet.getIdPet(), vet.getIdVeterinario(), "ATIVA")
+                : autorizacaoRepository.findFirstByPetIdPetAndClinicaIdClinicaAndStatus(pet.getIdPet(), clinica.getIdClinica(), "ATIVA");
+
+        if (existente.isPresent()) {
+            return existente.get();
+        }
+
+        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
+        auth.setPet(pet);
+        auth.setVeterinario(vet);
+        auth.setClinica(clinica);
+        auth.setContaAutorizador(tutor.getContaAcesso());
+        auth.setDataAutorizacao(java.time.LocalDateTime.now());
+        auth.setStatus("ATIVA");
+        AutorizacaoAcessoPet salva = autorizacaoRepository.save(auth);
+
+        if (vet != null && vet.getContaAcesso() != null) {
+            Notificacao notifVet = new Notificacao();
+            notifVet.setContaAcesso(vet.getContaAcesso());
+            notifVet.setMensagem("Você recebeu autorização de acesso ao prontuário do paciente " + pet.getNome() + ".");
+            notificacaoRepository.save(notifVet);
+        }
+
+        return salva;
     }
 }

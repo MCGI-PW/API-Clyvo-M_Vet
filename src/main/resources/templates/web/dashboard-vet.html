@@ -63,15 +63,28 @@
                         <div th:if="${c.pet != null && c.pet.tutor != null}"><strong>Tutor:</strong> <span th:text="${c.pet.tutor.nome}">Carlos Silva</span></div>
                     </div>
 
-                    <!-- Formulário de Conclusão Clínica (apenas se AGENDADO) -->
+                    <!-- Formulário de Conclusão Clínica e Emissão de Prontuário (apenas se AGENDADO) -->
                     <div th:if="${c.status == 'AGENDADO'}" style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">
+                            📝 Conclusão do Atendimento e Registro no Prontuário
+                        </h4>
                         <form th:action="@{/web/vet/consultas/{id}/concluir(id=${c.idConsulta})}" method="post">
-                            <label class="form-label" style="font-size: 12px; margin-bottom: 6px;">Observações Clínicas / Prescrição do Atendimento:</label>
-                            <textarea name="clinicalNotes" class="form-input" rows="2" placeholder="Ex: Paciente vacinado, recomendado retorno em 6 meses..." style="margin-bottom: 10px;"></textarea>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label class="form-label" style="font-size: 12px;">Diagnóstico / Avaliação Clínica</label>
+                                <input type="text" name="diagnostico" class="form-input" placeholder="Ex: Otite externa bacteriana bilateral" required style="font-size: 13px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label class="form-label" style="font-size: 12px;">Prescrição &amp; Medicamentos</label>
+                                <input type="text" name="prescricao" class="form-input" placeholder="Ex: Solução otológica 3 gotas/dia por 7 dias" style="font-size: 13px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label class="form-label" style="font-size: 12px;">Orientações Gerais / Retorno</label>
+                                <textarea name="clinicalNotes" class="form-input" rows="2" placeholder="Ex: Higienização prévia recomendada. Retorno em 10 dias para reavaliação." style="font-size: 13px;"></textarea>
+                            </div>
                             
                             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                                 <button type="submit" class="btn-aurora" style="padding: 8px 18px; font-size: 13px;" th:text="#{consulta.complete}">
-                                    Finalizar Atendimento ✔
+                                    Finalizar Atendimento &amp; Emitir Prontuário ✔
                                 </button>
                             </div>
                         </form>
@@ -81,6 +94,38 @@
                                 Cancelar Consulta
                             </button>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Histórico de Prontuários Emitidos pelo Médico -->
+        <div class="card" style="padding: 24px; margin-top: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <span>📂</span> <span>Histórico de Prontuários Emitidos (<span th:text="${prontuarios.size()}">0</span>)</span>
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                Registro dos prontuários médicos emitidos por você em atendimentos já concluídos.
+            </p>
+
+            <div th:if="${prontuarios == null || prontuarios.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhum prontuário emitido até o momento.
+            </div>
+
+            <div th:if="${prontuarios != null && !prontuarios.isEmpty()}" style="display: flex; flex-direction: column; gap: 16px;">
+                <div th:each="pr : ${prontuarios}" class="card" style="padding: 20px; background: var(--bg-surface-alt); border-left: 4px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+                        <div>
+                            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);"
+                                  th:text="${pr.consulta != null && pr.consulta.pet != null ? pr.consulta.pet.nome : 'Paciente'}">Pet</span>
+                            <span style="font-size: 13px; color: var(--text-secondary); margin-left: 8px;"
+                                  th:text="'| Registrado em ' + ${pr.dataRegistro}">| Data</span>
+                        </div>
+                        <span class="status-badge" style="background: var(--status-concluida-bg); color: var(--status-concluida-text);">CONCLUÍDO</span>
+                    </div>
+                    <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 14px; line-height: 1.5; white-space: pre-line;"
+                         th:text="${pr.notasClinicas}">
+                        Notas clínicas e diagnóstico do prontuário...
                     </div>
                 </div>
             </div>

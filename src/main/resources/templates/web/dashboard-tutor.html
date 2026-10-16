@@ -118,6 +118,42 @@
                 </form>
             </div>
 
+            <!-- Card 3: Concessão de Autorização de Acesso (LGPD) -->
+            <div class="card" style="padding: 24px;">
+                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span>🔒</span> <span>Autorizar Acesso ao Prontuário</span>
+                </h3>
+                <form th:action="@{/web/tutor/autorizacoes}" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Paciente (Pet)</label>
+                        <select name="idPet" class="form-input" required>
+                            <option value="" disabled selected>Selecione um animal...</option>
+                            <option th:each="p : ${pets}" th:value="${p.idPet}" th:text="${p.nome}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Médico Veterinário</label>
+                        <select name="idVeterinario" class="form-input" required>
+                            <option value="" disabled selected>Escolha o profissional...</option>
+                            <option th:each="v : ${veterinarios}" th:value="${v.idVeterinario}" th:text="${v.nome} + (${v.especialidade != null} ? ' - ' + ${v.especialidade} : '')"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Clínica / Unidade (Opcional)</label>
+                        <select name="idClinica" class="form-input">
+                            <option value="" selected>Todas as unidades / Sem vínculo específico</option>
+                            <option th:each="c : ${clinicas}" th:value="${c.idClinica}" th:text="${c.nomeFantasia}"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-aurora" style="width: 100%; margin-top: 8px;">
+                        Conceder Consentimento 🔒
+                    </button>
+                </form>
+            </div>
+
         </div>
 
         <!-- Seção: Lista de Pets do Tutor -->
@@ -185,6 +221,42 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Seção: Prontuários Médicos e Histórico Clínico dos Pets -->
+        <div class="card" style="padding: 24px; margin-bottom: 32px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                📂 Prontuários Médicos &amp; Histórico Clínico dos Pets (<span th:text="${prontuarios != null ? prontuarios.size() : 0}">0</span>)
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                Registros clínicos oficiais emitidos pelos veterinários responsáveis após a conclusão dos atendimentos.
+            </p>
+
+            <div th:if="${prontuarios == null || prontuarios.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
+                Nenhum prontuário registrado até o momento.
+            </div>
+
+            <div th:if="${prontuarios != null && !prontuarios.isEmpty()}" style="display: flex; flex-direction: column; gap: 16px;">
+                <div th:each="pr : ${prontuarios}" class="card" style="padding: 20px; background: var(--bg-surface-alt); border-left: 4px solid var(--accent);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+                        <div>
+                            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);"
+                                  th:text="${pr.consulta != null && pr.consulta.pet != null ? pr.consulta.pet.nome : 'Paciente'}">Pet</span>
+                            <span style="font-size: 13px; color: var(--text-secondary); margin-left: 8px;"
+                                  th:text="'| Atendimento em ' + ${pr.dataRegistro}">| Data</span>
+                        </div>
+                        <span class="status-badge" style="background: var(--status-concluida-bg); color: var(--status-concluida-text);">CONCLUÍDO</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">
+                        <strong>Médico Responsável:</strong>
+                        <span th:text="${pr.veterinario != null ? pr.veterinario.nome : 'Veterinário'}">Dr. Veterinário</span>
+                    </div>
+                    <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 14px; line-height: 1.5; white-space: pre-line;"
+                         th:text="${pr.notasClinicas}">
+                        Notas clínicas do prontuário...
+                    </div>
+                </div>
             </div>
         </div>
 

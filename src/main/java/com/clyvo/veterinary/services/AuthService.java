@@ -168,6 +168,37 @@ public class AuthService {
         return createSession(conta);
     }
 
+    @Transactional
+    public AuthResponse loginOrRegisterOAuth2(String email, String name) {
+        String emailClean = (email != null && !email.isBlank())
+                ? email.trim().toLowerCase()
+                : "oauth2-" + java.util.UUID.randomUUID() + "@clyvovet.com";
+        String nameClean = (name != null && !name.isBlank()) ? name.trim() : "Usuário Social OAuth2";
+
+        ContaAcesso conta = contaRepository.findByEmail(emailClean).orElseGet(() -> {
+            ContaAcesso nova = new ContaAcesso();
+            nova.setEmail(emailClean);
+            nova.setTipoConta("TUTOR");
+            nova.setStatusConta("ATIVA");
+            nova = contaRepository.save(nova);
+
+            Credencial cred = new Credencial();
+            cred.setContaAcesso(nova);
+            cred.setSenhaHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            cred.setTentativasFalhas(0);
+            cred.setTrocaSenhaObrigatoria(false);
+            credencialRepository.save(cred);
+
+            Tutor tutor = new Tutor();
+            tutor.setContaAcesso(nova);
+            tutor.setNome(nameClean);
+            tutorRepository.save(tutor);
+            return nova;
+        });
+
+        return createSession(conta);
+    }
+
     private AuthResponse createSession(ContaAcesso conta) {
         String token = jwtUtil.generateToken(conta.getIdConta(), conta.getTipoConta());
 

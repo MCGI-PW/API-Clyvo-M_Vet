@@ -40,7 +40,7 @@ function getToken() { return localStorage.getItem('token'); }
 
 function logout() {
     localStorage.removeItem('token');
-    window.location.href = 'login.html';
+    window.location.href = '/web/login';
 }
 
 function showMsg(elementId, msg, isSuccess = false) {
@@ -81,9 +81,9 @@ if (document.getElementById('loginForm')) {
                 localStorage.setItem('token', data.token);
                 showMsg('loginSuccess', 'Login efetuado com sucesso! Redirecionando...', true);
                 setTimeout(() => {
-                    if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
-                    else if (data.role === 'CLINICA') window.location.href = 'dashboard-clinica.html';
-                    else window.location.href = 'dashboard-vet.html';
+                    if (data.role === 'TUTOR') window.location.href = '/web/tutor/dashboard';
+                    else if (data.role === 'CLINICA') window.location.href = '/web/clinica/dashboard';
+                    else window.location.href = '/web/vet/dashboard';
                 }, 800);
             } else {
                 showMsg('loginError', parseErrors(data));
@@ -114,9 +114,9 @@ if (document.getElementById('loginForm')) {
                 localStorage.setItem('token', data.token);
                 showMsg('regError', 'Cadastro realizado com sucesso! Redirecionando...', true);
                 setTimeout(() => {
-                    if (data.role === 'TUTOR') window.location.href = 'dashboard-tutor.html';
-                    else if (data.role === 'CLINICA') window.location.href = 'dashboard-clinica.html';
-                    else window.location.href = 'dashboard-vet.html';
+                    if (data.role === 'TUTOR') window.location.href = '/web/tutor/dashboard';
+                    else if (data.role === 'CLINICA') window.location.href = '/web/clinica/dashboard';
+                    else window.location.href = '/web/vet/dashboard';
                 }, 800);
             } else {
                 showMsg('regError', parseErrors(data), false);
