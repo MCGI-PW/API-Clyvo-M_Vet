@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.toLanguageTag()}" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('notif.pageTitle')}"></head>
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page page--narrow">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="#{notif.title}">Notificações</h1>
+                <p class="page-subtitle" th:text="#{notif.subtitle}">Avisos sobre consultas, prontuários e autorizações.</p>
+            </div>
+            <a th:href="@{${dashboardPath}}" class="btn-aurora btn-compact" th:text="#{notif.back}">Voltar ao painel</a>
+        </div>
+
+        <section class="card section">
+            <div class="item-header">
+                <h2 class="section-title"><span aria-hidden="true">🔔</span>
+                    <span th:text="#{notif.list.title(${notificacoes.size()})}">Caixa de entrada (0)</span></h2>
+                <form th:if="${notificacoesNaoLidas > 0}" th:action="@{/web/notificacoes/lidas}" method="post">
+                    <button type="submit" class="btn-aurora btn-compact" th:text="#{notif.markAll}">Marcar todas como lidas</button>
+                </form>
+            </div>
+
+            <p th:if="${notificacoes.isEmpty()}" class="empty-state" th:text="#{notif.empty}">Nenhuma notificação.</p>
+
+            <ul th:unless="${notificacoes.isEmpty()}" class="stack notif-list">
+                <li th:each="n : ${notificacoes}" class="record notif-item" th:classappend="${!n.lida} ? 'record--pending notif-item--unread'">
+                    <div class="item-header">
+                        <span class="record-meta" th:text="${#temporals.format(n.dataCriacao, 'dd/MM/yyyy HH:mm')}">22/10/2026 14:00</span>
+                        <span th:unless="${n.lida}" class="status-badge" th:text="#{notif.new}">Nova</span>
+                    </div>
+                    <p class="notif-message" th:text="${n.mensagem}">Sua consulta foi agendada.</p>
+                </li>
+            </ul>
+        </section>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

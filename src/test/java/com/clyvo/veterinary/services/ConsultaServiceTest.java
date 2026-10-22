@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -52,7 +51,6 @@ class ConsultaServiceTest {
     @Mock
     private ProntuarioRepository prontuarioRepository;
 
-    @InjectMocks
     private ConsultaService consultaService;
 
     private UUID idContaTutor;
@@ -65,6 +63,10 @@ class ConsultaServiceTest {
 
     @BeforeEach
     void setUp() {
+        consultaService = new ConsultaService(consultaRepository, tutorRepository, veterinarioRepository,
+                clinicaRepository, petRepository, autorizacaoRepository, vcRepository,
+                new NotificacaoService(notificacaoRepository), prontuarioRepository);
+
         idContaTutor = UUID.randomUUID();
 
         mockTutor = new Tutor();
@@ -232,5 +234,41 @@ class ConsultaServiceTest {
         verify(consultaRepository, times(1)).save(mockConsulta);
         verify(prontuarioRepository, times(1)).save(any(Prontuario.class));
         verify(notificacaoRepository, times(1)).save(any(Notificacao.class));
+    }
+
+    @Test
+    @DisplayName("Não deve concluir consulta que já foi cancelada")
+    void naoDeveConcluirConsultaCancelada() {
+        // Arrange
+        UUID idConsulta = mockConsulta.getIdConsulta();
+        UUID idContaVet = UUID.randomUUID();
+        mockConsulta.setStatus("CANCELADA");
+        when(consultaRepository.findById(idConsulta)).thenReturn(Optional.of(mockConsulta));
+        when(veterinarioRepository.findByContaAcessoIdConta(idContaVet)).thenReturn(Optional.of(mockVet));
+
+        // Act & Assert
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> consultaService.completeConsulta(idConsulta, idContaVet, "Notas"));
+
+        assertTrue(ex.getMessage().contains("Apenas consultas agendadas"));
+        verify(consultaRepository, never()).save(any());
+        verify(prontuarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Notificação de conclusão não deve expor dados clínicos do prontuário (LGPD)")
+    void notificacaoDeConclusaoNaoDeveExporNotasClinicas() {
+        // Arrange
+        UUID idConsulta = mockConsulta.getIdConsulta();
+        UUID idContaVet = UUID.randomUUID();
+        when(consultaRepository.findById(idConsulta)).thenReturn(Optional.of(mockConsulta));
+        when(veterinarioRepository.findByContaAcessoIdConta(idContaVet)).thenReturn(Optional.of(mockVet));
+        when(prontuarioRepository.findByConsultaIdConsulta(idConsulta)).thenReturn(Optional.empty());
+
+        // Act
+        consultaService.completeConsulta(idConsulta, idContaVet, "Diagnóstico sigiloso");
+
+        // Assert
+        verify(notificacaoRepository).save(argThat(n -> !n.getMensagem().contains("Diagnóstico sigiloso")));
     }
 }

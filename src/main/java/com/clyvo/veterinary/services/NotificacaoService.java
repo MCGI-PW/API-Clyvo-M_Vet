@@ -23,13 +23,31 @@ public class NotificacaoService {
         return notificacaoRepository.findByContaAcessoIdContaOrderByDataCriacaoDesc(idConta);
     }
 
+    @Transactional(readOnly = true)
+    public long contarNaoLidas(UUID idConta) {
+        return notificacaoRepository.countByContaAcessoIdContaAndLidaFalse(idConta);
+    }
+
+    /** Marca como lidas todas as notificações da conta e devolve quantas foram atualizadas. */
     @Transactional
-    public Notificacao enviar(UUID idConta, String mensagem) {
+    public int marcarTodasComoLidas(UUID idConta) {
+        List<Notificacao> naoLidas = notificacaoRepository.findByContaAcessoIdContaAndLidaFalse(idConta);
+        naoLidas.forEach(notificacao -> notificacao.setLida(true));
+        return naoLidas.size();
+    }
+
+    /**
+     * Registra uma notificação na caixa de entrada da conta.
+     * Ignora silenciosamente destinatários sem conta (ex.: veterinário pré-cadastrado sem login).
+     */
+    @Transactional
+    public void notificar(ContaAcesso destinatario, String mensagem) {
+        if (destinatario == null) {
+            return;
+        }
         Notificacao notif = new Notificacao();
-        ContaAcesso conta = new ContaAcesso();
-        conta.setIdConta(idConta);
-        notif.setContaAcesso(conta);
+        notif.setContaAcesso(destinatario);
         notif.setMensagem(mensagem);
-        return notificacaoRepository.save(notif);
+        notificacaoRepository.save(notif);
     }
 }

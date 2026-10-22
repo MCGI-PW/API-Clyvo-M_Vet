@@ -1,20 +1,24 @@
 package com.clyvo.veterinary.controllers.web;
 
+import com.clyvo.veterinary.config.WebSession;
 import com.clyvo.veterinary.dto.AuthRequest;
 import com.clyvo.veterinary.dto.AuthResponse;
 import com.clyvo.veterinary.dto.RegisterRequest;
+import com.clyvo.veterinary.exceptions.DomainException;
 import com.clyvo.veterinary.services.AuthService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class WebAuthController {
+
+    private static final String LOGIN_VIEW = "web/login";
 
     private final AuthService authService;
     private final boolean oauthMockEnabled;
@@ -44,48 +48,34 @@ public class WebAuthController {
 
     @GetMapping("/")
     public String index(HttpSession session) {
-        String role = (String) session.getAttribute("userRole");
-        if ("TUTOR".equals(role)) return "redirect:/web/tutor/dashboard";
-        if ("VETERINARIO".equals(role)) return "redirect:/web/vet/dashboard";
-        if ("CLINICA".equals(role)) return "redirect:/web/clinica/dashboard";
-        return "redirect:/web/login";
+        return "redirect:" + WebSession.dashboardPath((String) session.getAttribute(WebSession.ROLE));
     }
 
     @GetMapping("/web/login")
     public String loginPage(Model model,
                             @RequestParam(required = false) String logout,
-                            @RequestParam(required = false) String registered,
-                            @RequestParam(required = false) String error) {
-        model.addAttribute("loginRequest", new AuthRequest());
-        model.addAttribute("registerRequest", new RegisterRequest());
-        if (logout != null) {
-            model.addAttribute("successMsg", "Sessão encerrada com sucesso.");
-        }
-        if (registered != null) {
-            model.addAttribute("successMsg", "Conta criada com sucesso! Faça login abaixo.");
-        }
-        if ("oauth2".equals(error)) {
-            model.addAttribute("errorMsg", "Falha na autenticação via OAuth2. Tente novamente.");
-        }
-        return "web/login";
+                            @RequestParam(required = false) String error,
+                            @RequestParam(required = false) String denied,
+                            @RequestParam(required = false) String unauthenticated) {
+        prepareForms(model);
+        if (logout != null) model.addAttribute(WebFeedback.SUCCESS, "msg.logout");
+        if ("oauth2".equals(error)) model.addAttribute("errorKey", "msg.error.oauth2");
+        if (denied != null) model.addAttribute("errorKey", "msg.error.denied");
+        if (unauthenticated != null) model.addAttribute("errorKey", "msg.error.unauthenticated");
+        return LOGIN_VIEW;
     }
 
     @GetMapping("/web/login/oauth2-mock")
-    public String mockOAuth2Login(@RequestParam(defaultValue = "google") String provider,
-                                  HttpSession session) {
+    public String mockOAuth2Login(@RequestParam(defaultValue = "google") String provider, HttpSession session) {
         // Simulação disponível apenas em ambiente local (app.oauth2.mock-enabled=true)
         if (!oauthMockEnabled) return "redirect:/web/login";
 
-        String email = "google".equalsIgnoreCase(provider) ? "tutor.google@gmail.com" : "tutor.github@github.com";
-        String name = "google".equalsIgnoreCase(provider) ? "Tutor Google Social" : "Tutor GitHub Social";
+        boolean google = "google".equalsIgnoreCase(provider);
+        String email = google ? "tutor.google@gmail.com" : "tutor.github@github.com";
+        String name = google ? "Tutor Google Social" : "Tutor GitHub Social";
 
         AuthResponse response = authService.loginOrRegisterOAuth2(email, name);
-        session.setAttribute("userRole", response.getRole());
-        session.setAttribute("jwtToken", response.getToken());
-        session.setAttribute("userEmail", email);
-        session.setAttribute("userName", name);
-
-        return "redirect:/web/tutor/dashboard";
+        return "redirect:" + WebSession.start(session, response, email, name);
     }
 
     @PostMapping("/web/login")
@@ -94,53 +84,45 @@ public class WebAuthController {
                                Model model) {
         try {
             AuthResponse response = authService.login(loginRequest);
-            session.setAttribute("userRole", response.getRole());
-            session.setAttribute("jwtToken", response.getToken());
-            session.setAttribute("userEmail", loginRequest.getEmail());
-
-            if ("TUTOR".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/tutor/dashboard";
-            } else if ("VETERINARIO".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/vet/dashboard";
-            } else if ("CLINICA".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/clinica/dashboard";
-            }
-            return "redirect:/web/login";
-        } catch (Exception e) {
-            model.addAttribute("errorMsg", "Falha no login: " + e.getMessage());
+            return "redirect:" + WebSession.start(session, response, loginRequest.getEmail(), null);
+        } catch (BadCredentialsException | DomainException e) {
+            model.addAttribute(WebFeedback.ERROR, e.getMessage());
             model.addAttribute("registerRequest", new RegisterRequest());
-            return "web/login";
+            return LOGIN_VIEW;
         }
     }
 
     @PostMapping("/web/register")
-    public String processRegister(@ModelAttribute("registerRequest") RegisterRequest registerRequest,
+    public String processRegister(@Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
+                                  BindingResult validation,
                                   HttpSession session,
                                   Model model) {
+        if (validation.hasErrors()) {
+            return registerError(model, validation.getAllErrors().get(0).getDefaultMessage());
+        }
         try {
             AuthResponse response = authService.register(registerRequest);
-            session.setAttribute("userRole", response.getRole());
-            session.setAttribute("jwtToken", response.getToken());
-            session.setAttribute("userEmail", registerRequest.getEmail());
-
-            if ("TUTOR".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/tutor/dashboard";
-            } else if ("VETERINARIO".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/vet/dashboard";
-            } else if ("CLINICA".equalsIgnoreCase(response.getRole())) {
-                return "redirect:/web/clinica/dashboard";
-            }
-            return "redirect:/web/login?registered=true";
-        } catch (Exception e) {
-            model.addAttribute("registerErrorMsg", "Falha no cadastro: " + e.getMessage());
-            model.addAttribute("loginRequest", new AuthRequest());
-            return "web/login";
+            return "redirect:" + WebSession.start(session, response, registerRequest.getEmail(), registerRequest.getName());
+        } catch (DomainException e) {
+            return registerError(model, e.getMessage());
         }
     }
 
     @GetMapping("/web/logout")
     public String logout(HttpSession session) {
+        authService.logout((String) session.getAttribute(WebSession.TOKEN));
         session.invalidate();
         return "redirect:/web/login?logout=true";
+    }
+
+    private String registerError(Model model, String message) {
+        model.addAttribute("registerErrorMsg", message);
+        model.addAttribute("loginRequest", new AuthRequest());
+        return LOGIN_VIEW;
+    }
+
+    private static void prepareForms(Model model) {
+        model.addAttribute("loginRequest", new AuthRequest());
+        model.addAttribute("registerRequest", new RegisterRequest());
     }
 }

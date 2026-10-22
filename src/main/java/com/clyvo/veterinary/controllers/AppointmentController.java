@@ -3,10 +3,11 @@ package com.clyvo.veterinary.controllers;
 import com.clyvo.veterinary.dto.CompleteAppointmentRequest;
 import com.clyvo.veterinary.services.ConsultaService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+
+import static com.clyvo.veterinary.config.SecurityUtils.getLoggedAccountId;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -18,16 +19,10 @@ public class AppointmentController {
         this.consultaService = consultaService;
     }
 
-    private UUID getLoggedAccountId() {
-        String idContaStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return UUID.fromString(idContaStr);
-    }
-
     @PostMapping("/{id}/complete")
     public ResponseEntity<Void> completeAppointment(
             @PathVariable UUID id,
             @RequestBody(required = false) CompleteAppointmentRequest request) {
-        
         String notes = (request != null) ? request.getClinicalNotes() : null;
         consultaService.completeConsulta(id, getLoggedAccountId(), notes);
         return ResponseEntity.ok().build();

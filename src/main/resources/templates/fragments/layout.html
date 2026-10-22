@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Fragmentos reutilizados por todas as páginas (evita repetição de cabeçalho, alertas, status e prontuários) -->
+
+<head th:fragment="head(titleKey)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{app.title} + ' — ' + #{${titleKey}}">Clyvo Vet</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <script th:src="@{/app.js}"></script>
+</head>
+
+<body>
+
+<header th:fragment="header" class="main-header">
+    <div class="header-inner">
+        <a th:href="@{/}" class="brand">
+            <span class="brand-icon" aria-hidden="true">🐾</span>
+            <span>
+                <span class="brand-title" th:text="#{app.title}">Clyvo Vet</span>
+                <span class="brand-tagline" th:text="#{app.tagline}">Plataforma Veterinária</span>
+            </span>
+        </a>
+
+        <div class="header-actions">
+            <nav class="lang-switch" th:with="lang=${#locale.language}" th:attr="aria-label=#{nav.language}">
+                <span aria-hidden="true">🌐</span>
+                <a href="?lang=pt_BR" th:classappend="${lang == 'pt'} ? 'active'" hreflang="pt-BR" lang="pt-BR">PT</a>
+                <a href="?lang=en" th:classappend="${lang == 'en'} ? 'active'" hreflang="en" lang="en">EN</a>
+            </nav>
+
+            <button type="button" class="theme-toggle"
+                    th:attr="aria-label=#{nav.theme},data-label-dark=#{nav.theme.dark},data-label-light=#{nav.theme.light}">🌙</button>
+
+            <div th:if="${session.userEmail != null}" class="user-info">
+                <span class="status-badge" th:text="#{${'role.' + session.userRole}}">Tutor</span>
+                <a th:href="@{/web/notificacoes}" class="notif-link"
+                   th:attr="aria-label=${notificacoesNaoLidas > 0} ? #{nav.notifications.unread(${notificacoesNaoLidas})} : #{nav.notifications}">
+                    <span aria-hidden="true">🔔</span>
+                    <span th:if="${notificacoesNaoLidas > 0}" class="notif-count" aria-hidden="true"
+                          th:text="${notificacoesNaoLidas > 9} ? '9+' : ${notificacoesNaoLidas}">2</span>
+                </a>
+                <span th:text="${session.userEmail}">usuario@email.com</span>
+                <a th:href="@{/web/logout}" class="btn-cancel" th:text="#{nav.logout}">Sair</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- successMsg e errorKey são chaves i18n; errorMsg é a mensagem da regra de negócio -->
+<div th:fragment="alerts" th:remove="tag">
+    <div th:if="${successMsg}" class="alert alert--success" role="status">
+        <span aria-hidden="true">✔</span> <span th:text="#{${successMsg}}"></span>
+    </div>
+    <div th:if="${errorKey}" class="alert alert--error" role="alert">
+        <span aria-hidden="true">⚠</span> <span th:text="#{${errorKey}}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert--error" role="alert">
+        <span aria-hidden="true">⚠</span> <span th:text="${errorMsg}"></span>
+    </div>
+</div>
+
+<span th:fragment="status(value)"
+      th:if="${value != null}"
+      class="status-badge"
+      th:classappend="${'status-' + #strings.toLowerCase(value)}"
+      th:text="#{${'status.' + value}}">AGENDADO</span>
+
+<div th:fragment="prontuarios(lista, mostrarVeterinario)" th:remove="tag">
+    <div th:if="${#lists.isEmpty(lista)}" class="empty-state" th:text="#{prontuario.empty}">Nenhum prontuário.</div>
+    <div th:unless="${#lists.isEmpty(lista)}" class="stack">
+        <article th:each="pr : ${lista}" class="record">
+            <div class="item-header">
+                <div>
+                    <strong th:text="${pr.consulta != null && pr.consulta.pet != null ? pr.consulta.pet.nome : #messages.msg('common.patient')}">Pet</strong>
+                    <span class="record-meta"
+                          th:text="#{prontuario.registeredAt(${#temporals.format(pr.dataRegistro, 'dd/MM/yyyy HH:mm')})}">| Data</span>
+                </div>
+                <span th:replace="~{fragments/layout :: status('CONCLUIDA')}"></span>
+            </div>
+            <p th:if="${mostrarVeterinario && pr.veterinario != null}" class="detail">
+                <strong th:text="#{prontuario.vet}">Médico Responsável:</strong>
+                <span th:text="${pr.veterinario.nome}">Dr. Veterinário</span>
+            </p>
+            <div class="record-body" th:text="${pr.notasClinicas}">Notas clínicas</div>
+        </article>
+    </div>
+</div>
+
+<footer th:fragment="footer" class="main-footer">
+    <p th:text="#{footer.rights}">Todos os direitos reservados.</p>
+    <p class="footer-stack" th:text="#{footer.stack}">Spring Boot 3.5, Thymeleaf e Oracle Database.</p>
+</footer>
+
+</body>
+</html>

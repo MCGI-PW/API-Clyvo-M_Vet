@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.models;
 
+import com.clyvo.veterinary.models.enums.StatusAutorizacao;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -39,7 +40,7 @@ public class AutorizacaoAcessoPet {
     private LocalDateTime dataExpiracao;
 
     @Column(nullable = false)
-    private String status = "ATIVA";
+    private String status = StatusAutorizacao.ATIVA.name();
 
     @Column(name = "motivo_revogacao")
     private String motivoRevogacao;

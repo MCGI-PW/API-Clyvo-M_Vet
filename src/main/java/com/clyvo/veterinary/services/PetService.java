@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.services;
 
+import com.clyvo.veterinary.exceptions.AccessDeniedException;
 import com.clyvo.veterinary.models.Pet;
 import com.clyvo.veterinary.models.Tutor;
 import com.clyvo.veterinary.repositories.PetRepository;
@@ -26,7 +27,7 @@ public class PetService {
     @Transactional
     public Pet createPet(Pet pet, UUID idConta) {
         Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta)
-                .orElseThrow(() -> new RuntimeException("Tutor não encontrado para a conta logada."));
+                .orElseThrow(() -> new AccessDeniedException("Tutor não encontrado para a conta logada."));
 
         pet.setIdPet(null);
         pet.setTutor(tutor);
@@ -36,11 +37,9 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public List<Pet> listPetsByConta(UUID idConta) {
-        Optional<Tutor> tutorOpt = tutorRepository.findByContaAcessoIdConta(idConta);
-        if (tutorOpt.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return petRepository.findByTutorIdTutor(tutorOpt.get().getIdTutor());
+        return tutorRepository.findByContaAcessoIdConta(idConta)
+                .map(tutor -> petRepository.findByTutorIdTutor(tutor.getIdTutor()))
+                .orElse(Collections.emptyList());
     }
 
     @Transactional(readOnly = true)

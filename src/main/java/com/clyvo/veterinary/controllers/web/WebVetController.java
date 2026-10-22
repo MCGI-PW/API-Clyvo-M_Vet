@@ -1,69 +1,40 @@
 package com.clyvo.veterinary.controllers.web;
 
-import com.clyvo.veterinary.config.JwtUtil;
-import com.clyvo.veterinary.models.Consulta;
-import com.clyvo.veterinary.models.Veterinario;
 import com.clyvo.veterinary.services.ConsultaService;
 import com.clyvo.veterinary.services.VeterinarioService;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
 
-import org.springframework.security.access.prepost.PreAuthorize;
+import static com.clyvo.veterinary.config.SecurityUtils.getLoggedAccountId;
 
 @Controller
 @RequestMapping("/web/vet")
 @PreAuthorize("hasRole('VETERINARIO')")
 public class WebVetController {
 
+    private static final String DASHBOARD = "/web/vet/dashboard";
+
     private final ConsultaService consultaService;
     private final VeterinarioService veterinarioService;
-    private final JwtUtil jwtUtil;
 
-    public WebVetController(ConsultaService consultaService,
-                            VeterinarioService veterinarioService,
-                            JwtUtil jwtUtil) {
+    public WebVetController(ConsultaService consultaService, VeterinarioService veterinarioService) {
         this.consultaService = consultaService;
         this.veterinarioService = veterinarioService;
-        this.jwtUtil = jwtUtil;
-    }
-
-    private UUID getAccountIdFromSession(HttpSession session) {
-        String token = (String) session.getAttribute("jwtToken");
-        if (token == null || !jwtUtil.validateToken(token)) {
-            return null;
-        }
-        return UUID.fromString(jwtUtil.extractIdConta(token));
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model,
-                            @RequestParam(required = false) String completed,
-                            @RequestParam(required = false) String cancelled,
-                            @RequestParam(required = false) String error) {
-        UUID idConta = getAccountIdFromSession(session);
-        if (idConta == null) {
-            return "redirect:/web/login";
-        }
+    public String dashboard(Model model) {
+        UUID idConta = getLoggedAccountId();
 
-        Optional<Veterinario> vetOpt = veterinarioService.findByConta(idConta);
-        vetOpt.ifPresent(vet -> model.addAttribute("veterinario", vet));
-
-        List<Consulta> consultas = consultaService.listConsultasByConta(idConta);
-        model.addAttribute("consultas", consultas);
-
-        List<com.clyvo.veterinary.models.Prontuario> prontuarios = consultaService.listProntuariosByConta(idConta);
-        model.addAttribute("prontuarios", prontuarios);
-
-        if (completed != null) model.addAttribute("successMsg", "Atendimento clínico concluído com sucesso!");
-        if (cancelled != null) model.addAttribute("successMsg", "Consulta cancelada com sucesso.");
-        if (error != null) model.addAttribute("errorMsg", error);
-
+        veterinarioService.findByConta(idConta).ifPresent(vet -> model.addAttribute("veterinario", vet));
+        model.addAttribute("consultas", consultaService.listConsultasByConta(idConta));
+        model.addAttribute("prontuarios", consultaService.listProntuariosByConta(idConta));
         return "web/dashboard-vet";
     }
 
@@ -72,40 +43,30 @@ public class WebVetController {
                                    @RequestParam(required = false) String diagnostico,
                                    @RequestParam(required = false) String prescricao,
                                    @RequestParam(required = false) String clinicalNotes,
-                                   HttpSession session) {
-        UUID idConta = getAccountIdFromSession(session);
-        if (idConta == null) return "redirect:/web/login";
-
-        try {
-            StringBuilder notes = new StringBuilder();
-            if (diagnostico != null && !diagnostico.isBlank()) {
-                notes.append("Diagnóstico: ").append(diagnostico.trim()).append("\n");
-            }
-            if (prescricao != null && !prescricao.isBlank()) {
-                notes.append("Prescrição: ").append(prescricao.trim()).append("\n");
-            }
-            if (clinicalNotes != null && !clinicalNotes.isBlank()) {
-                notes.append("Observações: ").append(clinicalNotes.trim());
-            }
-            String finalNotes = notes.toString().trim();
-
-            consultaService.completeConsulta(id, idConta, finalNotes);
-            return "redirect:/web/vet/dashboard?completed=true";
-        } catch (Exception e) {
-            return "redirect:/web/vet/dashboard?error=" + e.getMessage();
-        }
+                                   RedirectAttributes redirect) {
+        String notas = montarProntuario(diagnostico, prescricao, clinicalNotes);
+        return WebFeedback.execute(redirect, DASHBOARD, "msg.consulta.completed",
+                () -> consultaService.completeConsulta(id, getLoggedAccountId(), notas));
     }
 
     @PostMapping("/consultas/{id}/cancelar")
-    public String cancelarConsulta(@PathVariable UUID id, HttpSession session) {
-        UUID idConta = getAccountIdFromSession(session);
-        if (idConta == null) return "redirect:/web/login";
+    public String cancelarConsulta(@PathVariable UUID id, RedirectAttributes redirect) {
+        return WebFeedback.execute(redirect, DASHBOARD, "msg.consulta.cancelled",
+                () -> consultaService.cancelarConsulta(id, getLoggedAccountId()));
+    }
 
-        try {
-            consultaService.cancelarConsulta(id, idConta);
-            return "redirect:/web/vet/dashboard?cancelled=true";
-        } catch (Exception e) {
-            return "redirect:/web/vet/dashboard?error=" + e.getMessage();
+    /** Estrutura o texto do prontuário a partir dos campos do formulário clínico. */
+    private static String montarProntuario(String diagnostico, String prescricao, String observacoes) {
+        StringJoiner notas = new StringJoiner("\n");
+        adicionarSecao(notas, "Diagnóstico", diagnostico);
+        adicionarSecao(notas, "Prescrição", prescricao);
+        adicionarSecao(notas, "Observações", observacoes);
+        return notas.toString();
+    }
+
+    private static void adicionarSecao(StringJoiner notas, String titulo, String valor) {
+        if (valor != null && !valor.isBlank()) {
+            notas.add(titulo + ": " + valor.trim());
         }
     }
 }

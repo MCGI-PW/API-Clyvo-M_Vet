@@ -40,6 +40,8 @@ public class InternacionalizacaoConfig implements WebMvcConfigurer {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("i18n/messages");
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        // Locales sem tradução (ex.: es) usam messages.properties (português) em vez do idioma do servidor
+        messageSource.setFallbackToSystemLocale(false);
         return messageSource;
     }
 }

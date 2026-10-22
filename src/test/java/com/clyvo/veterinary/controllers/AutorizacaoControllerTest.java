@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.controllers;
 
+import com.clyvo.veterinary.exceptions.AccessDeniedException;
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.repositories.*;
 import org.junit.jupiter.api.AfterEach;
@@ -62,7 +63,7 @@ class AutorizacaoControllerTest {
     void setUp() {
         com.clyvo.veterinary.services.AutorizacaoService autorizacaoService = new com.clyvo.veterinary.services.AutorizacaoService(
                 autorizacaoRepository, tutorRepository, veterinarioRepository,
-                clinicaRepository, consultaRepository, notificacaoRepository, petRepository
+                clinicaRepository, consultaRepository, new com.clyvo.veterinary.services.NotificacaoService(notificacaoRepository), petRepository
         );
         autorizacaoController = new AutorizacaoController(autorizacaoService);
 
@@ -148,9 +149,9 @@ class AutorizacaoControllerTest {
         when(autorizacaoRepository.findById(auth.getIdAutorizacao())).thenReturn(Optional.of(auth));
         when(tutorRepository.findByContaAcessoIdConta(idContaTutor)).thenReturn(Optional.of(outroTutor));
 
-        ResponseEntity<?> response = autorizacaoController.revogarAutorizacao(auth.getIdAutorizacao(), Collections.emptyMap());
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        // O GlobalExceptionHandler converte AccessDeniedException em HTTP 403
+        assertThrows(AccessDeniedException.class,
+                () -> autorizacaoController.revogarAutorizacao(auth.getIdAutorizacao(), Collections.emptyMap()));
         verify(autorizacaoRepository, never()).save(any());
     }
 }

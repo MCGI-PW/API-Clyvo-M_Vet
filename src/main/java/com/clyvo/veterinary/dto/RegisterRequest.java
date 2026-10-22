@@ -6,18 +6,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
-    @NotBlank(message = "O nome nao pode ser vazio")
+    @NotBlank(message = "O nome não pode ser vazio.")
     private String name;
 
-    @NotBlank(message = "O email e obrigatorio")
-    @Email(message = "Formato de email invalido")
+    @NotBlank(message = "O e-mail é obrigatório.")
+    @Email(message = "Formato de e-mail inválido.")
     private String email;
 
-    @NotBlank(message = "A senha e obrigatoria")
-    @Size(min = 3, message = "A senha deve ter no minimo 3 digitos")
+    @NotBlank(message = "A senha é obrigatória.")
+    @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
     private String password;
 
-    @NotNull(message = "O perfil (role) e obrigatorio")
+    @NotNull(message = "O perfil (role) é obrigatório.")
     private String role; // TUTOR, VETERINARIO, CLINICA
 
     private Integer age;

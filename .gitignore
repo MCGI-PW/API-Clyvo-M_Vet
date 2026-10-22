@@ -37,8 +37,8 @@ build/
 Thumbs.db
 
 ### Application secrets — NEVER commit ###
-application-prod.properties
-application-local.properties
+# application-local.properties (H2 de demonstração) e application-prod.properties (somente ${VARIAVEIS})
+# não contêm segredos e precisam estar no repositório para o projeto rodar após o clone e no Docker.
 *.env
 secrets.yml
 
