@@ -1,5 +1,9 @@
 package com.clyvo.veterinary.controllers;
 
+import com.clyvo.veterinary.dto.ConsultaRequest;
+import com.clyvo.veterinary.exceptions.AccessDeniedException;
+import com.clyvo.veterinary.exceptions.BusinessException;
+import com.clyvo.veterinary.exceptions.ResourceNotFoundException;
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.repositories.*;
 import org.junit.jupiter.api.AfterEach;
@@ -72,7 +76,7 @@ class ConsultaControllerTest {
         com.clyvo.veterinary.services.ConsultaService consultaService = new com.clyvo.veterinary.services.ConsultaService(
                 consultaRepository, tutorRepository, veterinarioRepository,
                 clinicaRepository, petRepository, autorizacaoRepository,
-                vcRepository, notificacaoRepository, prontuarioRepository
+                vcRepository, new com.clyvo.veterinary.services.NotificacaoService(notificacaoRepository), prontuarioRepository
         );
         consultaController = new ConsultaController(consultaService);
 
@@ -108,7 +112,7 @@ class ConsultaControllerTest {
         consulta.setVeterinario(vet);
         consulta.setClinica(clinica);
         consulta.setDataHora(LocalDateTime.now().plusDays(1));
-        consulta.setModalidade("ONLINE");
+        consulta.setModalidade("TELEMEDICINA");
         consulta.setStatus("AGENDADO");
 
         // Mock Security Context
@@ -143,10 +147,17 @@ class ConsultaControllerTest {
         when(autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(any(), any(), eq("ATIVA")))
                 .thenReturn(Optional.empty());
 
-        ResponseEntity<Void> response = consultaController.createConsulta(consulta);
+        ConsultaRequest request = new ConsultaRequest(
+                new ConsultaRequest.PetRef(pet.getIdPet()),
+                new ConsultaRequest.VeterinarioRef(vet.getIdVeterinario()),
+                new ConsultaRequest.ClinicaRef(clinica.getIdClinica()),
+                LocalDateTime.now().plusDays(1),
+                "TELEMEDICINA");
+
+        ResponseEntity<Void> response = consultaController.createConsulta(request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(consultaRepository, times(1)).save(consulta);
+        verify(consultaRepository, times(1)).save(any(Consulta.class));
         verify(autorizacaoRepository, times(1)).save(any(AutorizacaoAcessoPet.class));
         verify(notificacaoRepository, atLeastOnce()).save(any(Notificacao.class));
     }
@@ -171,9 +182,8 @@ class ConsultaControllerTest {
         UUID idInexistente = UUID.randomUUID();
         when(consultaRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-        ResponseEntity<?> response = consultaController.cancelarConsulta(idInexistente);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // O GlobalExceptionHandler converte ResourceNotFoundException em HTTP 404
+        assertThrows(ResourceNotFoundException.class, () -> consultaController.cancelarConsulta(idInexistente));
         verify(consultaRepository, never()).save(any());
     }
 
@@ -183,9 +193,8 @@ class ConsultaControllerTest {
         consulta.setStatus("CONCLUIDA");
         when(consultaRepository.findById(idConsulta)).thenReturn(Optional.of(consulta));
 
-        ResponseEntity<?> response = consultaController.cancelarConsulta(idConsulta);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        // O GlobalExceptionHandler converte BusinessException em HTTP 400
+        assertThrows(BusinessException.class, () -> consultaController.cancelarConsulta(idConsulta));
         verify(consultaRepository, never()).save(any());
     }
 
@@ -198,9 +207,8 @@ class ConsultaControllerTest {
         when(consultaRepository.findById(idConsulta)).thenReturn(Optional.of(consulta));
         when(tutorRepository.findByContaAcessoIdConta(idConta)).thenReturn(Optional.of(outroTutor));
 
-        ResponseEntity<?> response = consultaController.cancelarConsulta(idConsulta);
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        // O GlobalExceptionHandler converte AccessDeniedException em HTTP 403
+        assertThrows(AccessDeniedException.class, () -> consultaController.cancelarConsulta(idConsulta));
         verify(consultaRepository, never()).save(any());
     }
 

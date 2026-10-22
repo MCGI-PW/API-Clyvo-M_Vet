@@ -58,7 +58,7 @@ class ClinicaControllerTest {
     void setUp() {
         com.clyvo.veterinary.services.ClinicaService clinicaService = new com.clyvo.veterinary.services.ClinicaService(
                 clinicaRepository, vcRepository, vetRepository,
-                consultaRepository, autorizacaoRepository, notificacaoRepository
+                consultaRepository, autorizacaoRepository, new com.clyvo.veterinary.services.NotificacaoService(notificacaoRepository)
         );
         clinicaController = new ClinicaController(clinicaService);
 
@@ -150,5 +150,34 @@ class ClinicaControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(vet2.getIdVeterinario(), auth.getVeterinario().getIdVeterinario());
         verify(autorizacaoRepository, times(1)).save(auth);
+    }
+
+    @Test
+    @DisplayName("Conta que nao e clinica deve receber acesso negado (403) nos recursos da clinica")
+    void contaNaoClinicaDeveReceberAcessoNegado() {
+        when(clinicaRepository.findByContaAcessoIdConta(idContaClinica)).thenReturn(Optional.empty());
+
+        assertThrows(com.clyvo.veterinary.exceptions.AccessDeniedException.class,
+                () -> clinicaController.listConsultasDaClinica());
+    }
+
+    @Test
+    @DisplayName("Nao deve transferir para veterinario sem vinculo ativo com a clinica")
+    void naoDeveTransferirParaVeterinarioSemVinculo() {
+        UUID idAuth = UUID.randomUUID();
+        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
+        auth.setIdAutorizacao(idAuth);
+        auth.setClinica(clinica);
+        auth.setVeterinario(vet1);
+
+        when(clinicaRepository.findByContaAcessoIdConta(idContaClinica)).thenReturn(Optional.of(clinica));
+        when(autorizacaoRepository.findById(idAuth)).thenReturn(Optional.of(auth));
+        when(vetRepository.findById(vet2.getIdVeterinario())).thenReturn(Optional.of(vet2));
+        when(vcRepository.findByVeterinarioIdVeterinarioAndClinicaIdClinica(vet2.getIdVeterinario(), idClinica))
+                .thenReturn(Optional.empty());
+
+        assertThrows(com.clyvo.veterinary.exceptions.BusinessException.class,
+                () -> clinicaController.transferirAutorizacao(idAuth, Map.of("idNovoVeterinario", vet2.getIdVeterinario().toString())));
+        verify(autorizacaoRepository, never()).save(any());
     }
 }
