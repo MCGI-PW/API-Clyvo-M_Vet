@@ -1,139 +1,86 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clyvo Vet — Painel do Médico Veterinário</title>
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" href="/style.css">
-</head>
+<html th:lang="${#locale.toLanguageTag()}" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('vet.pageTitle')}"></head>
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
+    <header th:replace="~{fragments/layout :: header}"></header>
 
-    <main class="container" style="max-width: 1100px; margin: 0 auto; padding: 20px;">
-        
-        <!-- Mensagens de Alerta -->
-        <div th:if="${successMsg}" class="success-box" style="display: flex; margin-bottom: 20px;">
-            <span>✔</span> <span th:text="${successMsg}"></span>
-        </div>
-        <div th:if="${errorMsg}" class="error-box" style="display: flex; margin-bottom: 20px;">
-            <span>⚠</span> <span th:text="${errorMsg}"></span>
-        </div>
+    <main class="page">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
 
-        <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div class="page-header">
             <div>
-                <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 4px;">
-                    Painel do Médico Veterinário 🩺
-                </h2>
-                <p style="color: var(--text-secondary); font-size: 15px;">
-                    Bem-vindo(a)<span th:if="${veterinario != null}" th:text="', ' + ${veterinario.nome}"></span>! Acompanhe sua agenda e realize o registro clínico das consultas.
-                </p>
+                <h1 class="page-title" th:text="#{vet.title}">Painel do Médico Veterinário</h1>
+                <p class="page-subtitle" th:text="${veterinario != null} ? #{vet.welcome.named(${veterinario.nome})} : #{vet.welcome}">Bem-vindo(a)!</p>
             </div>
-            <div th:if="${veterinario != null}" class="card" style="padding: 10px 18px; background: var(--bg-surface-elevated); font-size: 13px;">
-                <strong>Especialidade:</strong> <span th:text="${veterinario.especialidade != null ? veterinario.especialidade : 'Clínica Geral'}">Clínica Geral</span>
+            <div th:if="${veterinario != null}" class="info-chip">
+                <strong th:text="#{vet.specialty} + ':'">Especialidade:</strong>
+                <span th:text="${veterinario.especialidade != null ? veterinario.especialidade : '-'}">Clínica Geral</span>
             </div>
         </div>
 
         <!-- Fila de Atendimentos -->
-        <div class="card" style="padding: 24px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                <span>📋</span> <span>Fila de Consultas e Atendimentos (<span th:text="${consultas.size()}">0</span>)</span>
-            </h3>
+        <section class="card section">
+            <h2 class="section-title"><span aria-hidden="true">📋</span> <span th:text="#{vet.queue.title(${consultas.size()})}">Fila (0)</span></h2>
+            <p th:if="${consultas.isEmpty()}" class="empty-state" th:text="#{vet.queue.empty}">Nenhum atendimento.</p>
 
-            <div th:if="${consultas.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 32px;">
-                Nenhum atendimento atribuído à sua agenda no momento.
-            </div>
-
-            <div th:if="${!consultas.isEmpty()}" style="display: flex; flex-direction: column; gap: 16px;">
-                <div th:each="c : ${consultas}" class="card" style="padding: 20px; background: var(--bg-surface-alt); border-left: 4px solid var(--border-focus);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+            <div th:unless="${consultas.isEmpty()}" class="stack">
+                <article th:each="c : ${consultas}" class="record record--pending">
+                    <div class="item-header">
                         <div>
-                            <span style="font-size: 18px; font-weight: 700; color: var(--text-primary);" th:text="${c.pet != null ? c.pet.nome : 'Pet Sem Nome'}">Mel</span>
-                            <span th:if="${c.pet != null && c.pet.raca != null}" style="font-size: 13px; color: var(--text-muted); margin-left: 6px;" th:text="'(' + ${c.pet.raca.nome} + ')'">(Poodle)</span>
+                            <strong th:text="${c.pet != null ? c.pet.nome : '-'}">Mel</strong>
+                            <span th:if="${c.pet != null && c.pet.raca != null}" class="record-meta" th:text="'(' + ${c.pet.raca.nome} + ')'">(Poodle)</span>
                         </div>
-                        <span class="status-badge"
-                              th:style="${c.status == 'AGENDADO' ? 'background: var(--status-agendado-bg); color: var(--status-agendado-text);' : (c.status == 'CONCLUIDA' ? 'background: var(--status-concluida-bg); color: var(--status-concluida-text);' : 'background: var(--status-cancelada-bg); color: var(--status-cancelada-text);')}"
-                              th:text="${c.status}">AGENDADO</span>
+                        <span th:replace="~{fragments/layout :: status(${c.status})}"></span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                        <div><strong>Data/Hora:</strong> <span th:text="${c.dataHora}">2026-09-12 15:00</span></div>
-                        <div><strong>Modalidade:</strong> <span th:text="${c.modalidade}">PRESENCIAL</span></div>
-                        <div><strong>Unidade:</strong> <span th:text="${c.clinica != null ? c.clinica.nomeFantasia : 'Consultório Próprio'}">Clyvo Central</span></div>
-                        <div th:if="${c.pet != null && c.pet.tutor != null}"><strong>Tutor:</strong> <span th:text="${c.pet.tutor.nome}">Carlos Silva</span></div>
+                    <div class="meta-grid">
+                        <div><strong th:text="#{consulta.datetime} + ':'">Data/Hora:</strong>
+                            <span th:text="${#temporals.format(c.dataHora, 'dd/MM/yyyy HH:mm')}">12/09/2026 15:00</span></div>
+                        <div><strong th:text="#{consulta.modality} + ':'">Modalidade:</strong>
+                            <span th:text="${c.modalidade != null} ? #{${'modalidade.' + c.modalidade}} : '-'">Presencial</span></div>
+                        <div><strong th:text="#{consulta.clinic} + ':'">Unidade:</strong>
+                            <span th:text="${c.clinica != null ? c.clinica.nomeFantasia : '-'}">Clyvo Central</span></div>
+                        <div th:if="${c.pet != null && c.pet.tutor != null}"><strong th:text="#{common.tutor} + ':'">Tutor:</strong>
+                            <span th:text="${c.pet.tutor.nome}">Carlos Silva</span></div>
                     </div>
 
-                    <!-- Formulário de Conclusão Clínica e Emissão de Prontuário (apenas se AGENDADO) -->
-                    <div th:if="${c.status == 'AGENDADO'}" style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 12px;">
-                        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">
-                            📝 Conclusão do Atendimento e Registro no Prontuário
-                        </h4>
+                    <!-- Conclusão clínica e emissão de prontuário (apenas consultas agendadas) -->
+                    <div th:if="${c.status == 'AGENDADO'}" class="clinical-form">
+                        <h3 th:text="#{vet.complete.title}">Conclusão do Atendimento</h3>
                         <form th:action="@{/web/vet/consultas/{id}/concluir(id=${c.idConsulta})}" method="post">
-                            <div class="form-group" style="margin-bottom: 8px;">
-                                <label class="form-label" style="font-size: 12px;">Diagnóstico / Avaliação Clínica</label>
-                                <input type="text" name="diagnostico" class="form-input" placeholder="Ex: Otite externa bacteriana bilateral" required style="font-size: 13px;">
+                            <div class="form-group">
+                                <label class="form-label" th:for="'diag-' + ${c.idConsulta}" th:text="#{vet.diagnosis}">Diagnóstico</label>
+                                <input type="text" th:id="'diag-' + ${c.idConsulta}" name="diagnostico" class="form-input form-input--sm" th:placeholder="#{vet.diagnosis.placeholder}" required>
                             </div>
-                            <div class="form-group" style="margin-bottom: 8px;">
-                                <label class="form-label" style="font-size: 12px;">Prescrição &amp; Medicamentos</label>
-                                <input type="text" name="prescricao" class="form-input" placeholder="Ex: Solução otológica 3 gotas/dia por 7 dias" style="font-size: 13px;">
+                            <div class="form-group">
+                                <label class="form-label" th:for="'presc-' + ${c.idConsulta}" th:text="#{vet.prescription}">Prescrição</label>
+                                <input type="text" th:id="'presc-' + ${c.idConsulta}" name="prescricao" class="form-input form-input--sm" th:placeholder="#{vet.prescription.placeholder}">
                             </div>
-                            <div class="form-group" style="margin-bottom: 10px;">
-                                <label class="form-label" style="font-size: 12px;">Orientações Gerais / Retorno</label>
-                                <textarea name="clinicalNotes" class="form-input" rows="2" placeholder="Ex: Higienização prévia recomendada. Retorno em 10 dias para reavaliação." style="font-size: 13px;"></textarea>
+                            <div class="form-group">
+                                <label class="form-label" th:for="'notes-' + ${c.idConsulta}" th:text="#{vet.notes}">Orientações</label>
+                                <textarea th:id="'notes-' + ${c.idConsulta}" name="clinicalNotes" class="form-input form-input--sm" rows="2" th:placeholder="#{vet.notes.placeholder}"></textarea>
                             </div>
-                            
-                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                                <button type="submit" class="btn-aurora" style="padding: 8px 18px; font-size: 13px;" th:text="#{consulta.complete}">
-                                    Finalizar Atendimento &amp; Emitir Prontuário ✔
-                                </button>
+                            <div class="actions-end">
+                                <button type="submit" class="btn-aurora btn-compact" th:text="#{consulta.complete}">Finalizar Atendimento</button>
                             </div>
                         </form>
 
-                        <form th:action="@{/web/vet/consultas/{id}/cancelar(id=${c.idConsulta})}" method="post" style="display: inline-block; margin-top: 6px;" onsubmit="return confirm('Deseja cancelar esta consulta?');">
-                            <button type="submit" class="btn-cancel" style="padding: 6px 12px; font-size: 11px;" th:text="#{consulta.cancel}">
-                                Cancelar Consulta
-                            </button>
+                        <form th:action="@{/web/vet/consultas/{id}/cancelar(id=${c.idConsulta})}" method="post" th:attr="data-confirm=#{consulta.cancel.confirm}">
+                            <button type="submit" class="btn-cancel" th:text="#{consulta.cancel}">Cancelar Consulta</button>
                         </form>
                     </div>
-                </div>
+                </article>
             </div>
-        </div>
+        </section>
 
-        <!-- Seção: Histórico de Prontuários Emitidos pelo Médico -->
-        <div class="card" style="padding: 24px; margin-top: 32px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                <span>📂</span> <span>Histórico de Prontuários Emitidos (<span th:text="${prontuarios.size()}">0</span>)</span>
-            </h3>
-            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
-                Registro dos prontuários médicos emitidos por você em atendimentos já concluídos.
-            </p>
-
-            <div th:if="${prontuarios == null || prontuarios.isEmpty()}" style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px;">
-                Nenhum prontuário emitido até o momento.
-            </div>
-
-            <div th:if="${prontuarios != null && !prontuarios.isEmpty()}" style="display: flex; flex-direction: column; gap: 16px;">
-                <div th:each="pr : ${prontuarios}" class="card" style="padding: 20px; background: var(--bg-surface-alt); border-left: 4px solid var(--accent);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
-                        <div>
-                            <span style="font-size: 16px; font-weight: 700; color: var(--text-primary);"
-                                  th:text="${pr.consulta != null && pr.consulta.pet != null ? pr.consulta.pet.nome : 'Paciente'}">Pet</span>
-                            <span style="font-size: 13px; color: var(--text-secondary); margin-left: 8px;"
-                                  th:text="'| Registrado em ' + ${pr.dataRegistro}">| Data</span>
-                        </div>
-                        <span class="status-badge" style="background: var(--status-concluida-bg); color: var(--status-concluida-text);">CONCLUÍDO</span>
-                    </div>
-                    <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 14px; line-height: 1.5; white-space: pre-line;"
-                         th:text="${pr.notasClinicas}">
-                        Notas clínicas e diagnóstico do prontuário...
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <!-- Prontuários emitidos -->
+        <section class="card section">
+            <h2 class="section-title"><span aria-hidden="true">📂</span> <span th:text="#{prontuario.vet.title(${prontuarios.size()})}">Prontuários Emitidos (0)</span></h2>
+            <p class="section-desc" th:text="#{prontuario.vet.desc}">Prontuários emitidos por você.</p>
+            <div th:replace="~{fragments/layout :: prontuarios(${prontuarios}, false)}"></div>
+        </section>
     </main>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-    <script th:src="@{/app.js}"></script>
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>
