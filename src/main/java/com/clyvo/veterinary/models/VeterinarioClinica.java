@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.models;
 
+import com.clyvo.veterinary.models.enums.StatusVinculo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -31,7 +32,7 @@ public class VeterinarioClinica {
     private LocalDate dataFim;
 
     @Column(name = "status_vinculo", nullable = false)
-    private String statusVinculo = "ATIVO";
+    private String statusVinculo = StatusVinculo.ATIVO.name();
 
     public UUID getIdVeterinarioClinica() {
         return idVeterinarioClinica;

@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.models;
 
+import com.clyvo.veterinary.models.enums.StatusConsulta;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class Consulta {
     private String modalidade;
 
     @Column(nullable = false)
-    private String status = "AGENDADO";
+    private String status = StatusConsulta.AGENDADO.name();
 
     public UUID getIdConsulta() { return idConsulta; } public void setIdConsulta(UUID id) { this.idConsulta = id; }
     public Pet getPet() { return pet; } public void setPet(Pet p) { this.pet = p; }
