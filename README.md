@@ -11,8 +11,8 @@
 
 | | |
 |---|---|
-| 🌐 **Aplicação online** | ⚠️ **PREENCHER:** `http://<fqdn-do-aci>:8080/` |
-| 📘 **Swagger (API REST)** | ⚠️ **PREENCHER:** `http://<fqdn-do-aci>:8080/swagger-ui.html` |
+| 🌐 **Aplicação online** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) |
+| 📘 **Swagger (API REST)** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
 | 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** |
 | ☁️ **Repositório DevOps** | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 
@@ -211,7 +211,7 @@ Para incluir os dados de demonstração no Oracle, use `prod,demo` e defina `DEM
 
 ### 3. Nuvem (Azure)
 
-O deploy (ACR + ACI, perfil `prod,demo`) está no [repositório DevOps](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet): `scripts/deploy_acr_aci.sh`.
+O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repositório DevOps](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet): `scripts/deploy_acr_aci.sh`.
 
 ## 🧪 Testes Automatizados
 
