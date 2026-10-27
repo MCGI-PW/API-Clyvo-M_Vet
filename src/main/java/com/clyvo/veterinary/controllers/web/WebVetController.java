@@ -1,6 +1,8 @@
 package com.clyvo.veterinary.controllers.web;
 
+import com.clyvo.veterinary.dto.ResumoConsultaResponse;
 import com.clyvo.veterinary.services.ConsultaService;
+import com.clyvo.veterinary.services.TranscricaoService;
 import com.clyvo.veterinary.services.VeterinarioService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -22,10 +24,13 @@ public class WebVetController {
 
     private final ConsultaService consultaService;
     private final VeterinarioService veterinarioService;
+    private final TranscricaoService transcricaoService;
 
-    public WebVetController(ConsultaService consultaService, VeterinarioService veterinarioService) {
+    public WebVetController(ConsultaService consultaService, VeterinarioService veterinarioService,
+                            TranscricaoService transcricaoService) {
         this.consultaService = consultaService;
         this.veterinarioService = veterinarioService;
+        this.transcricaoService = transcricaoService;
     }
 
     @GetMapping("/dashboard")
@@ -47,6 +52,13 @@ public class WebVetController {
         String notas = montarProntuario(diagnostico, prescricao, clinicalNotes);
         return WebFeedback.execute(redirect, DASHBOARD, "msg.consulta.completed",
                 () -> consultaService.completeConsulta(id, getLoggedAccountId(), notas));
+    }
+
+    /** Chamado via fetch pelo painel: devolve as sugestões da IA em JSON para pré-preencher o prontuário. */
+    @PostMapping("/consultas/{id}/ia/resumo")
+    @ResponseBody
+    public ResumoConsultaResponse gerarResumoIA(@PathVariable UUID id, @RequestParam String transcricao) {
+        return ResumoConsultaResponse.of(transcricaoService.gerarResumo(id, getLoggedAccountId(), transcricao));
     }
 
     @PostMapping("/consultas/{id}/cancelar")
