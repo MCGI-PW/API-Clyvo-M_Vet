@@ -6,6 +6,8 @@ import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.models.enums.StatusConsulta;
 import com.clyvo.veterinary.repositories.*;
 import com.clyvo.veterinary.services.ia.AssistenteClinico;
+import com.clyvo.veterinary.services.ia.ClaudeAssistenteClinico;
+import com.clyvo.veterinary.services.ia.ClyvoScribeAssistenteClinico;
 import com.clyvo.veterinary.services.ia.ResumoClinico;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -99,6 +101,16 @@ class TranscricaoServiceTest {
         TranscricaoConsulta resultado = semIA.gerarResumo(consulta.getIdConsulta(), idContaVet, TRANSCRICAO);
 
         assertEquals("LOCAL", resultado.getFonteIa());
+    }
+
+    @Test
+    @DisplayName("Escolhe a IA pela configuração: ClyvoScribe, depois Claude, senão só o assistente local")
+    void escolheAssistentePelaConfiguracao() {
+        assertInstanceOf(ClyvoScribeAssistenteClinico.class,
+                TranscricaoService.escolherAssistente("http://localhost:8000", "chave", "claude-opus-5-5"));
+        assertInstanceOf(ClaudeAssistenteClinico.class,
+                TranscricaoService.escolherAssistente(" ", "chave", "claude-opus-5-5"));
+        assertNull(TranscricaoService.escolherAssistente("", "", "claude-opus-5-5"));
     }
 
     @Test

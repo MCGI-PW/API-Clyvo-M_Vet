@@ -8,7 +8,7 @@
 ![Oracle](https://img.shields.io/badge/Oracle_Database-FIAP-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 ![Flyway](https://img.shields.io/badge/Flyway-V1..V7-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
 ![IA](https://img.shields.io/badge/IA-Claude%20(Anthropic)-D97757?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Testes-60%20passando-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Testes-64%20passando-brightgreen?style=for-the-badge)
 
 | | |
 |---|---|
@@ -107,21 +107,28 @@ TUTOR                         VETERINÁRIO                        CLÍNICA
 |---|---|---|
 | **1. Transcrição em tempo real** | O navegador reconhece a fala (Web Speech API, `pt-BR`/`en-US` conforme o idioma da tela). Frases parciais aparecem em itálico como legenda e as finais entram no campo de transcrição. Também aceita colar a transcrição de uma **consulta gravada**. | [`app.js`](src/main/resources/static/app.js) · [`dashboard-vet.html`](src/main/resources/templates/web/dashboard-vet.html) |
 | **2. Resumo com LLM** | O servidor envia a transcrição ao **Claude** (SDK oficial `anthropic-java`) com um prompt de documentação clínica e **saída estruturada**: o schema JSON vem do record [`ResumoClinico`](src/main/java/com/clyvo/veterinary/services/ia/ResumoClinico.java), então a resposta já chega validada com `diagnostico`, `prescricao`, `orientacoes`, `resumoTutor` e `sinaisDeAlerta`. | [`ClaudeAssistenteClinico`](src/main/java/com/clyvo/veterinary/services/ia/ClaudeAssistenteClinico.java) |
+| **2b. Serviço de IA ClyvoScribe** | Com `CLYVOSCRIBE_URL` configurada, o resumo é feito pelo **[ClyvoScribe AI](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M)**, o serviço de IA da CLYVO VET em Python (`POST /api/transcriptions/summarize`). Ele usa o Claude ou o seu extrator local e acrescenta alertas de segurança clínica (ex.: raças sensíveis a ivermectina). | [`ClyvoScribeAssistenteClinico`](src/main/java/com/clyvo/veterinary/services/ia/ClyvoScribeAssistenteClinico.java) |
 | **3. Fallback local** | Sem chave de API, ou se a IA externa falhar ou recusar, um classificador por palavras-chave separa as frases nas mesmas categorias. A consulta nunca trava por causa da IA. | [`AssistenteClinicoLocal`](src/main/java/com/clyvo/veterinary/services/ia/AssistenteClinicoLocal.java) |
 | **4. Humano no controle** | As sugestões **pré-preenchem** os campos do prontuário (destacados). Nada entra no prontuário sem o veterinário revisar e clicar em finalizar. | [`TranscricaoService`](src/main/java/com/clyvo/veterinary/services/TranscricaoService.java) |
-| **5. Persistência e auditoria** | Transcrição, sugestões e a fonte (`CLAUDE:<modelo>` ou `LOCAL`) ficam em `TRANSCRICAO_CONSULTA`, ligadas à consulta. | [`V7__Create_Transcricao_Consulta.sql`](src/main/resources/db/migration/V7__Create_Transcricao_Consulta.sql) |
+| **5. Persistência e auditoria** | Transcrição, sugestões e a fonte (`CLYVOSCRIBE`, `CLAUDE:<modelo>` ou `LOCAL`) ficam em `TRANSCRICAO_CONSULTA`, ligadas à consulta. | [`V7__Create_Transcricao_Consulta.sql`](src/main/resources/db/migration/V7__Create_Transcricao_Consulta.sql) |
 
 **Cuidados (LGPD e segurança clínica):**
 * Só o veterinário responsável (ou a clínica da consulta) pode gerar o resumo; consulta cancelada é rejeitada.
 * Para a IA vão só o nome e a raça do pet e a transcrição. Nome, CPF e contato do tutor não são enviados.
 * O prompt proíbe inventar diagnóstico, medicamento ou dose que não esteja na fala; campo sem informação fica vazio.
 
-**Ativar o Claude** (sem a variável, o assistente local é usado automaticamente):
+**Escolha da IA** (ordem de prioridade; sem nenhuma variável, o assistente local é usado automaticamente):
 
 ```bash
+# 1. Serviço ClyvoScribe AI (repositório IoT-Clyvo-Vet_M rodando com: python3 run_server.py)
+export CLYVOSCRIBE_URL="http://localhost:8000"
+
+# 2. Ou Claude direto, sem o serviço Python
 export ANTHROPIC_API_KEY="sua_chave"
 export CLYVO_IA_MODEL="claude-opus-5-5"   # opcional, este já é o padrão
 ```
+
+Se o ClyvoScribe ou o Claude estiverem fora do ar, a API cai no assistente local e a consulta continua.
 
 **Demonstração:** login como **Veterinário** → na consulta do Thor, clique em **🎙️ Iniciar transcrição** e fale a consulta (ou cole o roteiro abaixo) → **✨ Gerar resumo com IA** → revise os campos preenchidos → **Finalizar atendimento** → login como **Tutor** para ver o prontuário.
 
@@ -151,7 +158,7 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 | **Banco de Dados (Oracle)** | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
 | **DevOps & Cloud** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 | **Mobile** | ⚠️ App que consome esta API (`/api/**`, JWT Bearer). | ⚠️ link do repositório mobile |
-| **QA / Testes** | 60 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
+| **QA / Testes** | 64 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
 | **⚠️ Negócios / Canvas / UX** | ⚠️ Business Model Canvas, personas e protótipo (Figma). | ⚠️ links |
 
 📄 Documento de arquitetura: [`Documentacao_Arquitetura_ClyvoVet.pdf`](Documentacao_Arquitetura_ClyvoVet.pdf) · 📁 Evidências: [`docs/`](docs/README.md) · 🗄️ [DER](docs/DER.md)
@@ -170,7 +177,7 @@ com.clyvo.veterinary/
 ├── models/          Entidades JPA (3FN) e enums de domínio (status, perfis, modalidade)
 ├── repositories/    Spring Data JPA
 └── services/        Regras de negócio (única fonte de verdade para Web e REST)
-    └── ia/          Assistente de IA da consulta: Claude (saída estruturada) + fallback local
+    └── ia/          Assistente de IA da consulta: ClyvoScribe (serviço Python), Claude ou fallback local
 
 resources/
 ├── db/migration/    Flyway V1..V7 (Oracle)
@@ -265,12 +272,13 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 ./mvnw clean test
 ```
 
-**60 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
+**64 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
 
 * `ConsultaServiceTest`: pet de outro tutor (403), data no passado, conflito de agenda, agendamento válido com autorização LGPD, cancelamento, conclusão com prontuário, bloqueio de conclusão de consulta cancelada e notificação sem dados clínicos.
 * `AuthServiceTest`: cadastro, perfil inválido, login, bloqueio após 5 tentativas e conta bloqueada.
 * `ConsultaControllerTest`, `ClinicaControllerTest`, `AutorizacaoControllerTest`: multi-tenancy, vínculo, transferência (inclusive para médico sem vínculo), revogação e erros 403, 404 e 400.
-* `TranscricaoServiceTest` e `AssistenteClinicoLocalTest` (IA): resumo estruturado gravado com a fonte, fallback local quando a IA externa falha ou não há chave, bloqueio de veterinário de outra consulta, consulta cancelada e extração sem inventar conteúdo.
+* `TranscricaoServiceTest` e `AssistenteClinicoLocalTest` (IA): resumo estruturado gravado com a fonte, fallback local quando a IA externa falha ou não há chave, escolha da IA pela configuração, bloqueio de veterinário de outra consulta, consulta cancelada e extração sem inventar conteúdo.
+* `ClyvoScribeAssistenteClinicoTest`: integração HTTP com o serviço de IA em Python (simulado por um servidor local no teste), incluindo erro HTTP e serviço fora do ar.
 * `PetServiceTest`, `WebSessionTest` e `ClyvoVeterinaryApplicationTests` (contexto Spring).
 * `SegurancaEFluxosIntegrationTest` (integração, contexto completo + H2 com as migrations Flyway): 401/403 na API, redirecionamentos Web, CSRF, RBAC por perfil, logout revogando o JWT, login por perfil, cadastro de pet via Web (PRG), validação dos DTOs, CPF duplicado e caixa de notificações, além de RBAC e validação do endpoint de resumo por IA.
 

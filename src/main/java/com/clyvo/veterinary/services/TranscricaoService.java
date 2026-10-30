@@ -13,6 +13,7 @@ import com.clyvo.veterinary.repositories.VeterinarioRepository;
 import com.clyvo.veterinary.services.ia.AssistenteClinico;
 import com.clyvo.veterinary.services.ia.AssistenteClinicoLocal;
 import com.clyvo.veterinary.services.ia.ClaudeAssistenteClinico;
+import com.clyvo.veterinary.services.ia.ClyvoScribeAssistenteClinico;
 import com.clyvo.veterinary.services.ia.ResumoClinico;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +48,11 @@ public class TranscricaoService {
                               VeterinarioRepository veterinarioRepository,
                               ClinicaRepository clinicaRepository,
                               TranscricaoConsultaRepository transcricaoRepository,
+                              @Value("${app.ia.clyvoscribe.url:${CLYVOSCRIBE_URL:}}") String clyvoScribeUrl,
                               @Value("${app.ia.anthropic.api-key:}") String apiKey,
                               @Value("${app.ia.model:claude-opus-5-5}") String modelo) {
         this(consultaRepository, veterinarioRepository, clinicaRepository, transcricaoRepository,
-                apiKey == null || apiKey.isBlank() ? null : new ClaudeAssistenteClinico(apiKey, modelo));
+                escolherAssistente(clyvoScribeUrl, apiKey, modelo));
     }
 
     /** Sem assistente de IA configurado (chave ausente), usa apenas o assistente local. */
@@ -119,6 +121,20 @@ public class TranscricaoService {
             throw new AccessDeniedException("Acesso negado às transcrições desta consulta.");
         }
         return transcricaoRepository.findByConsultaIdConsultaOrderByDataGeracaoDesc(idConsulta);
+    }
+
+    /**
+     * Prioridade: serviço ClyvoScribe (IA da CLYVO VET em Python), depois Claude direto, senão nenhum
+     * (só o assistente local). Configurado por CLYVOSCRIBE_URL e ANTHROPIC_API_KEY.
+     */
+    static AssistenteClinico escolherAssistente(String clyvoScribeUrl, String apiKey, String modelo) {
+        if (clyvoScribeUrl != null && !clyvoScribeUrl.isBlank()) {
+            return new ClyvoScribeAssistenteClinico(clyvoScribeUrl.trim());
+        }
+        if (apiKey != null && !apiKey.isBlank()) {
+            return new ClaudeAssistenteClinico(apiKey, modelo);
+        }
+        return null;
     }
 
     /** Só dados não identificáveis do pet vão para a IA: nome do tutor, CPF e contatos ficam de fora (LGPD). */
