@@ -57,7 +57,12 @@
                                       data-msg-empty=#{ai.empty},
                                       data-msg-loading=#{ai.loading},
                                       data-msg-done=#{ai.done},
-                                      data-msg-error=#{ai.error}">
+                                      data-msg-error=#{ai.error},
+                                      data-msg-mic-denied=#{ai.mic.denied},
+                                      data-msg-mic-not-found=#{ai.mic.notFound},
+                                      data-msg-mic-network=#{ai.mic.network},
+                                      data-msg-mic-insecure=#{ai.mic.insecure},
+                                      data-msg-mic-stopped=#{ai.mic.stopped}">
                             <div class="ai-panel-header">
                                 <strong th:text="#{ai.title}">✨ Assistente de IA da consulta</strong>
                                 <span class="ai-live" data-ai-live hidden th:text="#{ai.live}">● Gravando</span>
