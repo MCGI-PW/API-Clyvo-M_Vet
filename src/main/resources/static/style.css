@@ -677,6 +677,39 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .clinical-form .form-group { margin-bottom: 10px; }
 .clinical-form .btn-cancel { margin-top: 10px; }
 
+/* Assistente de IA da consulta */
+.ai-panel {
+    background: var(--bg-surface-alt);
+    border: 1px dashed var(--border-focus);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+.ai-panel-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+.ai-live { color: var(--danger); font-size: 12px; font-weight: 600; animation: ai-pulse 1.2s ease-in-out infinite; }
+@keyframes ai-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .ai-live { animation: none; } }
+.ai-hint { font-size: 12px; color: var(--text-muted); margin: 6px 0 10px; }
+.ai-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.btn-ai {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+.btn-ai:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-ai--primary { background: var(--aurora-gradient); border-color: transparent; color: #0f172a; font-weight: 600; }
+.ai-transcript { resize: vertical; }
+.ai-interim { font-size: 13px; color: var(--text-muted); font-style: italic; min-height: 1em; margin: 4px 0 0; }
+.ai-status { font-size: 12px; color: var(--text-secondary); margin: 4px 0 0; }
+.ai-result { font-size: 13px; color: var(--text-secondary); margin-top: 10px; display: grid; gap: 6px; }
+.ai-result ul { margin: 4px 0 0 18px; }
+.ai-source { color: var(--text-muted); }
+.ai-filled { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(0, 217, 245, 0.15); }
+
 /* ==========================================================================
    LOGIN E CADASTRO
    ========================================================================== */

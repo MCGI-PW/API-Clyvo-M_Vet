@@ -125,6 +125,32 @@ class SegurancaEFluxosIntegrationTest {
         }
 
         @Test
+        @DisplayName("Tutor não pode gerar resumo de IA da consulta (RBAC na API REST)")
+        void tutorNaoGeraResumoIA() throws Exception {
+            String token = registrar(novoEmail("tutor"), "TUTOR");
+
+            mockMvc.perform(post("/api/appointments/{id}/ai-summary", UUID.randomUUID())
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"transcript\": \"teste\"}"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Resumo de IA valida a transcrição e a existência da consulta")
+        void resumoIAValidaEntrada() throws Exception {
+            String token = registrar(novoEmail("vet"), "VETERINARIO");
+
+            mockMvc.perform(post("/api/appointments/{id}/ai-summary", UUID.randomUUID())
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"transcript\": \"\"}"))
+                    .andExpect(status().isBadRequest());
+            mockMvc.perform(post("/api/appointments/{id}/ai-summary", UUID.randomUUID())
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"transcript\": \"Parece ser uma otite.\"}"))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
         @DisplayName("Veterinário logado não abre o painel do tutor (RBAC na Web)")
         void veterinarioNaoAbrePainelDoTutor() throws Exception {
             String email = novoEmail("vet");

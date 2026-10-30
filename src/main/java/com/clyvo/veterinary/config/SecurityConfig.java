@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .requestMatchers("/web/notificacoes/**").authenticated()
 
                 // Proteção de Rotas REST com base no Perfil do Usuário
-                .requestMatchers("/api/appointments/*/complete").hasAnyRole("VETERINARIO", "CLINICA")
+                .requestMatchers("/api/appointments/*/complete", "/api/appointments/*/ai-summary").hasAnyRole("VETERINARIO", "CLINICA")
                 .requestMatchers("/api/clinicas/veterinarios/**", "/api/clinicas/autorizacoes/*/transferir").hasRole("CLINICA")
                 .requestMatchers("/api/tutors/**").hasAnyRole("VETERINARIO", "CLINICA")
                 .requestMatchers("/api/pets/**").hasAnyRole("TUTOR", "VETERINARIO", "CLINICA")
