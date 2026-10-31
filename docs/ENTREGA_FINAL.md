@@ -13,6 +13,8 @@ Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (De
 | Vídeo da apresentação (máx. **15 min**) | README, seção do topo | 🔴 gravar (seção 4) e colocar o link |
 | Serviço de IA (disciplina de IA/IoT) | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) | 🟢 |
 | App mobile | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) | 🟢 |
+| Assinaturas das clínicas (.NET) | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) | 🟢 |
+| Canvas e protótipo | [`CANVAS.md`](CANVAS.md) · [`prototipo/`](prototipo/README.md) | 🟡 canvas em rascunho |
 | Infraestrutura (Docker + Azure) | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) | 🟢 |
 
 > ⚠️ **Entrega fora do prazo ou fora do portal = −100 pontos.** Confirme a data e envie pelo portal da FIAP, não por e-mail ou Teams.
@@ -101,7 +103,8 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
   - IA/IoT: ClyvoScribe;
   - DevOps: repositório e Azure;
   - QA: rodar `./mvnw test` ou mostrar os 67 testes passando;
-  - Negócios/UX: canvas e protótipo.
+  - .NET: StripeAurora, com as assinaturas das clínicas pela Stripe (a fonte de receita do canvas);
+  - Negócios/UX: [canvas](CANVAS.md) e [telas do protótipo](prototipo/README.md).
 
 ### Bloco 6: Encerramento · todos · 13:15–14:15 · *Comunicação em equipe*
 - Cada um diz em uma frase o que construiu.
