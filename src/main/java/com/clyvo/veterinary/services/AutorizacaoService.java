@@ -10,7 +10,6 @@ import com.clyvo.veterinary.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -66,8 +65,7 @@ public class AutorizacaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Autorização não encontrada com ID: " + idAutorizacao));
 
         Tutor tutor = tutorRepository.findByContaAcessoIdConta(idConta)
-                .filter(t -> auth.getPet() != null && auth.getPet().getTutor() != null
-                        && auth.getPet().getTutor().getIdTutor().equals(t.getIdTutor()))
+                .filter(t -> auth.getPet() != null && auth.getPet().pertenceA(t))
                 .orElseThrow(() -> new AccessDeniedException("Acesso negado: apenas o tutor responsável pelo pet pode revogar esta autorização."));
 
         auth.setStatus(StatusAutorizacao.REVOGADA.name());
@@ -102,42 +100,33 @@ public class AutorizacaoService {
         Pet pet = petRepository.findById(idPet)
                 .orElseThrow(() -> new ResourceNotFoundException("Pet não encontrado com ID: " + idPet));
 
-        if (pet.getTutor() == null || !pet.getTutor().getIdTutor().equals(tutor.getIdTutor())) {
+        if (!pet.pertenceA(tutor)) {
             throw new AccessDeniedException("Acesso negado: o pet informado não pertence ao tutor autenticado.");
         }
 
-        Veterinario vet = idVeterinario == null ? null : veterinarioRepository.findById(idVeterinario)
+        if (idVeterinario == null) {
+            throw new BusinessException("Informe o médico veterinário que receberá acesso ao prontuário.");
+        }
+        Veterinario vet = veterinarioRepository.findById(idVeterinario)
                 .orElseThrow(() -> new ResourceNotFoundException("Médico veterinário não encontrado."));
         Clinica clinica = idClinica == null ? null : clinicaRepository.findById(idClinica)
                 .orElseThrow(() -> new ResourceNotFoundException("Clínica não encontrada."));
 
-        if (vet == null && clinica == null) {
-            throw new BusinessException("Informe ao menos um médico veterinário ou uma clínica para conceder acesso.");
-        }
-
-        // Se já existe autorização ativa, não duplica
-        String ativa = StatusAutorizacao.ATIVA.name();
-        Optional<AutorizacaoAcessoPet> existente = (vet != null)
-                ? autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(pet.getIdPet(), vet.getIdVeterinario(), ativa)
-                : autorizacaoRepository.findFirstByPetIdPetAndClinicaIdClinicaAndStatus(pet.getIdPet(), clinica.getIdClinica(), ativa);
+        Optional<AutorizacaoAcessoPet> existente = buscarAutorizacaoAtiva(pet, vet);
         if (existente.isPresent()) {
             return existente.get();
         }
 
-        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
-        auth.setPet(pet);
-        auth.setVeterinario(vet);
-        auth.setClinica(clinica);
-        auth.setContaAutorizador(tutor.getContaAcesso());
-        auth.setDataAutorizacao(LocalDateTime.now());
-        auth.setStatus(ativa);
-        AutorizacaoAcessoPet salva = autorizacaoRepository.save(auth);
-
-        if (vet != null) {
-            notificacaoService.notificar(vet.getContaAcesso(),
-                    "Você recebeu autorização de acesso ao prontuário do paciente " + pet.getNome() + ".");
-        }
+        AutorizacaoAcessoPet salva = autorizacaoRepository.save(
+                AutorizacaoAcessoPet.ativa(pet, vet, clinica, tutor.getContaAcesso()));
+        notificacaoService.notificar(vet.getContaAcesso(),
+                "Você recebeu autorização de acesso ao prontuário do paciente " + pet.getNome() + ".");
         return salva;
+    }
+
+    private Optional<AutorizacaoAcessoPet> buscarAutorizacaoAtiva(Pet pet, Veterinario vet) {
+        return autorizacaoRepository.findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(
+                pet.getIdPet(), vet.getIdVeterinario(), StatusAutorizacao.ATIVA.name());
     }
 
     private static boolean mesmoVeterinario(Consulta c, AutorizacaoAcessoPet auth) {

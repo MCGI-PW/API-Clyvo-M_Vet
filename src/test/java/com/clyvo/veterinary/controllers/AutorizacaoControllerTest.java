@@ -1,6 +1,9 @@
 package com.clyvo.veterinary.controllers;
 
 import com.clyvo.veterinary.exceptions.AccessDeniedException;
+import com.clyvo.veterinary.exceptions.BusinessException;
+import com.clyvo.veterinary.services.AutorizacaoService;
+import com.clyvo.veterinary.services.NotificacaoService;
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.repositories.*;
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +53,7 @@ class AutorizacaoControllerTest {
     @Mock
     private PetRepository petRepository;
 
+    private AutorizacaoService autorizacaoService;
     private AutorizacaoController autorizacaoController;
 
     private UUID idContaTutor;
@@ -61,10 +65,8 @@ class AutorizacaoControllerTest {
 
     @BeforeEach
     void setUp() {
-        com.clyvo.veterinary.services.AutorizacaoService autorizacaoService = new com.clyvo.veterinary.services.AutorizacaoService(
-                autorizacaoRepository, tutorRepository, veterinarioRepository,
-                clinicaRepository, consultaRepository, new com.clyvo.veterinary.services.NotificacaoService(notificacaoRepository), petRepository
-        );
+        autorizacaoService = new AutorizacaoService(autorizacaoRepository, tutorRepository, veterinarioRepository,
+                clinicaRepository, consultaRepository, new NotificacaoService(notificacaoRepository), petRepository);
         autorizacaoController = new AutorizacaoController(autorizacaoService);
 
         idContaTutor = UUID.randomUUID();
@@ -153,5 +155,32 @@ class AutorizacaoControllerTest {
         assertThrows(AccessDeniedException.class,
                 () -> autorizacaoController.revogarAutorizacao(auth.getIdAutorizacao(), Collections.emptyMap()));
         verify(autorizacaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Concessão sem veterinário é recusada antes de chegar ao banco (coluna obrigatória)")
+    void concessaoSemVeterinarioEhRecusada() {
+        when(tutorRepository.findByContaAcessoIdConta(idContaTutor)).thenReturn(Optional.of(tutor));
+        when(petRepository.findById(pet.getIdPet())).thenReturn(Optional.of(pet));
+
+        assertThrows(BusinessException.class,
+                () -> autorizacaoService.concederAutorizacao(pet.getIdPet(), null, UUID.randomUUID(), idContaTutor));
+        verify(autorizacaoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Concessão cria autorização ativa assinada pelo tutor e avisa o veterinário")
+    void concessaoCriaAutorizacaoAtiva() {
+        when(tutorRepository.findByContaAcessoIdConta(idContaTutor)).thenReturn(Optional.of(tutor));
+        when(petRepository.findById(pet.getIdPet())).thenReturn(Optional.of(pet));
+        when(veterinarioRepository.findById(vet.getIdVeterinario())).thenReturn(Optional.of(vet));
+        when(autorizacaoRepository.save(any(AutorizacaoAcessoPet.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AutorizacaoAcessoPet criada = autorizacaoService.concederAutorizacao(pet.getIdPet(), vet.getIdVeterinario(), null, idContaTutor);
+
+        assertEquals("ATIVA", criada.getStatus());
+        assertEquals(vet, criada.getVeterinario());
+        assertEquals(tutor.getContaAcesso(), criada.getContaAutorizador());
+        verify(notificacaoRepository).save(any(Notificacao.class));
     }
 }

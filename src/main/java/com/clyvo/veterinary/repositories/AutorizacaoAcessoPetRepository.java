@@ -16,5 +16,4 @@ public interface AutorizacaoAcessoPetRepository extends JpaRepository<Autorizaca
     List<AutorizacaoAcessoPet> findByClinicaIdClinicaAndStatus(UUID idClinica, String status);
     List<AutorizacaoAcessoPet> findByVeterinarioIdVeterinarioAndStatus(UUID idVeterinario, String status);
     Optional<AutorizacaoAcessoPet> findFirstByPetIdPetAndVeterinarioIdVeterinarioAndStatus(UUID idPet, UUID idVeterinario, String status);
-    Optional<AutorizacaoAcessoPet> findFirstByPetIdPetAndClinicaIdClinicaAndStatus(UUID idPet, UUID idClinica, String status);
 }
