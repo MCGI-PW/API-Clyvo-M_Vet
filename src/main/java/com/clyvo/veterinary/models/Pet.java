@@ -38,4 +38,8 @@ public class Pet {
     public LocalDate getDataNascimento() { return dataNascimento; } public void setDataNascimento(LocalDate d) { this.dataNascimento = d; }
     public String getSexo() { return sexo; } public void setSexo(String s) { this.sexo = s; }
     public Boolean getAtivo() { return ativo; } public void setAtivo(Boolean a) { this.ativo = a; }
+
+    public boolean pertenceA(Tutor outro) {
+        return tutor != null && outro != null && tutor.getIdTutor().equals(outro.getIdTutor());
+    }
 }

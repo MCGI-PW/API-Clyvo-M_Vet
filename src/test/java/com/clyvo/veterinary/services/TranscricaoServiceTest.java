@@ -32,19 +32,21 @@ class TranscricaoServiceTest {
     private static final String TRANSCRICAO = "Parece ser uma otite. Vou prescrever 3 gotas duas vezes ao dia. Retorno em 10 dias.";
 
     @Mock private ConsultaRepository consultaRepository;
+    @Mock private TutorRepository tutorRepository;
     @Mock private VeterinarioRepository veterinarioRepository;
     @Mock private ClinicaRepository clinicaRepository;
     @Mock private TranscricaoConsultaRepository transcricaoRepository;
     @Mock private AssistenteClinico assistenteIA;
 
+    private TitularidadeConsulta titularidade;
     private TranscricaoService service;
     private Consulta consulta;
     private UUID idContaVet;
 
     @BeforeEach
     void setUp() {
-        service = new TranscricaoService(consultaRepository, veterinarioRepository, clinicaRepository,
-                transcricaoRepository, assistenteIA);
+        titularidade = new TitularidadeConsulta(tutorRepository, veterinarioRepository, clinicaRepository);
+        service = new TranscricaoService(consultaRepository, titularidade, transcricaoRepository, assistenteIA);
 
         Veterinario vet = new Veterinario();
         vet.setIdVeterinario(UUID.randomUUID());
@@ -95,8 +97,8 @@ class TranscricaoServiceTest {
     @Test
     @DisplayName("Sem chave de API configurada, o resumo é feito pelo assistente local")
     void semChaveUsaAssistenteLocal() {
-        TranscricaoService semIA = new TranscricaoService(consultaRepository, veterinarioRepository,
-                clinicaRepository, transcricaoRepository, (AssistenteClinico) null);
+        TranscricaoService semIA = new TranscricaoService(consultaRepository, titularidade,
+                transcricaoRepository, (AssistenteClinico) null);
 
         TranscricaoConsulta resultado = semIA.gerarResumo(consulta.getIdConsulta(), idContaVet, TRANSCRICAO);
 

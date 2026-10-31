@@ -1,6 +1,7 @@
 package com.clyvo.veterinary.controllers.web;
 
 import com.clyvo.veterinary.dto.ResumoConsultaResponse;
+import com.clyvo.veterinary.exceptions.BusinessException;
 import com.clyvo.veterinary.services.ConsultaService;
 import com.clyvo.veterinary.services.TranscricaoService;
 import com.clyvo.veterinary.services.VeterinarioService;
@@ -49,9 +50,17 @@ public class WebVetController {
                                    @RequestParam(required = false) String prescricao,
                                    @RequestParam(required = false) String clinicalNotes,
                                    RedirectAttributes redirect) {
-        String notas = montarProntuario(diagnostico, prescricao, clinicalNotes);
-        return WebFeedback.execute(redirect, DASHBOARD, "msg.consulta.completed",
-                () -> consultaService.completeConsulta(id, getLoggedAccountId(), notas));
+        return WebFeedback.execute(redirect, DASHBOARD, "msg.consulta.completed", () -> {
+            exigirDiagnostico(diagnostico);
+            consultaService.completeConsulta(id, getLoggedAccountId(), montarProntuario(diagnostico, prescricao, clinicalNotes));
+        });
+    }
+
+    /** O prontuário não pode ser emitido sem diagnóstico, mesmo que o envio pule a validação do navegador. */
+    private static void exigirDiagnostico(String diagnostico) {
+        if (diagnostico == null || diagnostico.isBlank()) {
+            throw new BusinessException("Informe o diagnóstico para concluir o atendimento.");
+        }
     }
 
     /** Chamado via fetch pelo painel: devolve as sugestões da IA em JSON para pré-preencher o prontuário. */

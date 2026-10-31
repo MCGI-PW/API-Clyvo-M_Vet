@@ -65,7 +65,8 @@ class ConsultaServiceTest {
     void setUp() {
         consultaService = new ConsultaService(consultaRepository, tutorRepository, veterinarioRepository,
                 clinicaRepository, petRepository, autorizacaoRepository, vcRepository,
-                new NotificacaoService(notificacaoRepository), prontuarioRepository);
+                new NotificacaoService(notificacaoRepository), prontuarioRepository,
+                new TitularidadeConsulta(tutorRepository, veterinarioRepository, clinicaRepository));
 
         idContaTutor = UUID.randomUUID();
 

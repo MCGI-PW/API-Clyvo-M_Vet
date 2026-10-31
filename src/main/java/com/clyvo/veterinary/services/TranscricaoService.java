@@ -6,10 +6,8 @@ import com.clyvo.veterinary.exceptions.ResourceNotFoundException;
 import com.clyvo.veterinary.models.Consulta;
 import com.clyvo.veterinary.models.TranscricaoConsulta;
 import com.clyvo.veterinary.models.enums.StatusConsulta;
-import com.clyvo.veterinary.repositories.ClinicaRepository;
 import com.clyvo.veterinary.repositories.ConsultaRepository;
 import com.clyvo.veterinary.repositories.TranscricaoConsultaRepository;
-import com.clyvo.veterinary.repositories.VeterinarioRepository;
 import com.clyvo.veterinary.services.ia.AssistenteClinico;
 import com.clyvo.veterinary.services.ia.AssistenteClinicoLocal;
 import com.clyvo.veterinary.services.ia.ClaudeAssistenteClinico;
@@ -37,33 +35,28 @@ public class TranscricaoService {
     private static final int LIMITE_COLUNA = 4000;
 
     private final ConsultaRepository consultaRepository;
-    private final VeterinarioRepository veterinarioRepository;
-    private final ClinicaRepository clinicaRepository;
+    private final TitularidadeConsulta titularidade;
     private final TranscricaoConsultaRepository transcricaoRepository;
     private final AssistenteClinico assistenteIA;
     private final AssistenteClinico assistenteLocal = new AssistenteClinicoLocal();
 
     @Autowired
     public TranscricaoService(ConsultaRepository consultaRepository,
-                              VeterinarioRepository veterinarioRepository,
-                              ClinicaRepository clinicaRepository,
+                              TitularidadeConsulta titularidade,
                               TranscricaoConsultaRepository transcricaoRepository,
                               @Value("${app.ia.clyvoscribe.url:${CLYVOSCRIBE_URL:}}") String clyvoScribeUrl,
                               @Value("${app.ia.anthropic.api-key:}") String apiKey,
                               @Value("${app.ia.model:claude-opus-5-5}") String modelo) {
-        this(consultaRepository, veterinarioRepository, clinicaRepository, transcricaoRepository,
-                escolherAssistente(clyvoScribeUrl, apiKey, modelo));
+        this(consultaRepository, titularidade, transcricaoRepository, escolherAssistente(clyvoScribeUrl, apiKey, modelo));
     }
 
     /** Sem assistente de IA configurado (chave ausente), usa apenas o assistente local. */
     TranscricaoService(ConsultaRepository consultaRepository,
-                       VeterinarioRepository veterinarioRepository,
-                       ClinicaRepository clinicaRepository,
+                       TitularidadeConsulta titularidade,
                        TranscricaoConsultaRepository transcricaoRepository,
                        AssistenteClinico assistenteIA) {
         this.consultaRepository = consultaRepository;
-        this.veterinarioRepository = veterinarioRepository;
-        this.clinicaRepository = clinicaRepository;
+        this.titularidade = titularidade;
         this.transcricaoRepository = transcricaoRepository;
         this.assistenteIA = assistenteIA;
     }
@@ -73,34 +66,46 @@ public class TranscricaoService {
         if (transcricao == null || transcricao.isBlank()) {
             throw new BusinessException("A transcrição da consulta está vazia.");
         }
-        Consulta consulta = consultaRepository.findById(idConsulta)
-                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + idConsulta));
-
-        if (!isVeterinarioDaConsulta(consulta, idConta) && !isClinicaDaConsulta(consulta, idConta)) {
-            throw new AccessDeniedException("Acesso negado: apenas o veterinário ou a clínica responsável podem transcrever esta consulta.");
-        }
+        Consulta consulta = buscarConsultaDoResponsavel(idConsulta, idConta,
+                "Acesso negado: apenas o veterinário ou a clínica responsável podem transcrever esta consulta.");
         if (StatusConsulta.CANCELADA.matches(consulta.getStatus())) {
             throw new BusinessException("Não é possível gerar resumo de uma consulta cancelada.");
         }
 
         String texto = transcricao.trim();
-        String contexto = contextoDoPaciente(consulta);
+        ResumoGerado gerado = resumirComFallback(texto, contextoDoPaciente(consulta));
+        return transcricaoRepository.save(montarRegistro(consulta, texto, gerado));
+    }
 
-        AssistenteClinico usado = assistenteLocal;
-        ResumoClinico resumo = null;
+    @Transactional(readOnly = true)
+    public List<TranscricaoConsulta> listarPorConsulta(UUID idConsulta, UUID idConta) {
+        buscarConsultaDoResponsavel(idConsulta, idConta, "Acesso negado às transcrições desta consulta.");
+        return transcricaoRepository.findByConsultaIdConsultaOrderByDataGeracaoDesc(idConsulta);
+    }
+
+    private Consulta buscarConsultaDoResponsavel(UUID idConsulta, UUID idConta, String mensagemAcessoNegado) {
+        Consulta consulta = consultaRepository.findById(idConsulta)
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + idConsulta));
+        if (!titularidade.isResponsavelPeloAtendimento(consulta, idConta)) {
+            throw new AccessDeniedException(mensagemAcessoNegado);
+        }
+        return consulta;
+    }
+
+    /** A consulta não pode travar por indisponibilidade da IA externa: na falha, usa o assistente local. */
+    private ResumoGerado resumirComFallback(String texto, String contexto) {
         if (assistenteIA != null) {
             try {
-                resumo = assistenteIA.resumir(texto, contexto);
-                usado = assistenteIA;
+                return new ResumoGerado(assistenteIA.resumir(texto, contexto), assistenteIA.fonte());
             } catch (RuntimeException e) {
-                // A consulta não pode travar por indisponibilidade da IA externa
                 log.warn("Falha ao gerar resumo com {}. Usando assistente local: {}", assistenteIA.fonte(), e.getMessage());
             }
         }
-        if (resumo == null) {
-            resumo = assistenteLocal.resumir(texto, contexto);
-        }
+        return new ResumoGerado(assistenteLocal.resumir(texto, contexto), assistenteLocal.fonte());
+    }
 
+    private static TranscricaoConsulta montarRegistro(Consulta consulta, String texto, ResumoGerado gerado) {
+        ResumoClinico resumo = gerado.resumo();
         TranscricaoConsulta registro = new TranscricaoConsulta();
         registro.setConsulta(consulta);
         registro.setTextoTranscricao(texto);
@@ -109,18 +114,11 @@ public class TranscricaoService {
         registro.setOrientacoesSugeridas(limitar(resumo.orientacoes()));
         registro.setResumoTutor(limitar(resumo.resumoTutor()));
         registro.setSinaisAlerta(limitar(resumo.sinaisDeAlerta() == null ? null : String.join("\n", resumo.sinaisDeAlerta())));
-        registro.setFonteIa(usado.fonte());
-        return transcricaoRepository.save(registro);
+        registro.setFonteIa(gerado.fonte());
+        return registro;
     }
 
-    @Transactional(readOnly = true)
-    public List<TranscricaoConsulta> listarPorConsulta(UUID idConsulta, UUID idConta) {
-        Consulta consulta = consultaRepository.findById(idConsulta)
-                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + idConsulta));
-        if (!isVeterinarioDaConsulta(consulta, idConta) && !isClinicaDaConsulta(consulta, idConta)) {
-            throw new AccessDeniedException("Acesso negado às transcrições desta consulta.");
-        }
-        return transcricaoRepository.findByConsultaIdConsultaOrderByDataGeracaoDesc(idConsulta);
+    private record ResumoGerado(ResumoClinico resumo, String fonte) {
     }
 
     /**
@@ -155,19 +153,5 @@ public class TranscricaoService {
         }
         String limpo = valor.trim();
         return limpo.length() > LIMITE_COLUNA ? limpo.substring(0, LIMITE_COLUNA) : limpo;
-    }
-
-    private boolean isVeterinarioDaConsulta(Consulta consulta, UUID idConta) {
-        return consulta.getVeterinario() != null
-                && veterinarioRepository.findByContaAcessoIdConta(idConta)
-                    .map(v -> v.getIdVeterinario().equals(consulta.getVeterinario().getIdVeterinario()))
-                    .orElse(false);
-    }
-
-    private boolean isClinicaDaConsulta(Consulta consulta, UUID idConta) {
-        return consulta.getClinica() != null
-                && clinicaRepository.findByContaAcessoIdConta(idConta)
-                    .map(c -> c.getIdClinica().equals(consulta.getClinica().getIdClinica()))
-                    .orElse(false);
     }
 }

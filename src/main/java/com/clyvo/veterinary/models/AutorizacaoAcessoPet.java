@@ -45,6 +45,18 @@ public class AutorizacaoAcessoPet {
     @Column(name = "motivo_revogacao")
     private String motivoRevogacao;
 
+    /** Consentimento do tutor para o veterinário (e, opcionalmente, a clínica) acessar o prontuário do pet. */
+    public static AutorizacaoAcessoPet ativa(Pet pet, Veterinario veterinario, Clinica clinica, ContaAcesso contaAutorizador) {
+        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
+        auth.setPet(pet);
+        auth.setVeterinario(veterinario);
+        auth.setClinica(clinica);
+        auth.setContaAutorizador(contaAutorizador);
+        auth.setDataAutorizacao(LocalDateTime.now());
+        auth.setStatus(StatusAutorizacao.ATIVA.name());
+        return auth;
+    }
+
     // Getters and setters
     public UUID getIdAutorizacao() { return idAutorizacao; } public void setIdAutorizacao(UUID id) { this.idAutorizacao = id; }
     public Pet getPet() { return pet; } public void setPet(Pet p) { this.pet = p; }

@@ -6,6 +6,9 @@ import com.clyvo.veterinary.exceptions.BusinessException;
 import com.clyvo.veterinary.exceptions.ResourceNotFoundException;
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.repositories.*;
+import com.clyvo.veterinary.services.ConsultaService;
+import com.clyvo.veterinary.services.NotificacaoService;
+import com.clyvo.veterinary.services.TitularidadeConsulta;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -73,11 +76,10 @@ class ConsultaControllerTest {
 
     @BeforeEach
     void setUp() {
-        com.clyvo.veterinary.services.ConsultaService consultaService = new com.clyvo.veterinary.services.ConsultaService(
-                consultaRepository, tutorRepository, veterinarioRepository,
-                clinicaRepository, petRepository, autorizacaoRepository,
-                vcRepository, new com.clyvo.veterinary.services.NotificacaoService(notificacaoRepository), prontuarioRepository
-        );
+        ConsultaService consultaService = new ConsultaService(consultaRepository, tutorRepository, veterinarioRepository,
+                clinicaRepository, petRepository, autorizacaoRepository, vcRepository,
+                new NotificacaoService(notificacaoRepository), prontuarioRepository,
+                new TitularidadeConsulta(tutorRepository, veterinarioRepository, clinicaRepository));
         consultaController = new ConsultaController(consultaService);
 
         idConta = UUID.randomUUID();

@@ -3,7 +3,6 @@ package com.clyvo.veterinary.config;
 import com.clyvo.veterinary.dto.RegisterRequest;
 import com.clyvo.veterinary.models.*;
 import com.clyvo.veterinary.models.enums.ModalidadeConsulta;
-import com.clyvo.veterinary.models.enums.StatusAutorizacao;
 import com.clyvo.veterinary.models.enums.StatusConsulta;
 import com.clyvo.veterinary.models.enums.StatusVinculo;
 import com.clyvo.veterinary.models.enums.TipoConta;
@@ -181,13 +180,8 @@ public class DataInitializer implements CommandLineRunner {
 
     /** Consentimento LGPD do tutor, como o gerado automaticamente no agendamento pela aplicação. */
     private void seedAutorizacao(Pet pet, Veterinario vet, Clinica clinica, Tutor tutor) {
-        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
-        auth.setPet(pet);
-        auth.setVeterinario(vet);
-        auth.setClinica(clinica);
-        auth.setContaAutorizador(tutor.getContaAcesso());
+        AutorizacaoAcessoPet auth = AutorizacaoAcessoPet.ativa(pet, vet, clinica, tutor.getContaAcesso());
         auth.setDataAutorizacao(LocalDateTime.now().minusDays(20));
-        auth.setStatus(StatusAutorizacao.ATIVA.name());
         autorizacaoRepository.save(auth);
     }
 

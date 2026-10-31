@@ -30,6 +30,7 @@ public class ConsultaService {
     private final VeterinarioClinicaRepository vcRepository;
     private final NotificacaoService notificacaoService;
     private final ProntuarioRepository prontuarioRepository;
+    private final TitularidadeConsulta titularidade;
 
     public ConsultaService(ConsultaRepository consultaRepository,
                            TutorRepository tutorRepository,
@@ -39,7 +40,8 @@ public class ConsultaService {
                            AutorizacaoAcessoPetRepository autorizacaoRepository,
                            VeterinarioClinicaRepository vcRepository,
                            NotificacaoService notificacaoService,
-                           ProntuarioRepository prontuarioRepository) {
+                           ProntuarioRepository prontuarioRepository,
+                           TitularidadeConsulta titularidade) {
         this.consultaRepository = consultaRepository;
         this.tutorRepository = tutorRepository;
         this.veterinarioRepository = veterinarioRepository;
@@ -49,6 +51,7 @@ public class ConsultaService {
         this.vcRepository = vcRepository;
         this.notificacaoService = notificacaoService;
         this.prontuarioRepository = prontuarioRepository;
+        this.titularidade = titularidade;
     }
 
     @Transactional(readOnly = true)
@@ -117,10 +120,7 @@ public class ConsultaService {
             throw new BusinessException("Não é possível cancelar uma consulta já concluída.");
         }
 
-        boolean autorizado = isTutorDaConsulta(consulta, idConta)
-                || isVeterinarioDaConsulta(consulta, idConta)
-                || isClinicaDaConsulta(consulta, idConta);
-        if (!autorizado) {
+        if (!titularidade.isTutor(consulta, idConta) && !titularidade.isResponsavelPeloAtendimento(consulta, idConta)) {
             throw new AccessDeniedException("Acesso negado: você não tem permissão para cancelar esta consulta.");
         }
 
@@ -138,7 +138,7 @@ public class ConsultaService {
     public void completeConsulta(UUID idConsulta, UUID idConta, String clinicalNotes) {
         Consulta consulta = buscarConsulta(idConsulta);
 
-        if (!isVeterinarioDaConsulta(consulta, idConta) && !isClinicaDaConsulta(consulta, idConta)) {
+        if (!titularidade.isResponsavelPeloAtendimento(consulta, idConta)) {
             throw new AccessDeniedException("Acesso negado: apenas o médico veterinário ou a clínica responsável podem concluir o atendimento.");
         }
         if (!StatusConsulta.AGENDADO.matches(consulta.getStatus())) {
@@ -194,7 +194,7 @@ public class ConsultaService {
         Pet pet = petRepository.findById(petInformado.getIdPet())
                 .orElseThrow(() -> new ResourceNotFoundException("Pet não encontrado com ID: " + petInformado.getIdPet()));
 
-        if (pet.getTutor() == null || !pet.getTutor().getIdTutor().equals(tutor.getIdTutor())) {
+        if (!pet.pertenceA(tutor)) {
             throw new AccessDeniedException("Acesso negado: o pet informado não pertence ao tutor autenticado.");
         }
         if (Boolean.FALSE.equals(pet.getAtivo())) {
@@ -265,44 +265,12 @@ public class ConsultaService {
         if (jaAutorizado) {
             return;
         }
-        AutorizacaoAcessoPet auth = new AutorizacaoAcessoPet();
-        auth.setPet(pet);
-        auth.setVeterinario(vet);
-        auth.setClinica(clinica);
-        auth.setContaAutorizador(tutor.getContaAcesso());
-        auth.setDataAutorizacao(LocalDateTime.now());
-        auth.setStatus(StatusAutorizacao.ATIVA.name());
-        autorizacaoRepository.save(auth);
+        autorizacaoRepository.save(AutorizacaoAcessoPet.ativa(pet, vet, clinica, tutor.getContaAcesso()));
     }
-
-    // ------------------------------------------------------------------
-    // Verificações de titularidade
-    // ------------------------------------------------------------------
 
     private Consulta buscarConsulta(UUID idConsulta) {
         return consultaRepository.findById(idConsulta)
                 .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + idConsulta));
-    }
-
-    private boolean isTutorDaConsulta(Consulta consulta, UUID idConta) {
-        return consulta.getPet() != null && consulta.getPet().getTutor() != null
-                && tutorRepository.findByContaAcessoIdConta(idConta)
-                    .map(t -> t.getIdTutor().equals(consulta.getPet().getTutor().getIdTutor()))
-                    .orElse(false);
-    }
-
-    private boolean isVeterinarioDaConsulta(Consulta consulta, UUID idConta) {
-        return consulta.getVeterinario() != null
-                && veterinarioRepository.findByContaAcessoIdConta(idConta)
-                    .map(v -> v.getIdVeterinario().equals(consulta.getVeterinario().getIdVeterinario()))
-                    .orElse(false);
-    }
-
-    private boolean isClinicaDaConsulta(Consulta consulta, UUID idConta) {
-        return consulta.getClinica() != null
-                && clinicaRepository.findByContaAcessoIdConta(idConta)
-                    .map(c -> c.getIdClinica().equals(consulta.getClinica().getIdClinica()))
-                    .orElse(false);
     }
 
     private static ContaAcesso contaDoTutor(Consulta consulta) {
