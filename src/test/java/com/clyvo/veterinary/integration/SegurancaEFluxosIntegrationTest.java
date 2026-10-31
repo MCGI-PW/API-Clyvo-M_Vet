@@ -1,5 +1,6 @@
 package com.clyvo.veterinary.integration;
 
+import com.clyvo.veterinary.config.CustomOAuth2SuccessHandler;
 import com.clyvo.veterinary.config.WebSession;
 import com.clyvo.veterinary.repositories.ContaAcessoRepository;
 import com.clyvo.veterinary.services.NotificacaoService;
@@ -11,17 +12,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -46,6 +55,9 @@ class SegurancaEFluxosIntegrationTest {
 
     @Autowired
     private ContaAcessoRepository contaRepository;
+
+    @Autowired
+    private CustomOAuth2SuccessHandler oauth2SuccessHandler;
 
     // ---------------------------------------------------------------- helpers
 
@@ -252,6 +264,26 @@ class SegurancaEFluxosIntegrationTest {
             mockMvc.perform(get("/web/tutor/dashboard").session(session))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("Paçoca")));
+        }
+
+        @Test
+        @DisplayName("Login real pelo GitHub (OAuth2) cria a conta de tutor e abre o painel do tutor")
+        void loginOAuth2GithubAbrePainelDoTutor() throws Exception {
+            String login = "dev" + UUID.randomUUID().toString().substring(0, 8);
+            DefaultOAuth2User usuarioGithub = new DefaultOAuth2User(AuthorityUtils.createAuthorityList("OAUTH2_USER"),
+                    Map.of("id", 42, "login", login, "name", "Dev GitHub"), "login");
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            oauth2SuccessHandler.onAuthenticationSuccess(request, response,
+                    new OAuth2AuthenticationToken(usuarioGithub, usuarioGithub.getAuthorities(), "github"));
+
+            assertEquals("/web/tutor/dashboard", response.getRedirectedUrl());
+            mockMvc.perform(get("/web/tutor/dashboard").session((MockHttpSession) request.getSession()))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("web/dashboard-tutor"));
+            // GitHub sem e-mail público: a conta usa um identificador estável derivado do login
+            assertTrue(contaRepository.findByEmail(login + "@github.user").isPresent());
         }
 
         @Test
