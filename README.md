@@ -12,8 +12,8 @@
 
 | | |
 |---|---|
-| 🌐 **Aplicação online** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) ⚠️ **fora do ar: refazer o deploy e trocar este link** ([como](docs/ENTREGA_FINAL.md)) |
-| 📘 **Swagger (API REST)** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
+| 🌐 **Aplicação online** | [http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) · contas de demonstração na seção [Como Executar](#-como-executar), senha `senha123` |
+| 📘 **Swagger (API REST)** | [http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
 | 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** (roteiro em [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)) |
 | 🤖 **Serviço de IA (ClyvoScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
 | 📱 **App mobile** | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
