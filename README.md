@@ -8,13 +8,15 @@
 ![Oracle](https://img.shields.io/badge/Oracle_Database-FIAP-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 ![Flyway](https://img.shields.io/badge/Flyway-V1..V7-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
 ![IA](https://img.shields.io/badge/IA-Claude%20(Anthropic)-D97757?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Testes-64%20passando-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Testes-67%20passando-brightgreen?style=for-the-badge)
 
 | | |
 |---|---|
-| 🌐 **Aplicação online** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) |
+| 🌐 **Aplicação online** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) ⚠️ **fora do ar: refazer o deploy e trocar este link** ([como](docs/ENTREGA_FINAL.md)) |
 | 📘 **Swagger (API REST)** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
-| 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** |
+| 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** (roteiro em [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)) |
+| 🤖 **Serviço de IA (ClyvoScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| 📱 **App mobile** | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
 | ☁️ **Repositório DevOps** | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 
 ---
@@ -157,8 +159,9 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 | **Java Advanced / Spring** | API REST, Thymeleaf, Spring Security (RBAC + JWT + OAuth2), camada de serviços, tratamento global de exceções, i18n e testes JUnit/Mockito. | Este repositório |
 | **Banco de Dados (Oracle)** | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
 | **DevOps & Cloud** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
-| **Mobile** | ⚠️ App que consome esta API (`/api/**`, JWT Bearer). | ⚠️ link do repositório mobile |
-| **QA / Testes** | 64 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
+| **Mobile** | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
+| **IA Generativa / IoT** | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| **QA / Testes** | 67 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
 | **⚠️ Negócios / Canvas / UX** | ⚠️ Business Model Canvas, personas e protótipo (Figma). | ⚠️ links |
 
 📄 Documento de arquitetura: [`Documentacao_Arquitetura_ClyvoVet.pdf`](Documentacao_Arquitetura_ClyvoVet.pdf) · 📁 Evidências: [`docs/`](docs/README.md) · 🗄️ [DER](docs/DER.md)
@@ -272,7 +275,7 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 ./mvnw clean test
 ```
 
-**64 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
+**67 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
 
 * `ConsultaServiceTest`: pet de outro tutor (403), data no passado, conflito de agenda, agendamento válido com autorização LGPD, cancelamento, conclusão com prontuário, bloqueio de conclusão de consulta cancelada e notificação sem dados clínicos.
 * `AuthServiceTest`: cadastro, perfil inválido, login, bloqueio após 5 tentativas e conta bloqueada.
@@ -286,9 +289,9 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 
 | Integrante | RM | GitHub | Principais responsabilidades |
 |---|---|---|---|
-| Maicon Douglas | RM561279 | [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev) | ⚠️ PREENCHER |
-| Gabriel (Gabs) | RM561551 | ⚠️ @usuario | ⚠️ PREENCHER |
-| Charlles | RM566482 | ⚠️ @usuario | ⚠️ PREENCHER |
-| Iago D. | RM565708 | ⚠️ @usuario | ⚠️ PREENCHER |
+| Maicon Douglas | RM561279 | [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev) | Segurança e sessão (Spring Security, JWT, OAuth2), autenticação, DevOps/Oracle e assistente de IA da teleconsulta |
+| Gabriel (Gabs) | RM561551 | ⚠️ @usuario | Regras de negócio (services), exceções e enums, DTOs e API REST |
+| Charlles | RM566482 | ⚠️ @usuario | Layout e design system (Aurora), internacionalização PT/EN e notificações na Web |
+| Iago D. | RM565708 | ⚠️ @usuario | Configuração e dados de demonstração, testes automatizados e documentação |
 
 Fluxo de trabalho: branches por funcionalidade → Pull Request → revisão por outro integrante → merge na `main`.
