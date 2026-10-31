@@ -12,11 +12,12 @@
 
 | | |
 |---|---|
-| 🌐 **Aplicação online** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) ⚠️ **fora do ar: refazer o deploy e trocar este link** ([como](docs/ENTREGA_FINAL.md)) |
-| 📘 **Swagger (API REST)** | [http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-31961.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
+| 🌐 **Aplicação online** | [http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/) (Azure Container Instances, região Brazil South) · contas de demonstração na seção [Como Executar](#-como-executar), senha `senha123` |
+| 📘 **Swagger (API REST)** | [http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html) |
 | 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** (roteiro em [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)) |
 | 🤖 **Serviço de IA (ClyvoScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
 | 📱 **App mobile** | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
+| 💳 **Assinaturas das clínicas (.NET)** | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
 | ☁️ **Repositório DevOps** | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 
 ---
@@ -152,17 +153,18 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 
 ## 🎓 Integração Multidisciplinar
 
-> ⚠️ **PREENCHER pelo grupo:** confirme os nomes oficiais das disciplinas do semestre e anexe as evidências (links ou arquivos na pasta `docs/`).
+> Os nomes de **Java Advanced**, **DevOps Tools & Cloud Computing** e **Advanced Business Development with .NET** estão nos próprios repositórios. ⚠️ Confirmem os demais com o calendário do semestre.
 
 | Disciplina | Como foi aplicada na solução | Evidência |
 |---|---|---|
-| **Java Advanced / Spring** | API REST, Thymeleaf, Spring Security (RBAC + JWT + OAuth2), camada de serviços, tratamento global de exceções, i18n e testes JUnit/Mockito. | Este repositório |
-| **Banco de Dados (Oracle)** | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
-| **DevOps & Cloud** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
-| **Mobile** | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
-| **IA Generativa / IoT** | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
-| **QA / Testes** | 67 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
-| **⚠️ Negócios / Canvas / UX** | ⚠️ Business Model Canvas, personas e protótipo (Figma). | ⚠️ links |
+| **Java Advanced** | API REST, Thymeleaf, Spring Security (RBAC + JWT + OAuth2), camada de serviços, tratamento global de exceções, i18n e testes JUnit/Mockito. | Este repositório |
+| **Mastering Relational and Non-Relational Database** ⚠️ | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
+| **DevOps Tools & Cloud Computing** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
+| **Mobile Application Development** ⚠️ | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
+| **Disruptive Architectures: IoT, IoB & Generative IA** ⚠️ | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| **Compliance, Quality Assurance & Tests** ⚠️ | 67 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
+| **Advanced Business Development with .NET** | API **StripeAurora** em ASP.NET Core (.NET 10) com Oracle via Entity Framework: cadastro de clínicas e **assinaturas recorrentes pela Stripe**, a fonte de receita do modelo de negócio. | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
+| **Modelo de negócio e UX** | Business Model Canvas e protótipo navegável com as telas reais de cada perfil. | [Canvas](docs/CANVAS.md) · [Protótipo](docs/prototipo/README.md) |
 
 📄 Documento de arquitetura: [`Documentacao_Arquitetura_ClyvoVet.pdf`](Documentacao_Arquitetura_ClyvoVet.pdf) · 📁 Evidências: [`docs/`](docs/README.md) · 🗄️ [DER](docs/DER.md)
 
@@ -290,8 +292,8 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 | Integrante | RM | GitHub | Principais responsabilidades |
 |---|---|---|---|
 | Maicon Douglas | RM561279 | [@MaiconDouglas-dev](https://github.com/MaiconDouglas-dev) | Segurança e sessão (Spring Security, JWT, OAuth2), autenticação, DevOps/Oracle e assistente de IA da teleconsulta |
-| Gabriel (Gabs) | RM561551 | ⚠️ @usuario | Regras de negócio (services), exceções e enums, DTOs e API REST |
-| Charlles | RM566482 | ⚠️ @usuario | Layout e design system (Aurora), internacionalização PT/EN e notificações na Web |
-| Iago D. | RM565708 | ⚠️ @usuario | Configuração e dados de demonstração, testes automatizados e documentação |
+| Gabriel (Gabs) | RM561551 | [@OnlyGabyDev](https://github.com/OnlyGabyDev) | Regras de negócio (services), exceções e enums, DTOs e API REST |
+| Charlles | RM566482 | [@Sigmachr](https://github.com/Sigmachr) | Layout e design system (Aurora), internacionalização PT/EN e notificações na Web |
+| Iago D. | RM565708 | [@IagoDAinette](https://github.com/IagoDAinette) | Configuração e dados de demonstração, testes automatizados e documentação |
 
 Fluxo de trabalho: branches por funcionalidade → Pull Request → revisão por outro integrante → merge na `main`.

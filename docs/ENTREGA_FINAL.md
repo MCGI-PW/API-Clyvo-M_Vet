@@ -9,36 +9,26 @@ Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (De
 | Artefato | Onde | Status |
 |---|---|:---:|
 | Repositório no GitHub com README completo | [MCGI-PW/API-Clyvo-M_Vet](https://github.com/MCGI-PW/API-Clyvo-M_Vet) | 🟡 faltam os itens marcados com ⚠️ no README |
-| Link de acesso à aplicação | README, seção do topo | 🔴 **o deploy está fora do ar**: refazer (seção 2) e atualizar o link |
+| Link de acesso à aplicação | [clyvovet-app-16666](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/) · [Swagger](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html) | 🟢 no ar desde 31/10/2026 |
 | Vídeo da apresentação (máx. **15 min**) | README, seção do topo | 🔴 gravar (seção 4) e colocar o link |
 | Serviço de IA (disciplina de IA/IoT) | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) | 🟢 |
 | App mobile | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) | 🟢 |
+| Assinaturas das clínicas (.NET) | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) | 🟢 |
+| Canvas e protótipo | [`CANVAS.md`](CANVAS.md) · [`prototipo/`](prototipo/README.md) | 🟡 canvas em rascunho |
 | Infraestrutura (Docker + Azure) | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) | 🟢 |
 
 > ⚠️ **Entrega fora do prazo ou fora do portal = −100 pontos.** Confirme a data e envie pelo portal da FIAP, não por e-mail ou Teams.
 
 ---
 
-## ☁️ 2. Colocar a aplicação online de novo
+## ☁️ 2. Aplicação online
 
-O grupo de recursos antigo foi apagado da assinatura Azure, então o endereço `clyvovet-app-31961...` não existe mais. O script de deploy recria tudo (Resource Group, ACR e ACI). Como o Dockerfile clona a `main` do GitHub, a versão publicada já sai com todas as correções.
+No ar em **http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/** (ACI `aci-clyvovet-app`, grupo `rg-clyvovet-fiap`, conectado ao Oracle da FIAP com o schema `RM561279` na versão V7). As contas de demonstração usam a senha `senha123`.
 
-Rode a partir do repositório DevOps, com as **suas** credenciais do Oracle da FIAP:
-
-```bash
-cd DevOps-Clyvo-M_Vet
-export DB_USER="rm561279"
-export DB_PASS="sua-senha-do-oracle"
-export JWT_SECRET="$(openssl rand -base64 48)"
-export DEMO_PASSWORD="senha-das-contas-de-demonstracao"
-./scripts/deploy_acr_aci.sh
-```
-
-No fim, o script imprime a URL nova (`http://clyvovet-app-XXXXX.brazilsouth.azurecontainer.io:8080/`). Depois:
-
-1. Abra a URL e faça login com cada perfil. Online, a senha das contas de demonstração é a `DEMO_PASSWORD`, e não `senha123`.
-2. Troque o link no topo do README (aplicação e Swagger).
-3. **Só desligue o container depois que a nota sair.** O avaliador pode abrir o link dias depois da entrega.
+- **Não desligue o container antes de sair a nota:** o avaliador pode abrir o link dias depois da entrega.
+- **Se precisar refazer o deploy:** rode `scripts/deploy_acr_aci.sh` do repositório DevOps. O usuário do Oracle é `rm561279`, **com o "rm"**. Sem ele, o Oracle recusa o login e o container fica reiniciando.
+- **Logs:** `az container logs -g rg-clyvovet-fiap -n aci-clyvovet-app`.
+- **OAuth2 online:** os botões Google/GitHub só aparecem com chaves reais (`GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`). Sem elas, mostre o login social no ambiente local (botões "Testar Google/GitHub").
 
 ---
 
@@ -101,7 +91,8 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
   - IA/IoT: ClyvoScribe;
   - DevOps: repositório e Azure;
   - QA: rodar `./mvnw test` ou mostrar os 67 testes passando;
-  - Negócios/UX: canvas e protótipo.
+  - .NET: StripeAurora, com as assinaturas das clínicas pela Stripe (a fonte de receita do canvas);
+  - Negócios/UX: [canvas](CANVAS.md) e [telas do protótipo](prototipo/README.md).
 
 ### Bloco 6: Encerramento · todos · 13:15–14:15 · *Comunicação em equipe*
 - Cada um diz em uma frase o que construiu.
