@@ -63,6 +63,7 @@ function setupAiPanel(panel) {
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let recording = false;
+    let pending = '';
 
     function setRecording(on) {
         recording = on;
@@ -85,45 +86,93 @@ function setupAiPanel(panel) {
             let partial = '';
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const text = event.results[i][0].transcript.trim();
+                if (!text) continue;
                 if (event.results[i].isFinal) {
-                    transcript.value += (transcript.value ? ' ' : '') + text + '.';
-                    transcript.scrollTop = transcript.scrollHeight;
+                    appendSentence(text);
                 } else {
                     partial += text + ' ';
                 }
             }
-            interim.textContent = partial;
+            pending = partial.trim();
+            interim.textContent = pending;
         };
         // O navegador encerra a escuta após silêncio; reinicia enquanto o médico não clicar em parar
-        recognition.onend = () => { if (recording) recognition.start(); };
+        recognition.onend = () => {
+            if (!recording) return;
+            setTimeout(() => {
+                if (!recording) return;
+                try {
+                    recognition.start();
+                } catch (e) {
+                    stopListening(msg.msgMicStopped);
+                }
+            }, 250);
+        };
+        // Falhas que não se resolvem tentando de novo: para a escuta e mostra o motivo.
+        // "no-speech" e "aborted" são pausas normais e a escuta reinicia sozinha no onend.
         recognition.onerror = event => {
-            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                setRecording(false);
-                status.textContent = msg.msgUnsupported;
-            }
+            const reason = {
+                'not-allowed': msg.msgMicDenied,
+                'service-not-allowed': msg.msgUnsupported,
+                'language-not-supported': msg.msgUnsupported,
+                'audio-capture': msg.msgMicNotFound,
+                'network': msg.msgMicNetwork
+            }[event.error];
+            if (reason) stopListening(reason);
         };
 
-        recordBtn.addEventListener('click', () => {
+        recordBtn.addEventListener('click', async () => {
             if (recording) {
-                setRecording(false);
-                recognition.stop();
-            } else {
-                setRecording(true);
-                status.textContent = msg.msgListening;
-                recognition.start();
+                stopListening('');
+                return;
             }
+            if (!window.isSecureContext) {
+                status.textContent = msg.msgMicInsecure;
+                return;
+            }
+            // Pede o microfone antes: o navegador mostra a permissão e já sabemos se há microfone
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (e) {
+                    status.textContent = e.name === 'NotFoundError' ? msg.msgMicNotFound : msg.msgMicDenied;
+                    return;
+                }
+            }
+            try {
+                recognition.start();
+            } catch (e) {
+                status.textContent = msg.msgMicStopped;
+                return;
+            }
+            setRecording(true);
+            status.textContent = msg.msgListening;
         });
     }
 
+    function appendSentence(text) {
+        const sentence = text.charAt(0).toUpperCase() + text.slice(1);
+        transcript.value += (transcript.value.trim() ? ' ' : '') + sentence + (/[.!?]$/.test(sentence) ? '' : '.');
+        transcript.scrollTop = transcript.scrollHeight;
+        pending = '';
+    }
+
+    function stopListening(message) {
+        setRecording(false);
+        try { recognition.stop(); } catch (e) { /* já estava parada */ }
+        // Alguns navegadores (ex.: Safari) não confirmam a última frase ao parar: ela não pode se perder
+        if (pending) appendSentence(pending);
+        if (message) status.textContent = message;
+    }
+
     summarizeBtn.addEventListener('click', async () => {
+        // Para a escuta antes de ler o texto, para a última frase falada entrar no resumo
+        if (recording) stopListening('');
         const text = transcript.value.trim();
         if (!text) {
             status.textContent = msg.msgEmpty;
             return;
-        }
-        if (recording) {
-            setRecording(false);
-            recognition.stop();
         }
         summarizeBtn.disabled = true;
         status.textContent = msg.msgLoading;
