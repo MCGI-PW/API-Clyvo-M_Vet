@@ -255,6 +255,19 @@ class SegurancaEFluxosIntegrationTest {
         }
 
         @Test
+        @DisplayName("Veterinário não conclui atendimento sem diagnóstico, mesmo burlando o formulário")
+        void concluirExigeDiagnostico() throws Exception {
+            String email = novoEmail("vet");
+            registrar(email, "VETERINARIO");
+            MockHttpSession session = loginWeb(email);
+
+            mockMvc.perform(post("/web/vet/consultas/{id}/concluir", UUID.randomUUID()).session(session).with(csrf())
+                            .param("diagnostico", "  ").param("prescricao", "Repouso"))
+                    .andExpect(redirectedUrl("/web/vet/dashboard"))
+                    .andExpect(flash().attribute("errorMsg", "Informe o diagnóstico para concluir o atendimento."));
+        }
+
+        @Test
         @DisplayName("Caixa de notificações mostra o contador e marca todas como lidas")
         void caixaDeNotificacoes() throws Exception {
             String email = novoEmail("tutor");
