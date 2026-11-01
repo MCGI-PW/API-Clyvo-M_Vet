@@ -9,7 +9,7 @@ Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (De
 | Artefato | Onde | Status |
 |---|---|:---:|
 | Repositório no GitHub com README completo | [MCGI-PW/API-Clyvo-M_Vet](https://github.com/MCGI-PW/API-Clyvo-M_Vet) | 🟡 faltam os itens marcados com ⚠️ no README |
-| Link de acesso à aplicação | [clyvovet-app-16666](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/) · [Swagger](http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/swagger-ui.html) | 🟢 no ar desde 31/10/2026 |
+| Link de acesso à aplicação | [clyvovet-app-16666](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/) · [Swagger](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html) | 🟢 no ar desde 31/10/2026 |
 | Vídeo da apresentação (máx. **15 min**) | README, seção do topo | 🔴 gravar (seção 4) e colocar o link |
 | Serviço de IA (disciplina de IA/IoT) | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) | 🟢 |
 | App mobile | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) | 🟢 |
@@ -23,12 +23,12 @@ Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (De
 
 ## ☁️ 2. Aplicação online
 
-No ar em **http://clyvovet-app-16666.brazilsouth.azurecontainer.io:8080/** (ACI `aci-clyvovet-app`, grupo `rg-clyvovet-fiap`, conectado ao Oracle da FIAP com o schema `RM561279` na versão V7). As contas de demonstração usam a senha `senha123`.
+No ar em **https://clyvovet-app-16666.brazilsouth.azurecontainer.io/** (ACI `aci-clyvovet-app`, grupo `rg-clyvovet-fiap`, conectado ao Oracle da FIAP com o schema `RM561279` na versão V7). As contas de demonstração usam a senha `senha123`.
 
 - **Não desligue o container antes de sair a nota:** o avaliador pode abrir o link dias depois da entrega.
 - **Se precisar refazer o deploy:** rode `scripts/deploy_acr_aci.sh` do repositório DevOps. O usuário do Oracle é `rm561279`, **com o "rm"**. Sem ele, o Oracle recusa o login e o container fica reiniciando.
 - **Logs:** `az container logs -g rg-clyvovet-fiap -n aci-clyvovet-app`.
-- **OAuth2 online:** os botões Google/GitHub só aparecem com chaves reais (`GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`). Sem elas, mostre o login social no ambiente local (botões "Testar Google/GitHub").
+- **OAuth2 online:** com HTTPS (Caddy na frente do container) e as chaves do Google e do GitHub. Para refazer, use `scripts/deploy_https_oauth.sh` do repositório DevOps.
 
 ---
 
