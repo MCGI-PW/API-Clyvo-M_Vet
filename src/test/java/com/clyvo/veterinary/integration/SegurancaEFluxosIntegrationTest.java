@@ -250,6 +250,33 @@ class SegurancaEFluxosIntegrationTest {
         }
 
         @Test
+        @DisplayName("Login e cadastro ficam em telas separadas, ligadas pelo botão Criar conta")
+        void cadastroTemTelaPropria() throws Exception {
+            mockMvc.perform(get("/web/login"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("href=\"/web/register\"")))
+                    .andExpect(content().string(not(containsString("action=\"/web/register\""))));
+            mockMvc.perform(get("/web/register"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("web/register"))
+                    .andExpect(content().string(containsString("action=\"/web/register\"")));
+        }
+
+        @Test
+        @DisplayName("E-mail repetido no cadastro volta para a tela de cadastro com o erro")
+        void cadastroRepetidoMostraErroNaTelaDeCadastro() throws Exception {
+            String email = novoEmail("tutor");
+            registrar(email, "TUTOR");
+
+            mockMvc.perform(post("/web/register").with(csrf())
+                            .param("name", "Outra Pessoa").param("email", email)
+                            .param("password", SENHA).param("role", "TUTOR"))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("web/register"))
+                    .andExpect(model().attributeExists("errorMsg"));
+        }
+
+        @Test
         @DisplayName("Tutor cadastra pet pela Web (PRG com mensagem flash) e o vê no painel")
         void tutorCadastraPetPelaWeb() throws Exception {
             String email = novoEmail("tutor");
