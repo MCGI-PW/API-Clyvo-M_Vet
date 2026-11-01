@@ -90,7 +90,7 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
   - Mobile: app AuroraPet consumindo a API;
   - IA/IoT: ClyvoScribe;
   - DevOps: repositório e Azure;
-  - QA: rodar `./mvnw test` ou mostrar os 67 testes passando;
+  - QA: rodar `./mvnw test` ou mostrar os 70 testes passando;
   - .NET: StripeAurora, com as assinaturas das clínicas pela Stripe (a fonte de receita do canvas);
   - Negócios/UX: [canvas](CANVAS.md) e [telas do protótipo](prototipo/README.md).
 

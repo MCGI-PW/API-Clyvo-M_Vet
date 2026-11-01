@@ -8,7 +8,7 @@
 ![Oracle](https://img.shields.io/badge/Oracle_Database-FIAP-F80000?style=for-the-badge&logo=oracle&logoColor=white)
 ![Flyway](https://img.shields.io/badge/Flyway-V1..V7-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
 ![IA](https://img.shields.io/badge/IA-Claude%20(Anthropic)-D97757?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Testes-68%20passando-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Testes-70%20passando-brightgreen?style=for-the-badge)
 
 | | |
 |---|---|
@@ -162,7 +162,7 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 | **DevOps Tools & Cloud Computing** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 | **Mobile Application Development** ⚠️ | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
 | **Disruptive Architectures: IoT, IoB & Generative IA** ⚠️ | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
-| **Compliance, Quality Assurance & Tests** ⚠️ | 68 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
+| **Compliance, Quality Assurance & Tests** ⚠️ | 70 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
 | **Advanced Business Development with .NET** | API **StripeAurora** em ASP.NET Core (.NET 10) com Oracle via Entity Framework: cadastro de clínicas e **assinaturas recorrentes pela Stripe**, a fonte de receita do modelo de negócio. | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
 | **Modelo de negócio e UX** | Business Model Canvas e protótipo navegável com as telas reais de cada perfil. | [Canvas](docs/CANVAS.md) · [Protótipo](docs/prototipo/README.md) |
 
@@ -278,7 +278,7 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 ./mvnw clean test
 ```
 
-**68 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
+**70 testes** (JUnit 5 + Mockito + MockMvc, padrão Arrange-Act-Assert):
 
 * `ConsultaServiceTest`: pet de outro tutor (403), data no passado, conflito de agenda, agendamento válido com autorização LGPD, cancelamento, conclusão com prontuário, bloqueio de conclusão de consulta cancelada e notificação sem dados clínicos.
 * `AuthServiceTest`: cadastro, perfil inválido, login, bloqueio após 5 tentativas e conta bloqueada.
@@ -286,7 +286,7 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 * `TranscricaoServiceTest` e `AssistenteClinicoLocalTest` (IA): resumo estruturado gravado com a fonte, fallback local quando a IA externa falha ou não há chave, escolha da IA pela configuração, bloqueio de veterinário de outra consulta, consulta cancelada e extração sem inventar conteúdo.
 * `ClyvoScribeAssistenteClinicoTest`: integração HTTP com o serviço de IA em Python (simulado por um servidor local no teste), incluindo erro HTTP e serviço fora do ar.
 * `PetServiceTest`, `WebSessionTest` e `ClyvoVeterinaryApplicationTests` (contexto Spring).
-* `SegurancaEFluxosIntegrationTest` (integração, contexto completo + H2 com as migrations Flyway): 401/403 na API, redirecionamentos Web, CSRF, RBAC por perfil, logout revogando o JWT, login por perfil, cadastro de pet via Web (PRG), validação dos DTOs, CPF duplicado e caixa de notificações, login real pelo GitHub (OAuth2) criando a conta de tutor, além de RBAC e validação do endpoint de resumo por IA.
+* `SegurancaEFluxosIntegrationTest` (integração, contexto completo + H2 com as migrations Flyway): 401/403 na API, redirecionamentos Web, CSRF, RBAC por perfil, logout revogando o JWT, login por perfil, cadastro de pet via Web (PRG), validação dos DTOs, CPF duplicado e caixa de notificações, login real pelo GitHub (OAuth2) criando a conta de tutor, login e cadastro em telas separadas, além de RBAC e validação do endpoint de resumo por IA.
 
 ## 👥 Equipe e Colaboração
 
