@@ -4,7 +4,8 @@ Telas reais do Clyvo Vet, capturadas da aplicação rodando com os dados de demo
 
 | # | Tela | O que mostra |
 |:-:|---|---|
-| 1 | ![Login](01-login.jpg) | **Login e cadastro** com os três perfis, login social com Google e GitHub (OAuth2, na aplicação online em HTTPS) e acesso ao Swagger. |
+| 1 | ![Login](01-login.jpg) | **Login:** e-mail e senha, o botão **Criar conta** e o login social com Google e GitHub (OAuth2, na aplicação online em HTTPS), mais o acesso ao Swagger. |
+| 1b | ![Cadastro](01b-cadastro.jpg) | **Cadastro** em tela própria, com os três perfis (tutor, veterinário e clínica) e o link de volta para o login. |
 | 2 | ![Painel do tutor](02-tutor-agendamento.jpg) | **Tutor:** cadastro de pet, agendamento de consulta (presencial ou telemedicina) e concessão de acesso ao prontuário. |
 | 3 | ![Prontuário e consentimentos](03-tutor-prontuario-consentimentos.jpg) | **Tutor:** prontuário emitido pelo veterinário e consentimentos ativos, com o botão de revogar (LGPD). |
 | 4 | ![Assistente de IA](04-vet-assistente-ia.jpg) | **Veterinário:** assistente de IA da teleconsulta. A transcrição vira diagnóstico, prescrição, orientações, resumo para o tutor e sinais de alerta. |
