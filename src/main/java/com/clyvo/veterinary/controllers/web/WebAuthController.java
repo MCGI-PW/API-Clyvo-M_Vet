@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class WebAuthController {
 
     private static final String LOGIN_VIEW = "web/login";
+    private static final String REGISTER_VIEW = "web/register";
 
     private final AuthService authService;
     private final boolean oauthMockEnabled;
@@ -57,7 +58,7 @@ public class WebAuthController {
                             @RequestParam(required = false) String error,
                             @RequestParam(required = false) String denied,
                             @RequestParam(required = false) String unauthenticated) {
-        prepareForms(model);
+        model.addAttribute("loginRequest", new AuthRequest());
         if (logout != null) model.addAttribute(WebFeedback.SUCCESS, "msg.logout");
         if ("oauth2".equals(error)) model.addAttribute("errorKey", "msg.error.oauth2");
         if (denied != null) model.addAttribute("errorKey", "msg.error.denied");
@@ -87,9 +88,14 @@ public class WebAuthController {
             return "redirect:" + WebSession.start(session, response, loginRequest.getEmail(), null);
         } catch (BadCredentialsException | DomainException e) {
             model.addAttribute(WebFeedback.ERROR, e.getMessage());
-            model.addAttribute("registerRequest", new RegisterRequest());
             return LOGIN_VIEW;
         }
+    }
+
+    @GetMapping("/web/register")
+    public String registerPage(Model model) {
+        model.addAttribute("registerRequest", new RegisterRequest());
+        return REGISTER_VIEW;
     }
 
     @PostMapping("/web/register")
@@ -116,13 +122,7 @@ public class WebAuthController {
     }
 
     private String registerError(Model model, String message) {
-        model.addAttribute("registerErrorMsg", message);
-        model.addAttribute("loginRequest", new AuthRequest());
-        return LOGIN_VIEW;
-    }
-
-    private static void prepareForms(Model model) {
-        model.addAttribute("loginRequest", new AuthRequest());
-        model.addAttribute("registerRequest", new RegisterRequest());
+        model.addAttribute(WebFeedback.ERROR, message);
+        return REGISTER_VIEW;
     }
 }

@@ -718,6 +718,32 @@ textarea.form-input { resize: vertical; min-height: 70px; }
 .auth-title { font-size: 24px; margin-bottom: 6px; }
 .auth-subtitle { margin-bottom: 24px; }
 
+/* Login e cadastro em telas separadas, num cartão centralizado */
+.page--auth { max-width: 480px; }
+.auth-single { margin-bottom: 32px; }
+
+.btn-outline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 1px solid var(--border-focus);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.btn-outline:hover { text-decoration: none; background: var(--bg-surface-alt); }
+
+.auth-switch {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
 .divider {
     display: flex;
     align-items: center;

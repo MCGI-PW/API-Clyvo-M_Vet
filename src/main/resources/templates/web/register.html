@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.toLanguageTag()}" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('register.pageTitle')}"></head>
+<body>
+    <header th:replace="~{fragments/layout :: header}"></header>
+
+    <main class="page page--auth">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="auth-single">
+            <section class="card">
+                <h2 class="auth-title" th:text="#{login.register.title}">Criar Nova Conta</h2>
+                <p class="auth-subtitle" th:text="#{login.register.subtitle}">Cadastre-se como Tutor, Médico Veterinário ou Clínica.</p>
+
+                <form th:action="@{/web/register}" th:object="${registerRequest}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="regName" th:text="#{login.register.name}">Nome Completo / Razão Social</label>
+                        <input type="text" id="regName" class="form-input" th:field="*{name}" autocomplete="name" th:placeholder="#{login.register.name.placeholder}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regRole" th:text="#{login.role}">Perfil</label>
+                        <select id="regRole" class="form-input" th:field="*{role}" required>
+                            <option value="TUTOR" th:text="#{role.option.TUTOR}">Tutor de Pets</option>
+                            <option value="VETERINARIO" th:text="#{role.option.VETERINARIO}">Médico Veterinário</option>
+                            <option value="CLINICA" th:text="#{role.option.CLINICA}">Clínica Veterinária</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail" th:text="#{login.email}">E-mail</label>
+                        <input type="email" id="regEmail" class="form-input" th:field="*{email}" autocomplete="email" th:placeholder="#{login.email.placeholder}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regPhone" th:text="#{login.register.phone}">Telefone</label>
+                        <input type="tel" id="regPhone" class="form-input" th:field="*{phone}" autocomplete="tel" placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regDocument" th:text="#{login.register.document}">CPF / CNPJ</label>
+                        <input type="text" id="regDocument" class="form-input" th:field="*{document}" inputmode="numeric">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regCrmv" th:text="#{login.register.crmv}">CRMV (apenas veterinários)</label>
+                        <input type="text" id="regCrmv" class="form-input" th:field="*{crmv}" placeholder="CRMV-SP 12345">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword" th:text="#{login.password}">Senha</label>
+                        <input type="password" id="regPassword" class="form-input" th:field="*{password}" autocomplete="new-password" minlength="6" th:placeholder="#{login.register.password.placeholder}" required>
+                    </div>
+
+                    <button type="submit" class="btn-aurora btn-block" th:text="#{login.register.btn}">Criar Conta</button>
+                </form>
+
+                <p class="auth-switch">
+                    <span th:text="#{register.haveAccount}">Já tem conta?</span>
+                    <a th:href="@{/web/login}" th:text="#{register.signin}">Entrar</a>
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
