@@ -8,7 +8,7 @@ Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (De
 
 | Artefato | Onde | Status |
 |---|---|:---:|
-| Repositório no GitHub com README completo | [MCGI-PW/API-Clyvo-M_Vet](https://github.com/MCGI-PW/API-Clyvo-M_Vet) | 🟡 faltam os itens marcados com ⚠️ no README |
+| Repositório no GitHub com README completo | [MCGI-PW/API-Clyvo-M_Vet](https://github.com/MCGI-PW/API-Clyvo-M_Vet) | 🟡 falta só o link do vídeo |
 | Link de acesso à aplicação | [clyvovet-app-16666](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/) · [Swagger](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html) | 🟢 no ar desde 31/10/2026 |
 | Vídeo da apresentação (máx. **15 min**) | README, seção do topo | 🔴 gravar (seção 4) e colocar o link |
 | Serviço de IA (disciplina de IA/IoT) | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) | 🟢 |
