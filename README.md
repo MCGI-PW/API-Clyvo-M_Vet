@@ -49,8 +49,6 @@ O histórico de saúde de um animal fica **espalhado** entre as clínicas e os v
 * O tutor **não sabe nem controla** quem acessa os dados do seu animal, e esses dados também envolvem dados pessoais dele (LGPD).
 * Clínicas com vários veterinários não têm um jeito simples de **transferir o acompanhamento** de um paciente entre profissionais.
 
-> ⚠️ **PREENCHER (opcional):** dados ou entrevistas que o grupo usou para validar o problema (pesquisa com tutores, conversa com clínicas etc.).
-
 ## 💡 A Solução
 
 O **Clyvo Vet** conecta os três atores em um só lugar, com o **tutor no controle dos dados do pet**:
@@ -153,16 +151,14 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 
 ## 🎓 Integração Multidisciplinar
 
-> Os nomes de **Java Advanced**, **DevOps Tools & Cloud Computing** e **Advanced Business Development with .NET** estão nos próprios repositórios. ⚠️ Confirmem os demais com o calendário do semestre.
-
 | Disciplina | Como foi aplicada na solução | Evidência |
 |---|---|---|
 | **Java Advanced** | API REST, Thymeleaf, Spring Security (RBAC + JWT + OAuth2), camada de serviços, tratamento global de exceções, i18n e testes JUnit/Mockito. | Este repositório |
-| **Mastering Relational and Non-Relational Database** ⚠️ | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
+| **Mastering Relational and Non-Relational Database** | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
 | **DevOps Tools & Cloud Computing** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
-| **Mobile Application Development** ⚠️ | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
-| **Disruptive Architectures: IoT, IoB & Generative IA** ⚠️ | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
-| **Compliance, Quality Assurance & Tests** ⚠️ | 70 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
+| **Mobile Application Development** | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
+| **Disruptive Architectures: IoT, IoB & Generative IA** | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| **Compliance, Quality Assurance & Tests** | 70 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
 | **Advanced Business Development with .NET** | API **StripeAurora** em ASP.NET Core (.NET 10) com Oracle via Entity Framework: cadastro de clínicas e **assinaturas recorrentes pela Stripe**, a fonte de receita do modelo de negócio. | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
 | **Modelo de negócio e UX** | Business Model Canvas e protótipo navegável com as telas reais de cada perfil. | [Canvas](docs/CANVAS.md) · [Protótipo](docs/prototipo/README.md) |
 
