@@ -60,7 +60,7 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
 - Apresentar o grupo (nome e RM de cada um, câmera ligada).
 - **Problema real:** o histórico do pet fica espalhado entre clínicas; o veterinário atende sem contexto; o tutor não controla quem vê os dados (LGPD).
 - **Proposta em uma frase:** "O Aurora Pet conecta tutor, veterinário e clínica, com o tutor no controle do prontuário do pet."
-- Mostrar a tela de login online.
+- Mostrar a tela de login online (`https://clyvovet-app-16666...`, com o cadeado do HTTPS): **Entrar**, **Criar conta** (tela própria) e **Entrar com Google / GitHub**.
 
 ### Bloco 2: Jornada do tutor · Charlles · 1:45–4:30 · *Demonstração, UI/UX*
 - Login como **tutor** → 🔔 notificações → cadastrar um pet.
@@ -71,18 +71,18 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
 
 ### Bloco 3: Veterinário, IA e clínica · Gabriel · 4:30–8:00 · *Demonstração, originalidade*
 - Login como **veterinário** → fila de atendimentos.
-- **Assistente de IA da teleconsulta:** colar a transcrição → "Gerar resumo com IA" → diagnóstico, prescrição e orientações preenchidos, mais o resumo para o tutor e os sinais de alerta. Reforçar: **a IA sugere, o veterinário revisa e assina**.
+- **Assistente de IA da teleconsulta:** clicar em **Iniciar transcrição** e falar a consulta (ou colar a transcrição) → **Gerar resumo com IA** → diagnóstico, prescrição e orientações preenchidos, mais o resumo para o tutor e os sinais de alerta. Mostrar o selo **IA: AURORASCRIBE**: o resumo veio do serviço de IA rodando online. Reforçar: **a IA sugere, o veterinário revisa e assina**.
 - Concluir o atendimento e mostrar que **sem diagnóstico o sistema recusa**.
 - Login como **clínica** → vincular a Dra. Camila → **transferir** o paciente Thor para ela.
 - Fechar com o diferencial: consentimento como regra de negócio + multi-tenancy (cada clínica só vê o que é dela).
 
 ### Bloco 4: Tecnologias da disciplina · Maicon · 8:00–11:15 · *Conceitos aplicados, decisões técnicas*
 - **Spring Security:** três perfis com permissões diferentes. Logado como tutor, tentar abrir `/web/vet/dashboard` → é barrado. CSRF nos formulários; JWT revogável na API (mostrar no Swagger).
-- **OAuth2:** botões Google/GitHub no login (com as chaves configuradas) e o modo de simulação local.
+- **OAuth2:** entrar de verdade com **Google ou GitHub** na versão online. Explicar que o OAuth2 exige HTTPS e um endereço de retorno cadastrado no Google/GitHub, e que a conta social vira um usuário tutor.
 - **Flyway:** abrir `db/migration` (V1 a V8) e explicar que qualquer ambiente sobe com o mesmo schema, inclusive o Oracle da FIAP.
 - **Arquitetura:** a mesma camada de services atende a Web (Thymeleaf) e a API REST do app mobile, sem duplicar regra.
 - **IA:** o resumo vem do **AuroraScribe AI** (Python, outro repositório) via HTTP; se ele cair, um assistente local assume e a consulta não trava.
-- **Deploy:** Dockerfile multi-stage não-root, build no ACR e execução no ACI.
+- **Deploy:** Dockerfile multi-stage não-root, build no ACR e execução no ACI. O grupo tem três containers: `app` (Java), `clyvoscribe` (IA em Python, chamado em `localhost:8000`) e `caddy` (HTTPS automático com Let's Encrypt).
 
 ### Bloco 5: Integração multidisciplinar e qualidade · Iago · 11:15–13:15 · *Integração, evidências*
 - Percorrer a tabela **Integração Multidisciplinar** do README mostrando cada evidência:
@@ -93,6 +93,14 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
   - QA: rodar `./mvnw test` ou mostrar os 70 testes passando;
   - .NET: StripeAurora, com as assinaturas das clínicas pela Stripe (a fonte de receita do canvas);
   - Negócios/UX: [canvas](CANVAS.md) e [telas do protótipo](prototipo/README.md).
+
+### Dicas de gravação
+- **Mínimo 720p**, com áudio claro e narração por voz. Gravem uma tela por vez em tela cheia e com zoom no navegador (Ctrl/Cmd +) para o texto ficar legível.
+- **Ensaiem uma vez** com o cronômetro: o limite é **15 min**. Se passar, cortem do bloco 5, não da demonstração.
+- **Sigam a ordem dos dados:** o tutor agenda no bloco 2 e o veterinário atende esse mesmo agendamento no bloco 3, para a história fechar.
+- **Deixem as abas abertas e já logadas** em navegadores ou perfis diferentes (tutor, veterinário, clínica; janelas anônimas do mesmo navegador compartilham a sessão), para não perder tempo digitando senha.
+- **Mostrem que gravou:** sempre que salvarem algo, recarreguem a tela para provar que ficou no Oracle.
+- Subam no YouTube como **não listado** e testem o link numa janela anônima antes de colocar no README.
 
 ### Bloco 6: Encerramento · todos · 13:15–14:15 · *Comunicação em equipe*
 - Cada um diz em uma frase o que construiu.
