@@ -135,7 +135,7 @@ public class AuthService {
     @Transactional
     public AuthResponse loginOrRegisterOAuth2(String email, String name) {
         String emailClean = isBlank(email)
-                ? "oauth2-" + UUID.randomUUID() + "@clyvovet.com"
+                ? "oauth2-" + UUID.randomUUID() + "@aurorapet.com"
                 : email.trim().toLowerCase();
         String nameClean = isBlank(name) ? "Usuário Social OAuth2" : name.trim();
 

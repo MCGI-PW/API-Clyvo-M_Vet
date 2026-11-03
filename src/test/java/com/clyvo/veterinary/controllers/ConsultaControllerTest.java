@@ -106,7 +106,7 @@ class ConsultaControllerTest {
 
         clinica = new Clinica();
         clinica.setIdClinica(UUID.randomUUID());
-        clinica.setNomeFantasia("Clyvo Central");
+        clinica.setNomeFantasia("Aurora Central");
 
         consulta = new Consulta();
         consulta.setIdConsulta(idConsulta);

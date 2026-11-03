@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Ponto de entrada da aplicação Clyvo Veterinary API.
+ * Ponto de entrada da aplicação Aurora Pet API.
  *
  * <p>Esta classe inicializa o contexto do Spring Boot, que fará:
  * <ul>
@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   <li>Configuração do Spring Security</li>
  * </ul>
  *
- * @author Clyvo Team
+ * @author Aurora Pet Team
  * @version 1.0.0
  */
 @SpringBootApplication

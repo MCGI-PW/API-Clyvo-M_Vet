@@ -11,7 +11,7 @@ import com.clyvo.veterinary.repositories.TranscricaoConsultaRepository;
 import com.clyvo.veterinary.services.ia.AssistenteClinico;
 import com.clyvo.veterinary.services.ia.AssistenteClinicoLocal;
 import com.clyvo.veterinary.services.ia.ClaudeAssistenteClinico;
-import com.clyvo.veterinary.services.ia.ClyvoScribeAssistenteClinico;
+import com.clyvo.veterinary.services.ia.AuroraScribeAssistenteClinico;
 import com.clyvo.veterinary.services.ia.ResumoClinico;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +44,10 @@ public class TranscricaoService {
     public TranscricaoService(ConsultaRepository consultaRepository,
                               TitularidadeConsulta titularidade,
                               TranscricaoConsultaRepository transcricaoRepository,
-                              @Value("${app.ia.clyvoscribe.url:${CLYVOSCRIBE_URL:}}") String clyvoScribeUrl,
+                              @Value("${app.ia.aurorascribe.url:${AURORASCRIBE_URL:${CLYVOSCRIBE_URL:}}}") String auroraScribeUrl,
                               @Value("${app.ia.anthropic.api-key:}") String apiKey,
                               @Value("${app.ia.model:claude-opus-5-5}") String modelo) {
-        this(consultaRepository, titularidade, transcricaoRepository, escolherAssistente(clyvoScribeUrl, apiKey, modelo));
+        this(consultaRepository, titularidade, transcricaoRepository, escolherAssistente(auroraScribeUrl, apiKey, modelo));
     }
 
     /** Sem assistente de IA configurado (chave ausente), usa apenas o assistente local. */
@@ -122,12 +122,12 @@ public class TranscricaoService {
     }
 
     /**
-     * Prioridade: serviço ClyvoScribe (IA da CLYVO VET em Python), depois Claude direto, senão nenhum
-     * (só o assistente local). Configurado por CLYVOSCRIBE_URL e ANTHROPIC_API_KEY.
+     * Prioridade: serviço AuroraScribe (IA da Aurora Pet em Python), depois Claude direto, senão nenhum
+     * (só o assistente local). Configurado por AURORASCRIBE_URL (ou o nome antigo, CLYVOSCRIBE_URL) e ANTHROPIC_API_KEY.
      */
-    static AssistenteClinico escolherAssistente(String clyvoScribeUrl, String apiKey, String modelo) {
-        if (clyvoScribeUrl != null && !clyvoScribeUrl.isBlank()) {
-            return new ClyvoScribeAssistenteClinico(clyvoScribeUrl.trim());
+    static AssistenteClinico escolherAssistente(String auroraScribeUrl, String apiKey, String modelo) {
+        if (auroraScribeUrl != null && !auroraScribeUrl.isBlank()) {
+            return new AuroraScribeAssistenteClinico(auroraScribeUrl.trim());
         }
         if (apiKey != null && !apiKey.isBlank()) {
             return new ClaudeAssistenteClinico(apiKey, modelo);

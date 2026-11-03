@@ -1,6 +1,6 @@
 # 🖼️ Protótipo navegável: telas da aplicação
 
-Telas reais do Clyvo Vet, capturadas da aplicação rodando com os dados de demonstração. Cada uma mostra um dos fluxos apresentados no vídeo.
+Telas reais do Aurora Pet, capturadas da aplicação rodando com os dados de demonstração. Cada uma mostra um dos fluxos apresentados no vídeo.
 
 | # | Tela | O que mostra |
 |:-:|---|---|

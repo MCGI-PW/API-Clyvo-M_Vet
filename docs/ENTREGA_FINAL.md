@@ -1,6 +1,6 @@
 # 🎬 Entrega Final: checklist e roteiro do vídeo
 
-Guia do grupo para a entrega final do **Clyvo Vet**, organizado pela rubrica (Demonstração 40 · Narrativa 20 · Integração 20 · Apresentação 10 · Organização 10).
+Guia do grupo para a entrega final do **Aurora Pet**, organizado pela rubrica (Demonstração 40 · Narrativa 20 · Integração 20 · Apresentação 10 · Organização 10).
 
 ---
 
@@ -36,7 +36,7 @@ No ar em **https://clyvovet-app-16666.brazilsouth.azurecontainer.io/** (ACI `aci
 
 - [ ] Gravar com a aplicação **online**, não com o `localhost`: o requisito é "rodando online".
 - [ ] Ensaiar o roteiro inteiro uma vez, cronometrando.
-- [ ] Usar o **Google Chrome**. O microfone da IA só funciona em https ou `localhost`. Na URL `http://` do Azure, o Chrome bloqueia o microfone, então **na demonstração online, cole a transcrição** (deixe o texto abaixo copiado). A transcrição ao vivo pode ser mostrada no ClyvoScribe, rodando localmente.
+- [ ] Usar o **Google Chrome**. O microfone da IA só funciona em https ou `localhost`. Na URL `http://` do Azure, o Chrome bloqueia o microfone, então **na demonstração online, cole a transcrição** (deixe o texto abaixo copiado). A transcrição ao vivo pode ser mostrada no AuroraScribe, rodando localmente.
 - [ ] Deixar abertas as abas: aplicação (deslogada), Swagger, GitHub (README e `db/migration`), repositório IoT e repositório AuroraPet.
 - [ ] Fechar notificações do computador e aumentar o zoom do navegador para 110–125%.
 
@@ -59,7 +59,7 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
 ### Bloco 1: Abertura e problema · Iago · 0:00–1:45 · *Narrativa*
 - Apresentar o grupo (nome e RM de cada um, câmera ligada).
 - **Problema real:** o histórico do pet fica espalhado entre clínicas; o veterinário atende sem contexto; o tutor não controla quem vê os dados (LGPD).
-- **Proposta em uma frase:** "O Clyvo Vet conecta tutor, veterinário e clínica, com o tutor no controle do prontuário do pet."
+- **Proposta em uma frase:** "O Aurora Pet conecta tutor, veterinário e clínica, com o tutor no controle do prontuário do pet."
 - Mostrar a tela de login online.
 
 ### Bloco 2: Jornada do tutor · Charlles · 1:45–4:30 · *Demonstração, UI/UX*
@@ -79,16 +79,16 @@ Cada bloco cita os critérios da rubrica que ele cobre. A divisão segue a área
 ### Bloco 4: Tecnologias da disciplina · Maicon · 8:00–11:15 · *Conceitos aplicados, decisões técnicas*
 - **Spring Security:** três perfis com permissões diferentes. Logado como tutor, tentar abrir `/web/vet/dashboard` → é barrado. CSRF nos formulários; JWT revogável na API (mostrar no Swagger).
 - **OAuth2:** botões Google/GitHub no login (com as chaves configuradas) e o modo de simulação local.
-- **Flyway:** abrir `db/migration` (V1 a V7) e explicar que qualquer ambiente sobe com o mesmo schema, inclusive o Oracle da FIAP.
+- **Flyway:** abrir `db/migration` (V1 a V8) e explicar que qualquer ambiente sobe com o mesmo schema, inclusive o Oracle da FIAP.
 - **Arquitetura:** a mesma camada de services atende a Web (Thymeleaf) e a API REST do app mobile, sem duplicar regra.
-- **IA:** o resumo vem do **ClyvoScribe AI** (Python, outro repositório) via HTTP; se ele cair, um assistente local assume e a consulta não trava.
+- **IA:** o resumo vem do **AuroraScribe AI** (Python, outro repositório) via HTTP; se ele cair, um assistente local assume e a consulta não trava.
 - **Deploy:** Dockerfile multi-stage não-root, build no ACR e execução no ACI.
 
 ### Bloco 5: Integração multidisciplinar e qualidade · Iago · 11:15–13:15 · *Integração, evidências*
 - Percorrer a tabela **Integração Multidisciplinar** do README mostrando cada evidência:
   - Banco de Dados: DER + scripts SQL;
   - Mobile: app AuroraPet consumindo a API;
-  - IA/IoT: ClyvoScribe;
+  - IA/IoT: AuroraScribe;
   - DevOps: repositório e Azure;
   - QA: rodar `./mvnw test` ou mostrar os 70 testes passando;
   - .NET: StripeAurora, com as assinaturas das clínicas pela Stripe (a fonte de receita do canvas);

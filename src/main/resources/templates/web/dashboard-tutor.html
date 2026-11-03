@@ -158,7 +158,7 @@
                         <tr th:each="c : ${consultas}">
                             <td class="cell-strong" th:text="${c.pet != null ? c.pet.nome : '-'}">Rex</td>
                             <td th:text="${c.veterinario != null ? c.veterinario.nome : '-'}">Dr. Roberto</td>
-                            <td th:text="${c.clinica != null ? c.clinica.nomeFantasia : '-'}">Clyvo Central</td>
+                            <td th:text="${c.clinica != null ? c.clinica.nomeFantasia : '-'}">Aurora Central</td>
                             <td th:text="${#temporals.format(c.dataHora, 'dd/MM/yyyy HH:mm')}">12/09/2026 14:00</td>
                             <td th:text="${c.modalidade != null} ? #{${'modalidade.' + c.modalidade}} : '-'">Presencial</td>
                             <td><span th:replace="~{fragments/layout :: status(${c.status})}"></span></td>
@@ -195,7 +195,7 @@
                     <p class="detail"><strong th:text="#{consulta.vet} + ':'">Médico:</strong>
                         <span th:text="${a.veterinario != null ? a.veterinario.nome : '-'}">Dr. Roberto</span></p>
                     <p class="detail"><strong th:text="#{consulta.clinic} + ':'">Clínica:</strong>
-                        <span th:text="${a.clinica != null ? a.clinica.nomeFantasia : '-'}">Clyvo Central</span></p>
+                        <span th:text="${a.clinica != null ? a.clinica.nomeFantasia : '-'}">Aurora Central</span></p>
                     <form th:if="${a.status == 'ATIVA'}" th:action="@{/web/tutor/autorizacoes/{id}/revogar(id=${a.idAutorizacao})}"
                           method="post" th:attr="data-confirm=#{autorizacao.revoke.confirm}">
                         <button type="submit" class="btn-cancel btn-block" th:text="#{autorizacao.revoke}">Revogar</button>

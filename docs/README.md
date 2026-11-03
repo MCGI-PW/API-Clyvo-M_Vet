@@ -1,6 +1,6 @@
 # 📁 Evidências do Projeto
 
-Material de apoio da entrega final do **Clyvo Vet**, organizado por disciplina.
+Material de apoio da entrega final do **Aurora Pet**, organizado por disciplina.
 
 | Evidência | Arquivo / link | Status |
 |---|---|:---:|

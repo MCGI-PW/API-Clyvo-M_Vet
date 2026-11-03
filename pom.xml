@@ -15,8 +15,8 @@
     <artifactId>api-clyvovet_M</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>Clyvo Veterinary API</name>
-    <description>API para sistema veterinario Clyvo</description>
+    <name>Aurora Pet API</name>
+    <description>API para sistema veterinário Aurora Pet</description>
 
     <properties>
         <java.version>21</java.version>

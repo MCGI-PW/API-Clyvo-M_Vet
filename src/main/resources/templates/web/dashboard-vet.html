@@ -39,7 +39,7 @@
                         <div><strong th:text="#{consulta.modality} + ':'">Modalidade:</strong>
                             <span th:text="${c.modalidade != null} ? #{${'modalidade.' + c.modalidade}} : '-'">Presencial</span></div>
                         <div><strong th:text="#{consulta.clinic} + ':'">Unidade:</strong>
-                            <span th:text="${c.clinica != null ? c.clinica.nomeFantasia : '-'}">Clyvo Central</span></div>
+                            <span th:text="${c.clinica != null ? c.clinica.nomeFantasia : '-'}">Aurora Central</span></div>
                         <div th:if="${c.pet != null && c.pet.tutor != null}"><strong th:text="#{common.tutor} + ':'">Tutor:</strong>
                             <span th:text="${c.pet.tutor.nome}">Carlos Silva</span></div>
                     </div>

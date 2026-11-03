@@ -89,7 +89,7 @@ class ConsultaServiceTest {
 
         mockClinica = new Clinica();
         mockClinica.setIdClinica(UUID.randomUUID());
-        mockClinica.setNomeFantasia("Clyvo Central");
+        mockClinica.setNomeFantasia("Aurora Central");
         mockClinica.setAtiva(true);
 
         mockVinculo = new VeterinarioClinica();
