@@ -83,6 +83,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Azure SQL Database (perfil "azure"): driver JDBC do SQL Server -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -96,6 +103,11 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-oracle</artifactId>
+        </dependency>
+        <!-- Flyway para o Azure SQL Database (SQL Server) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-sqlserver</artifactId>
         </dependency>
 
         <dependency>
