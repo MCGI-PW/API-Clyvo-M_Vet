@@ -14,7 +14,7 @@
 |---|---|
 | 🌐 **Aplicação online** | [https://clyvovet-app-16666.brazilsouth.azurecontainer.io/](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/) (Azure Container Instances, região Brazil South) · contas de demonstração na seção [Como Executar](#-como-executar), senha `senha123` |
 | 📘 **Swagger (API REST)** | [https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html) |
-| 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** (roteiro em [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)) |
+| 🎥 **Vídeo da apresentação** | [https://youtu.be/opFv0LAqCZw](https://youtu.be/opFv0LAqCZw) (YouTube, 5 min 46 s) |
 | 🤖 **Serviço de IA (AuroraScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
 | 📱 **App mobile** | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
 | 💳 **Assinaturas das clínicas (.NET)** | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
