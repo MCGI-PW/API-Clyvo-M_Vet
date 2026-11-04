@@ -239,10 +239,10 @@ Erros sempre no formato `{"error": "mensagem"}` com o status HTTP correto (400, 
 ### 1. Local (H2 em memória, sem configuração)
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+./mvnw spring-boot:run
 ```
 
-Acesse **http://localhost:8080**. As migrations rodam sozinhas e os dados de demonstração são carregados.
+Sem `SPRING_PROFILES_ACTIVE`, a API sobe no perfil **`local`** (padrão definido em `spring.profiles.default`). No IntelliJ, basta rodar `ClyvoVeterinaryApplication`. Acesse **http://localhost:8080**. As migrations rodam sozinhas e os dados de demonstração são carregados.
 
 | Perfil | E-mail | Senha |
 |---|---|---|
@@ -253,21 +253,38 @@ Acesse **http://localhost:8080**. As migrations rodam sozinhas e os dados de dem
 
 Troca de idioma: `?lang=pt_BR` ou `?lang=en` (ou o seletor PT/EN no cabeçalho).
 
-### 2. Oracle da FIAP
+### 2. Com variáveis de ambiente (Oracle, Azure SQL, OAuth2 ou IA)
+
+O modelo [`.env.example`](.env.example) lista todas as variáveis, separadas por perfil. Copie, tire o `#` só das linhas que for preencher e carregue antes de rodar:
 
 ```bash
-export DB_URL="jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL"
-export DB_USER="seu_rm"
-export DB_PASS="sua_senha"
-export JWT_SECRET="$(openssl rand -base64 48)"
-./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+cp .env.example .env        # o .env está no .gitignore
+set -a; source .env; set +a
+./mvnw spring-boot:run
 ```
 
-Para incluir os dados de demonstração no Oracle, use `prod,demo` e defina `DEMO_PASSWORD`.
+| Variável | `local` (H2) | `prod` (Oracle FIAP) | `azure` (Azure SQL) |
+|---|---|---|---|
+| `SPRING_PROFILES_ACTIVE` | opcional (padrão) | `prod` ou `prod,demo` | `azure` ou `azure,demo` |
+| `DB_URL` · `DB_USER` · `DB_PASS` | não usa | obrigatórias | obrigatórias |
+| `JWT_SECRET` (`openssl rand -base64 48`) | não usa | obrigatória | obrigatória |
+| `DEMO_PASSWORD` | não usa (`senha123`) | com `demo` | com `demo` |
+| `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` | opcional (sem elas, login social simulado) | para o login com Google | para o login com Google |
+| `GITHUB_CLIENT_ID` · `GITHUB_CLIENT_SECRET` | opcional (sem elas, login social simulado) | para o login com GitHub | para o login com GitHub |
+| `AURORASCRIBE_URL` ou `ANTHROPIC_API_KEY` | opcional | opcional | opcional |
+
+Cuidados:
+* **Não deixe variável vazia ativa** no `.env`: vazia, ela apaga o valor padrão da aplicação (um `JWT_SECRET=` vazio derruba o perfil local).
+* **Oracle:** é o mesmo banco do site no ar, e o Oracle da FIAP limita as sessões por usuário (`ORA-02391`). Encerre a API local quando terminar; para desenvolver, prefira o perfil `local`.
+* **Azure SQL:** o firewall do servidor precisa liberar o seu IP.
+* **OAuth2 local:** cadastre `http://localhost:8080/login/oauth2/code/google` (e `/github`) no Google Cloud e na OAuth App do GitHub.
 
 ### 3. Nuvem (Azure)
 
-O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repositório DevOps](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet): `scripts/deploy_acr_aci.sh`.
+| Ambiente | Perfil e banco | Onde está |
+|---|---|---|
+| **ACI + Caddy (HTTPS)**, o site da aplicação | `prod,demo` · Oracle FIAP | [repositório DevOps](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet): `scripts/deploy_https_oauth.sh` |
+| **App Service** (disciplina de DevOps) | `azure,demo` · Azure SQL | [`azure-pipelines.yml`](azure-pipelines.yml) (Azure DevOps) e CI em [`.github/workflows/ci-azure-api.yml`](.github/workflows/ci-azure-api.yml) |
 
 ## 🧪 Testes Automatizados
 
