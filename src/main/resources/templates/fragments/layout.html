@@ -5,7 +5,7 @@
 <head th:fragment="head(titleKey)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{app.title} + ' — ' + #{${titleKey}}">Clyvo Vet</title>
+    <title th:text="#{app.title} + ' — ' + #{${titleKey}}">Aurora Pet</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
     <link rel="stylesheet" th:href="@{/style.css}">
     <script th:src="@{/app.js}"></script>
@@ -18,7 +18,7 @@
         <a th:href="@{/}" class="brand">
             <span class="brand-icon" aria-hidden="true">🐾</span>
             <span>
-                <span class="brand-title" th:text="#{app.title}">Clyvo Vet</span>
+                <span class="brand-title" th:text="#{app.title}">Aurora Pet</span>
                 <span class="brand-tagline" th:text="#{app.tagline}">Plataforma Veterinária</span>
             </span>
         </a>

@@ -7,7 +7,7 @@ import com.clyvo.veterinary.models.enums.StatusConsulta;
 import com.clyvo.veterinary.repositories.*;
 import com.clyvo.veterinary.services.ia.AssistenteClinico;
 import com.clyvo.veterinary.services.ia.ClaudeAssistenteClinico;
-import com.clyvo.veterinary.services.ia.ClyvoScribeAssistenteClinico;
+import com.clyvo.veterinary.services.ia.AuroraScribeAssistenteClinico;
 import com.clyvo.veterinary.services.ia.ResumoClinico;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -106,9 +106,9 @@ class TranscricaoServiceTest {
     }
 
     @Test
-    @DisplayName("Escolhe a IA pela configuração: ClyvoScribe, depois Claude, senão só o assistente local")
+    @DisplayName("Escolhe a IA pela configuração: AuroraScribe, depois Claude, senão só o assistente local")
     void escolheAssistentePelaConfiguracao() {
-        assertInstanceOf(ClyvoScribeAssistenteClinico.class,
+        assertInstanceOf(AuroraScribeAssistenteClinico.class,
                 TranscricaoService.escolherAssistente("http://localhost:8000", "chave", "claude-opus-5-5"));
         assertInstanceOf(ClaudeAssistenteClinico.class,
                 TranscricaoService.escolherAssistente(" ", "chave", "claude-opus-5-5"));

@@ -81,7 +81,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Tutor ana = seedConta("Ana Silva", "ana.silva@email.com", "11999991111", TipoConta.TUTOR, "12345678901",
                 tutorRepository::findByContaAcessoIdConta);
-        Clinica central = seedConta("Clínica Clyvo Central", "contato@matriz.com", "1133334444", TipoConta.CLINICA, "12345678000199",
+        Clinica central = seedConta("Clínica Aurora Central", "contato@matriz.com", "1133334444", TipoConta.CLINICA, "12345678000199",
                 clinicaRepository::findByContaAcessoIdConta);
         Veterinario drCarlos = seedConta("Dr. Carlos Mendes", "dr.carlos@veterinaria.com", "11988882222", TipoConta.VETERINARIO, "98765432100",
                 vetRepository::findByContaAcessoIdConta);

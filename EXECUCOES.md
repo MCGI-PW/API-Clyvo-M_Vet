@@ -1,4 +1,4 @@
-# 🛠️ Execuções: Revisão e Correções do Clyvo Vet
+# 🛠️ Execuções: Revisão e Correções do Aurora Pet
 
 > Registro de tudo o que foi analisado e corrigido no repositório **API-Clyvo-M_Vet** para a entrega final, e do que **ainda falta o grupo fazer**.
 >
@@ -371,4 +371,4 @@ Procure por **⚠️ PREENCHER** no `README.md`:
 
 ---
 
-<p align="center">🐾 <strong>Clyvo Vet</strong>: revisão para a entrega final</p>
+<p align="center">🐾 <strong>Aurora Pet</strong>: revisão para a entrega final</p>

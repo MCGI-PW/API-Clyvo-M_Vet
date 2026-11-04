@@ -1,4 +1,4 @@
-# 🐾 Clyvo Vet — Plataforma Integrada de Saúde Veterinária
+# 🐾 Aurora Pet — Plataforma Integrada de Saúde Veterinária
 
 > Tutores, médicos veterinários e clínicas na mesma plataforma, com **prontuário digital compartilhado** e **consentimento de acesso controlado pelo tutor (LGPD)**.
 
@@ -6,7 +6,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.4-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-SSR%20%2B%20i18n-005F0E?style=for-the-badge&logo=thymeleaf&logoColor=white)
 ![Oracle](https://img.shields.io/badge/Oracle_Database-FIAP-F80000?style=for-the-badge&logo=oracle&logoColor=white)
-![Flyway](https://img.shields.io/badge/Flyway-V1..V7-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
+![Flyway](https://img.shields.io/badge/Flyway-V1..V8-CC0202?style=for-the-badge&logo=flyway&logoColor=white)
 ![IA](https://img.shields.io/badge/IA-Claude%20(Anthropic)-D97757?style=for-the-badge)
 ![Tests](https://img.shields.io/badge/Testes-70%20passando-brightgreen?style=for-the-badge)
 
@@ -15,7 +15,7 @@
 | 🌐 **Aplicação online** | [https://clyvovet-app-16666.brazilsouth.azurecontainer.io/](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/) (Azure Container Instances, região Brazil South) · contas de demonstração na seção [Como Executar](#-como-executar), senha `senha123` |
 | 📘 **Swagger (API REST)** | [https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html](https://clyvovet-app-16666.brazilsouth.azurecontainer.io/swagger-ui.html) |
 | 🎥 **Vídeo da apresentação** | ⚠️ **PREENCHER com o vídeo da entrega final** (roteiro em [`docs/ENTREGA_FINAL.md`](docs/ENTREGA_FINAL.md)) |
-| 🤖 **Serviço de IA (ClyvoScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| 🤖 **Serviço de IA (AuroraScribe)** | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
 | 📱 **App mobile** | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
 | 💳 **Assinaturas das clínicas (.NET)** | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
 | ☁️ **Repositório DevOps** | [MCGI-PW/DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
@@ -51,7 +51,7 @@ O histórico de saúde de um animal fica **espalhado** entre as clínicas e os v
 
 ## 💡 A Solução
 
-O **Clyvo Vet** conecta os três atores em um só lugar, com o **tutor no controle dos dados do pet**:
+O **Aurora Pet** conecta os três atores em um só lugar, com o **tutor no controle dos dados do pet**:
 
 | Perfil | O que faz na plataforma |
 |---|---|
@@ -108,10 +108,10 @@ TUTOR                         VETERINÁRIO                        CLÍNICA
 |---|---|---|
 | **1. Transcrição em tempo real** | O navegador reconhece a fala (Web Speech API, `pt-BR`/`en-US` conforme o idioma da tela). Frases parciais aparecem em itálico como legenda e as finais entram no campo de transcrição. Também aceita colar a transcrição de uma **consulta gravada**. | [`app.js`](src/main/resources/static/app.js) · [`dashboard-vet.html`](src/main/resources/templates/web/dashboard-vet.html) |
 | **2. Resumo com LLM** | O servidor envia a transcrição ao **Claude** (SDK oficial `anthropic-java`) com um prompt de documentação clínica e **saída estruturada**: o schema JSON vem do record [`ResumoClinico`](src/main/java/com/clyvo/veterinary/services/ia/ResumoClinico.java), então a resposta já chega validada com `diagnostico`, `prescricao`, `orientacoes`, `resumoTutor` e `sinaisDeAlerta`. | [`ClaudeAssistenteClinico`](src/main/java/com/clyvo/veterinary/services/ia/ClaudeAssistenteClinico.java) |
-| **2b. Serviço de IA ClyvoScribe** | Com `CLYVOSCRIBE_URL` configurada, o resumo é feito pelo **[ClyvoScribe AI](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M)**, o serviço de IA da CLYVO VET em Python (`POST /api/transcriptions/summarize`). Ele usa o Claude ou o seu extrator local e acrescenta alertas de segurança clínica (ex.: raças sensíveis a ivermectina). | [`ClyvoScribeAssistenteClinico`](src/main/java/com/clyvo/veterinary/services/ia/ClyvoScribeAssistenteClinico.java) |
+| **2b. Serviço de IA AuroraScribe** | Com `AURORASCRIBE_URL` configurada, o resumo é feito pelo **[AuroraScribe AI](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M)**, o serviço de IA da Aurora Pet em Python (`POST /api/transcriptions/summarize`). Ele usa o Claude ou o seu extrator local e acrescenta alertas de segurança clínica (ex.: raças sensíveis a ivermectina). | [`AuroraScribeAssistenteClinico`](src/main/java/com/clyvo/veterinary/services/ia/AuroraScribeAssistenteClinico.java) |
 | **3. Fallback local** | Sem chave de API, ou se a IA externa falhar ou recusar, um classificador por palavras-chave separa as frases nas mesmas categorias. A consulta nunca trava por causa da IA. | [`AssistenteClinicoLocal`](src/main/java/com/clyvo/veterinary/services/ia/AssistenteClinicoLocal.java) |
 | **4. Humano no controle** | As sugestões **pré-preenchem** os campos do prontuário (destacados). Nada entra no prontuário sem o veterinário revisar e clicar em finalizar. | [`TranscricaoService`](src/main/java/com/clyvo/veterinary/services/TranscricaoService.java) |
-| **5. Persistência e auditoria** | Transcrição, sugestões e a fonte (`CLYVOSCRIBE`, `CLAUDE:<modelo>` ou `LOCAL`) ficam em `TRANSCRICAO_CONSULTA`, ligadas à consulta. | [`V7__Create_Transcricao_Consulta.sql`](src/main/resources/db/migration/V7__Create_Transcricao_Consulta.sql) |
+| **5. Persistência e auditoria** | Transcrição, sugestões e a fonte (`AURORASCRIBE`, `CLAUDE:<modelo>` ou `LOCAL`) ficam em `TRANSCRICAO_CONSULTA`, ligadas à consulta. | [`V7__Create_Transcricao_Consulta.sql`](src/main/resources/db/migration/V7__Create_Transcricao_Consulta.sql) |
 
 **Cuidados (LGPD e segurança clínica):**
 * Só o veterinário responsável (ou a clínica da consulta) pode gerar o resumo; consulta cancelada é rejeitada.
@@ -121,15 +121,15 @@ TUTOR                         VETERINÁRIO                        CLÍNICA
 **Escolha da IA** (ordem de prioridade; sem nenhuma variável, o assistente local é usado automaticamente):
 
 ```bash
-# 1. Serviço ClyvoScribe AI (repositório IoT-Clyvo-Vet_M rodando com: python3 run_server.py)
-export CLYVOSCRIBE_URL="http://localhost:8000"
+# 1. Serviço AuroraScribe AI (repositório IoT-Clyvo-Vet_M rodando com: python3 run_server.py)
+export AURORASCRIBE_URL="http://localhost:8000"
 
 # 2. Ou Claude direto, sem o serviço Python
 export ANTHROPIC_API_KEY="sua_chave"
 export CLYVO_IA_MODEL="claude-opus-5-5"   # opcional, este já é o padrão
 ```
 
-Se o ClyvoScribe ou o Claude estiverem fora do ar, a API cai no assistente local e a consulta continua.
+Se o AuroraScribe ou o Claude estiverem fora do ar, a API cai no assistente local e a consulta continua.
 
 **Demonstração:** login como **Veterinário** → na consulta do Thor, clique em **🎙️ Iniciar transcrição** e fale a consulta (ou cole o roteiro abaixo) → **✨ Gerar resumo com IA** → revise os campos preenchidos → **Finalizar atendimento** → login como **Tutor** para ver o prontuário.
 
@@ -143,7 +143,7 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 |---|---|
 | **Spring Boot 3 + Java 21 LTS** | Stack trabalhada na disciplina, com suporte de longo prazo e ecossistema maduro (Security, Data JPA, Validation). |
 | **Thymeleaf (SSR) + API REST** | As telas Web são renderizadas no servidor (sessão + CSRF), e a API JSON stateless (JWT) atende o app mobile. As duas camadas usam os **mesmos services**, sem duplicar regra de negócio. |
-| **Oracle + Flyway** | O banco da FIAP é Oracle. As migrations versionadas (`V1..V7`) garantem que qualquer ambiente sobe com o mesmo schema. Localmente usamos H2 em `MODE=Oracle`. |
+| **Oracle + Flyway** | O banco da FIAP é Oracle. As migrations versionadas (`V1..V8`) garantem que qualquer ambiente sobe com o mesmo schema. Localmente usamos H2 em `MODE=Oracle`. |
 | **Modelo em 3FN** | Conta de acesso, credencial, identificadores e perfis separados. O prontuário é separado da consulta, e as autorizações de acesso são uma entidade própria. |
 | **JWT com sessão revogável** | O token é assinado (HMAC) e tem o hash registrado na tabela `sessao`; o logout revoga a sessão antes da expiração. |
 | **Padrão Post-Redirect-Get + flash messages** | Formulários não são reenviados com F5 e as mensagens de retorno não trafegam pela URL. |
@@ -157,7 +157,7 @@ A transcrição ao vivo usa o reconhecimento de voz do navegador (Chrome e Edge;
 | **Mastering Relational and Non-Relational Database** | Modelagem em 3FN, scripts DDL versionados com Flyway e constraints de integridade. | [`src/main/resources/db/migration`](src/main/resources/db/migration) · [DER](docs/DER.md) |
 | **DevOps Tools & Cloud Computing** | Dockerfile multi-stage com usuário não-root, build no Azure Container Registry e deploy no Azure Container Instances via Azure CLI. | [DevOps-Clyvo-M_Vet](https://github.com/MCGI-PW/DevOps-Clyvo-M_Vet) |
 | **Mobile Application Development** | App **AuroraPet** em React Native (Expo Router, TanStack Query), que consome a API REST deste projeto (`/api/**`, JWT Bearer). | [MCGI-PW/AuroraPet](https://github.com/MCGI-PW/AuroraPet) |
-| **Disruptive Architectures: IoT, IoB & Generative IA** | **ClyvoScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`CLYVOSCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
+| **Disruptive Architectures: IoT, IoB & Generative IA** | **AuroraScribe AI** em Python: transcrição da teleconsulta, prontuário SOAP com o Claude (ou extrator local), alertas clínicos por regras simbólicas. Esta API chama o serviço por HTTP (`AURORASCRIBE_URL`). | [MCGI-PW/IoT-Clyvo-Vet_M](https://github.com/MCGI-PW/IoT-Clyvo-Vet_M) |
 | **Compliance, Quality Assurance & Tests** | 70 testes automatizados (unitários + integração com MockMvc sobre o schema real do Flyway), cobrindo regras de negócio e segurança. | [`src/test`](src/test) |
 | **Advanced Business Development with .NET** | API **StripeAurora** em ASP.NET Core (.NET 10) com Oracle via Entity Framework: cadastro de clínicas e **assinaturas recorrentes pela Stripe**, a fonte de receita do modelo de negócio. | [MCGI-PW/StripeAurora](https://github.com/MCGI-PW/StripeAurora) |
 | **Modelo de negócio e UX** | Business Model Canvas e protótipo navegável com as telas reais de cada perfil. | [Canvas](docs/CANVAS.md) · [Protótipo](docs/prototipo/README.md) |
@@ -178,10 +178,10 @@ com.clyvo.veterinary/
 ├── models/          Entidades JPA (3FN) e enums de domínio (status, perfis, modalidade)
 ├── repositories/    Spring Data JPA
 └── services/        Regras de negócio (única fonte de verdade para Web e REST)
-    └── ia/          Assistente de IA da consulta: ClyvoScribe (serviço Python), Claude ou fallback local
+    └── ia/          Assistente de IA da consulta: AuroraScribe (serviço Python), Claude ou fallback local
 
 resources/
-├── db/migration/    Flyway V1..V7 (Oracle)
+├── db/migration/    Flyway V1..V8 (Oracle)
 ├── i18n/            messages.properties (PT-BR) e messages_en.properties
 ├── templates/       fragments/layout.html (cabeçalho, alertas, status, prontuários, rodapé) + páginas
 └── static/          style.css (design system) e app.js (tema claro/escuro e confirmações)
@@ -198,6 +198,7 @@ resources/
 | `V5__Add_Clinica_To_Consulta_And_Autorizacao.sql` | Multi-tenancy: `id_clinica` em consultas e autorizações |
 | `V6__Create_Prontuario.sql` | Prontuário clínico (FK para consulta e veterinário) |
 | `V7__Create_Transcricao_Consulta.sql` | Transcrição da teleconsulta (`CLOB`) e sugestões geradas pela IA, com a fonte do resumo |
+| `V8__Rename_Marca_Aurora_Pet.sql` | Atualiza o nome das clínicas já gravadas para a nova marca, Aurora Pet (exemplo de migration de dados, não só de estrutura) |
 
 Padrões Oracle: chaves `RAW(16) DEFAULT SYS_GUID()`, booleanos `NUMBER(1) CHECK (IN (0,1))` e textos longos `VARCHAR2(4000)`.
 
@@ -280,7 +281,7 @@ O deploy (ACR + ACI na região `brazilsouth`, perfil `prod,demo`) está no [repo
 * `AuthServiceTest`: cadastro, perfil inválido, login, bloqueio após 5 tentativas e conta bloqueada.
 * `ConsultaControllerTest`, `ClinicaControllerTest`, `AutorizacaoControllerTest`: multi-tenancy, vínculo, transferência (inclusive para médico sem vínculo), revogação e erros 403, 404 e 400.
 * `TranscricaoServiceTest` e `AssistenteClinicoLocalTest` (IA): resumo estruturado gravado com a fonte, fallback local quando a IA externa falha ou não há chave, escolha da IA pela configuração, bloqueio de veterinário de outra consulta, consulta cancelada e extração sem inventar conteúdo.
-* `ClyvoScribeAssistenteClinicoTest`: integração HTTP com o serviço de IA em Python (simulado por um servidor local no teste), incluindo erro HTTP e serviço fora do ar.
+* `AuroraScribeAssistenteClinicoTest`: integração HTTP com o serviço de IA em Python (simulado por um servidor local no teste), incluindo erro HTTP e serviço fora do ar.
 * `PetServiceTest`, `WebSessionTest` e `ClyvoVeterinaryApplicationTests` (contexto Spring).
 * `SegurancaEFluxosIntegrationTest` (integração, contexto completo + H2 com as migrations Flyway): 401/403 na API, redirecionamentos Web, CSRF, RBAC por perfil, logout revogando o JWT, login por perfil, cadastro de pet via Web (PRG), validação dos DTOs, CPF duplicado e caixa de notificações, login real pelo GitHub (OAuth2) criando a conta de tutor, login e cadastro em telas separadas, além de RBAC e validação do endpoint de resumo por IA.
 

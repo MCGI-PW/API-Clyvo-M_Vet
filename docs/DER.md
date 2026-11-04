@@ -1,4 +1,4 @@
-# 🗄️ DER: Modelo de Dados do Clyvo Vet
+# 🗄️ DER: Modelo de Dados do Aurora Pet
 
 Diagrama gerado a partir das migrations Flyway [`V1..V6`](../src/main/resources/db/migration) (Oracle, 3ª Forma Normal).
 O GitHub renderiza o diagrama Mermaid abaixo automaticamente.

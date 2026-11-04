@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Integração HTTP com o ClyvoScribe AI, simulado por um servidor local dentro do teste. */
-class ClyvoScribeAssistenteClinicoTest {
+/** Integração HTTP com o AuroraScribe AI, simulado por um servidor local dentro do teste. */
+class AuroraScribeAssistenteClinicoTest {
 
     private HttpServer servidor;
 
@@ -25,7 +25,7 @@ class ClyvoScribeAssistenteClinicoTest {
         }
     }
 
-    private String subirClyvoScribe(int status, String resposta, AtomicReference<String> corpoRecebido) throws IOException {
+    private String subirAuroraScribe(int status, String resposta, AtomicReference<String> corpoRecebido) throws IOException {
         servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         servidor.createContext("/api/transcriptions/summarize", troca -> {
             corpoRecebido.set(new String(troca.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
@@ -40,16 +40,16 @@ class ClyvoScribeAssistenteClinicoTest {
     }
 
     @Test
-    @DisplayName("Converte a resposta do ClyvoScribe no resumo clínico, incluindo alertas de segurança")
+    @DisplayName("Converte a resposta do AuroraScribe no resumo clínico, incluindo alertas de segurança")
     void converteRespostaDoServico() throws IOException {
         AtomicReference<String> recebido = new AtomicReference<>();
-        String url = subirClyvoScribe(200, """
+        String url = subirAuroraScribe(200, """
                 {"diagnostico": "Otite externa", "prescricao": "Gotas otológicas — a cada 12h — por 7 dias",
                  "orientacoes": "Manter a orelha seca", "resumo_tutor": "O Thor está com otite.",
                  "sinais_alerta": ["Febre"], "alertas_clinicos": ["Paciente braquicefálico"], "fonte": "LOCAL:extracao"}
                 """, recebido);
 
-        ResumoClinico resumo = new ClyvoScribeAssistenteClinico(url).resumir("transcrição da consulta", "Thor (Buldogue Francês)");
+        ResumoClinico resumo = new AuroraScribeAssistenteClinico(url).resumir("transcrição da consulta", "Thor (Buldogue Francês)");
 
         assertEquals("Otite externa", resumo.diagnostico());
         assertTrue(resumo.prescricao().contains("a cada 12h"));
@@ -60,11 +60,11 @@ class ClyvoScribeAssistenteClinicoTest {
     }
 
     @Test
-    @DisplayName("Erro HTTP do ClyvoScribe vira exceção para o serviço usar o assistente local")
+    @DisplayName("Erro HTTP do AuroraScribe vira exceção para o serviço usar o assistente local")
     void erroDoServicoLancaExcecao() throws IOException {
-        String url = subirClyvoScribe(500, "{\"error\": \"falha\"}", new AtomicReference<>());
+        String url = subirAuroraScribe(500, "{\"error\": \"falha\"}", new AtomicReference<>());
 
-        ClyvoScribeAssistenteClinico assistente = new ClyvoScribeAssistenteClinico(url);
+        AuroraScribeAssistenteClinico assistente = new AuroraScribeAssistenteClinico(url);
 
         assertThrows(IllegalStateException.class, () -> assistente.resumir("texto", "Thor"));
     }
@@ -72,7 +72,7 @@ class ClyvoScribeAssistenteClinicoTest {
     @Test
     @DisplayName("Serviço fora do ar também cai no assistente local")
     void servicoForaDoAr() {
-        ClyvoScribeAssistenteClinico assistente = new ClyvoScribeAssistenteClinico("http://127.0.0.1:1");
+        AuroraScribeAssistenteClinico assistente = new AuroraScribeAssistenteClinico("http://127.0.0.1:1");
 
         assertThrows(IllegalStateException.class, () -> assistente.resumir("texto", "Thor"));
     }

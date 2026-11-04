@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Resumo clínico feito pelo ClyvoScribe AI, o serviço de IA da CLYVO VET em Python
+ * Resumo clínico feito pelo AuroraScribe AI, o serviço de IA da Aurora Pet em Python
  * (repositório IoT-Clyvo-Vet_M). Chama {@code POST /api/transcriptions/summarize}; lá dentro o
- * ClyvoScribe usa o Claude ou o seu extrator local e ainda aplica as regras de segurança clínica.
+ * AuroraScribe usa o Claude ou o seu extrator local e ainda aplica as regras de segurança clínica.
  */
-public class ClyvoScribeAssistenteClinico implements AssistenteClinico {
+public class AuroraScribeAssistenteClinico implements AssistenteClinico {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(90);
 
@@ -26,7 +26,7 @@ public class ClyvoScribeAssistenteClinico implements AssistenteClinico {
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public ClyvoScribeAssistenteClinico(String urlBase) {
+    public AuroraScribeAssistenteClinico(String urlBase) {
         String base = urlBase.endsWith("/") ? urlBase.substring(0, urlBase.length() - 1) : urlBase;
         this.endpoint = base + "/api/transcriptions/summarize";
     }
@@ -45,7 +45,7 @@ public class ClyvoScribeAssistenteClinico implements AssistenteClinico {
 
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                throw new IllegalStateException("ClyvoScribe respondeu HTTP " + response.statusCode());
+                throw new IllegalStateException("AuroraScribe respondeu HTTP " + response.statusCode());
             }
 
             JsonNode json = mapper.readTree(response.body());
@@ -62,15 +62,15 @@ public class ClyvoScribeAssistenteClinico implements AssistenteClinico {
                     sinais);
         } catch (IOException e) {
             // Quem chama trata a falha e usa o assistente local: a consulta não trava
-            throw new IllegalStateException("ClyvoScribe indisponível: " + e.getMessage(), e);
+            throw new IllegalStateException("AuroraScribe indisponível: " + e.getMessage(), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Chamada ao ClyvoScribe interrompida.", e);
+            throw new IllegalStateException("Chamada ao AuroraScribe interrompida.", e);
         }
     }
 
     @Override
     public String fonte() {
-        return "CLYVOSCRIBE";
+        return "AURORASCRIBE";
     }
 }

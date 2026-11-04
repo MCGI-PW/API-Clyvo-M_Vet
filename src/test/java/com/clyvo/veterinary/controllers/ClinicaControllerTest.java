@@ -71,7 +71,7 @@ class ClinicaControllerTest {
         clinica = new Clinica();
         clinica.setIdClinica(idClinica);
         clinica.setContaAcesso(conta);
-        clinica.setNomeFantasia("Clyvo Central");
+        clinica.setNomeFantasia("Aurora Central");
         clinica.setAtiva(true);
 
         vet1 = new Veterinario();

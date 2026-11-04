@@ -45,7 +45,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         if (login != null && !login.isBlank()) {
             return login.trim().toLowerCase() + "@github.user";
         }
-        return "oauth2-" + UUID.randomUUID() + "@clyvovet.com";
+        return "oauth2-" + UUID.randomUUID() + "@aurorapet.com";
     }
 
     private static String firstNonBlank(String... values) {
