@@ -1,0 +1,49 @@
+# =============================================================================
+# CI da API Aurora Pet (Java 21 / Spring Boot) - Azure Pipelines
+# Compila, roda os testes (H2 em memória, sem precisar do banco da nuvem),
+# gera o .jar e publica o artefato "app" para a Release fazer o deploy
+# no App Service.
+# =============================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# O projeto exige Java 21 (pom.xml); o agente ubuntu-latest já tem o JDK 21 instalado
+- task: JavaToolInstaller@0
+  displayName: 'Java 21'
+  inputs:
+    versionSpec: '21'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+- task: Maven@4
+  displayName: 'Maven package'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'package'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: 'default'   # usa o JDK 21 definido no passo anterior
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+
+- task: CopyFiles@2
+  displayName: 'Copiar arquivos'
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**/target/*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    flattenFolders: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publicar artefato'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'app'
+    publishLocation: 'Container'

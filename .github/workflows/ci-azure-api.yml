@@ -1,0 +1,106 @@
+# CI da API Aurora Pet / Clyvo (Spring Boot / Java 21) - SOMENTE INTEGRAÇÃO CONTÍNUA
+# Gerado por criar-webapp-api.sh (Sprint 4).
+#
+# O DEPLOY no Azure Web App (api-aurora-rm565708) é feito pela pipeline do
+# Azure DevOps (Semana_19_02_AuroraPet-API-yaml.txt). Este workflow só valida o
+# código a cada push e Pull Request, para os dois não publicarem no mesmo Web App.
+#
+#   1) Build + testes (H2, perfil "test")
+#   2) Teste de fumaça com SQL Server real (perfil "azure"): Flyway aplica as
+#      migrations T-SQL e o Hibernate valida o schema
+#   3) Guarda o JAR como artefato (download na aba Actions, por 7 dias)
+
+name: CI API - Build e Testes
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-api-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, testes e teste com SQL Server
+    runs-on: ubuntu-latest
+    env:
+      # Senha de um SQL Server descartável que só existe durante este job (não é segredo)
+      CI_SA_PASSWORD: 'Ci_Clyvo_Sql2026!'
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          MSSQL_SA_PASSWORD: 'Ci_Clyvo_Sql2026!'
+        ports:
+          - 1433:1433
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build e testes (H2)
+        run: mvn -B -ntp verify
+
+      - name: Preparar o JAR
+        run: |
+          JAR=$(ls target/*.jar | grep -v -- '-plain.jar' | head -n 1)
+          test -n "$JAR"
+          cp "$JAR" app.jar
+          ls -lh app.jar
+
+      - name: Criar banco de teste no SQL Server
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec ${{ job.services.sqlserver.id }} /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$CI_SA_PASSWORD" -Q "SELECT 1" >/dev/null 2>&1; then break; fi
+            echo "aguardando o SQL Server ($i)..."; sleep 5
+          done
+          docker exec ${{ job.services.sqlserver.id }} /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$CI_SA_PASSWORD" -b -Q "CREATE DATABASE clyvo_ci"
+
+      # Perfil azure = Flyway (db/migration-sqlserver) + Hibernate "validate" no SQL Server
+      - name: Teste de fumaça (perfil azure no SQL Server)
+        env:
+          SPRING_PROFILES_ACTIVE: azure
+          DB_URL: jdbc:sqlserver://localhost:1433;database=clyvo_ci;encrypt=true;trustServerCertificate=true
+          DB_USER: sa
+          SERVER_PORT: '8080'
+        run: |
+          export DB_PASS="$CI_SA_PASSWORD"
+          export JWT_SECRET="$(openssl rand -base64 48)"
+          java -jar app.jar > app.log 2>&1 &
+          PID=$!
+          CODE=000
+          for i in $(seq 1 60); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/v3/api-docs || true)
+            [ "$CODE" = "200" ] && break
+            kill -0 "$PID" 2>/dev/null || break
+            sleep 3
+          done
+          grep -E "Successfully applied|Schema .* is up to date|Started .*Application" app.log || true
+          kill "$PID" 2>/dev/null || true
+          if [ "$CODE" != "200" ]; then
+            echo "::error::A API não subiu no SQL Server (HTTP $CODE). Últimas linhas do log:"
+            tail -n 120 app.log
+            exit 1
+          fi
+          echo "API respondeu 200 em /v3/api-docs com Flyway + validação do schema no SQL Server"
+
+      - name: Guardar JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-jar
+          path: app.jar
+          retention-days: 7
